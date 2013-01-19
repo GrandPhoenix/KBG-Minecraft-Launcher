@@ -1,0 +1,6 @@
+Notes:
+
+
+
+Getting twitter feeds with the version 1 api might get absolete in the future.
+Using the new 1.1 api requires an authentication key. Have to work on that.

@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<KBGVersionInfo>
+  <Version>0.001</Version>
+  <News>This is whats new: stuff,
+	things,
+	ALOT!</News>
+  <ExcludeFromUpdate>lastlogin</ExcludeFromUpdate>
+  <ExcludeFromUpdate>options.txt</ExcludeFromUpdate>
+  <ExcludeFromUpdate>optionsof.txt</ExcludeFromUpdate>
+  <ExcludeFromUpdate>saves</ExcludeFromUpdate>
+  <ExcludeFromUpdate>config</ExcludeFromUpdate>
+  <!-- optional -->
+  <ExcludeFromUpdate>screenshots</ExcludeFromUpdate>
+  <ExcludeFromUpdate>servers.dat</ExcludeFromUpdate>
+  <!-- optional -->
+  <ExcludeFromUpdate>mods\rei_minimap</ExcludeFromUpdate>
+  <ExcludeFromUpdate>stats</ExcludeFromUpdate>
+  <!-- optional -->
+  <ExcludeFromUpdate>texturepacks</ExcludeFromUpdate>
+</KBGVersionInfo>
