@@ -40,8 +40,6 @@
             this.label8 = new System.Windows.Forms.Label();
             this.comboBox2 = new System.Windows.Forms.ComboBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -55,6 +53,12 @@
             this.labelAbout = new System.Windows.Forms.Label();
             this.groupBoxLinks = new System.Windows.Forms.GroupBox();
             this.richTextBoxLinks = new System.Windows.Forms.RichTextBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.textBoxAutoLoginAddress = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
+            this.checkBoxAutoLogin = new System.Windows.Forms.CheckBox();
+            this.comboBoxAutoLoginPack = new System.Windows.Forms.ComboBox();
             this.tabControl1.SuspendLayout();
             this.tabPageMisc.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -84,7 +88,7 @@
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(330, 15);
             this.label4.TabIndex = 14;
-            this.label4.Text = "KBG Minecraft Launcher is made by Phoenix (GrandPhoenix82)";
+            this.label4.Text = "KBG Minecraft Launcher was made by Phoenix (GrandPhoenix82)";
             // 
             // labelVersion
             // 
@@ -127,9 +131,9 @@
             this.groupBox3.Controls.Add(this.label8);
             this.groupBox3.Controls.Add(this.comboBox2);
             this.groupBox3.Enabled = false;
-            this.groupBox3.Location = new System.Drawing.Point(3, 184);
+            this.groupBox3.Location = new System.Drawing.Point(3, 188);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(550, 47);
+            this.groupBox3.Size = new System.Drawing.Size(550, 43);
             this.groupBox3.TabIndex = 2;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Java";
@@ -173,39 +177,25 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.comboBox1);
-            this.groupBox1.Controls.Add(this.checkBox1);
+            this.groupBox1.Controls.Add(this.label10);
+            this.groupBox1.Controls.Add(this.textBoxAutoLoginAddress);
+            this.groupBox1.Controls.Add(this.label11);
+            this.groupBox1.Controls.Add(this.label12);
+            this.groupBox1.Controls.Add(this.checkBoxAutoLogin);
+            this.groupBox1.Controls.Add(this.comboBoxAutoLoginPack);
             this.groupBox1.Enabled = false;
             this.groupBox1.Location = new System.Drawing.Point(3, 6);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(550, 53);
+            this.groupBox1.Size = new System.Drawing.Size(550, 65);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Auto login";
-            // 
-            // comboBox1
-            // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(231, 19);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(310, 21);
-            this.comboBox1.TabIndex = 1;
-            // 
-            // checkBox1
-            // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(6, 21);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(117, 17);
-            this.checkBox1.TabIndex = 0;
-            this.checkBox1.Text = "Auto login to server";
-            this.checkBox1.UseVisualStyleBackColor = true;
             // 
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.groupBox5);
             this.groupBox2.Controls.Add(this.groupBox4);
-            this.groupBox2.Location = new System.Drawing.Point(3, 65);
+            this.groupBox2.Location = new System.Drawing.Point(3, 77);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(550, 105);
             this.groupBox2.TabIndex = 1;
@@ -291,16 +281,16 @@
             // 
             this.groupBox4.Controls.Add(this.buttonSetRam);
             this.groupBox4.Controls.Add(this.label3);
-            this.groupBox4.Location = new System.Drawing.Point(249, 17);
+            this.groupBox4.Location = new System.Drawing.Point(249, 19);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(286, 82);
+            this.groupBox4.Size = new System.Drawing.Size(295, 80);
             this.groupBox4.TabIndex = 6;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Recommended";
             // 
             // buttonSetRam
             // 
-            this.buttonSetRam.Location = new System.Drawing.Point(6, 53);
+            this.buttonSetRam.Location = new System.Drawing.Point(6, 51);
             this.buttonSetRam.Name = "buttonSetRam";
             this.buttonSetRam.Size = new System.Drawing.Size(79, 23);
             this.buttonSetRam.TabIndex = 2;
@@ -361,6 +351,59 @@
             this.richTextBoxLinks.TabIndex = 13;
             this.richTextBoxLinks.Text = "";
             // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(237, 42);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(307, 13);
+            this.label10.TabIndex = 11;
+            this.label10.Text = "Leave the address blank to disable auto-login for specific packs";
+            // 
+            // textBoxAutoLoginAddress
+            // 
+            this.textBoxAutoLoginAddress.Location = new System.Drawing.Point(423, 19);
+            this.textBoxAutoLoginAddress.Name = "textBoxAutoLoginAddress";
+            this.textBoxAutoLoginAddress.Size = new System.Drawing.Size(121, 20);
+            this.textBoxAutoLoginAddress.TabIndex = 10;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(335, 22);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(82, 13);
+            this.label11.TabIndex = 9;
+            this.label11.Text = "auto-connect to";
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(138, 22);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(64, 13);
+            this.label12.TabIndex = 8;
+            this.label12.Text = "When using";
+            // 
+            // checkBoxAutoLogin
+            // 
+            this.checkBoxAutoLogin.AutoSize = true;
+            this.checkBoxAutoLogin.Location = new System.Drawing.Point(6, 21);
+            this.checkBoxAutoLogin.Name = "checkBoxAutoLogin";
+            this.checkBoxAutoLogin.Size = new System.Drawing.Size(98, 17);
+            this.checkBoxAutoLogin.TabIndex = 7;
+            this.checkBoxAutoLogin.Text = "Use Auto-login:";
+            this.checkBoxAutoLogin.UseVisualStyleBackColor = true;
+            // 
+            // comboBoxAutoLoginPack
+            // 
+            this.comboBoxAutoLoginPack.FormattingEnabled = true;
+            this.comboBoxAutoLoginPack.Location = new System.Drawing.Point(208, 19);
+            this.comboBoxAutoLoginPack.Name = "comboBoxAutoLoginPack";
+            this.comboBoxAutoLoginPack.Size = new System.Drawing.Size(121, 21);
+            this.comboBoxAutoLoginPack.TabIndex = 6;
+            this.comboBoxAutoLoginPack.Text = "Industrial Rage";
+            // 
             // FormOptions
             // 
             this.AcceptButton = this.buttonOk;
@@ -408,8 +451,6 @@
         private System.Windows.Forms.NumericUpDown numericUpDownRamMin;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.Button buttonOk;
         private MyTabControl tabControl1;        
         private System.Windows.Forms.TabPage tabPageMisc;
@@ -426,5 +467,11 @@
         private System.Windows.Forms.Label labelVersion;
         private System.Windows.Forms.GroupBox groupBox5;
         private System.Windows.Forms.GroupBox groupBox4;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.TextBox textBoxAutoLoginAddress;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.CheckBox checkBoxAutoLogin;
+        private System.Windows.Forms.ComboBox comboBoxAutoLoginPack;
     }
 }

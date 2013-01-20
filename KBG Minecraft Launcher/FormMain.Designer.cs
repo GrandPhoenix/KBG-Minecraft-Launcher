@@ -129,15 +129,15 @@
             // 
             this.labelPassword.Location = new System.Drawing.Point(6, 79);
             this.labelPassword.Name = "labelPassword";
-            this.labelPassword.Size = new System.Drawing.Size(78, 15);
+            this.labelPassword.Size = new System.Drawing.Size(58, 15);
             this.labelPassword.TabIndex = 6;
             this.labelPassword.Text = "Password";
             // 
             // textBoxPassword
             // 
-            this.textBoxPassword.Location = new System.Drawing.Point(90, 76);
+            this.textBoxPassword.Location = new System.Drawing.Point(70, 76);
             this.textBoxPassword.Name = "textBoxPassword";
-            this.textBoxPassword.Size = new System.Drawing.Size(100, 20);
+            this.textBoxPassword.Size = new System.Drawing.Size(120, 20);
             this.textBoxPassword.TabIndex = 5;
             this.textBoxPassword.UseSystemPasswordChar = true;
             // 
@@ -145,15 +145,15 @@
             // 
             this.labelUsername.Location = new System.Drawing.Point(6, 49);
             this.labelUsername.Name = "labelUsername";
-            this.labelUsername.Size = new System.Drawing.Size(78, 15);
+            this.labelUsername.Size = new System.Drawing.Size(58, 15);
             this.labelUsername.TabIndex = 4;
             this.labelUsername.Text = "Username";
             // 
             // textBoxUsername
             // 
-            this.textBoxUsername.Location = new System.Drawing.Point(90, 46);
+            this.textBoxUsername.Location = new System.Drawing.Point(70, 46);
             this.textBoxUsername.Name = "textBoxUsername";
-            this.textBoxUsername.Size = new System.Drawing.Size(100, 20);
+            this.textBoxUsername.Size = new System.Drawing.Size(120, 20);
             this.textBoxUsername.TabIndex = 3;
             // 
             // buttonOptions

@@ -1093,26 +1093,42 @@ namespace KBG_Minecraft_Launcher
         {
             try
             {
+                SetDownloadLabelText("Logging in");
+
                 ProcessStartInfo procStartInfo = new ProcessStartInfo();
 
-                string sessionID = generateSession(textBoxUsername.Text, textBoxPassword.Text, 5000).Split(':')[3];
+                string session = generateSession(textBoxUsername.Text, textBoxPassword.Text, 5000);
+                string sessionID = "";
+                string username = "";
 
-                if (sessionID.ToLower().Contains("bad login"))
+                if (session.ToLower().Contains("bad login"))
                 {
-                    MessageBox.Show("Invalid Username and/or Password. Please make sure you typed in the right information", "Invalid Username and/or Password");
+                    MessageBox.Show("Invalid Username and/or Password." + Environment.NewLine + "Please make sure you typed in the right information", "Invalid Username and/or Password",MessageBoxButtons.OK,MessageBoxIcon.Asterisk);
 
+                }
+                else if (session == "Account migrated, use e-mail as username.")
+                {
+                    MessageBox.Show("Your account has been migrated to a Mojang acocunt. Use your email as a username to log in", "Account migrated");
                 }
                 else
                 {
                     //assumes that a valid session was retrieved. Might need more work here
+                    if (session.Contains(":"))
+                        sessionID = session.Split(':')[3];
+
+                    if (textBoxUsername.Text.Contains("@"))                    
+                        username = session.Split(':')[2];
+                    else
+                        username = textBoxUsername.Text;
 
 
                     if (File.Exists(_packDir + "\\" + selItem + "\\.Minecraft\\bin\\minecraft.jar"))
                     {
                         //FINALLY i got it to work. Damm it was a pain
+                        SetDownloadLabelText("Starting game");
                         procStartInfo.FileName = GetJavaInstallationPath() + @"\bin\javaw.exe";
                         Environment.SetEnvironmentVariable("APPDATA", _packDir + "\\" + selItem);
-                        procStartInfo.Arguments = Environment.ExpandEnvironmentVariables(string.Format(@" -Xms{0}m -Xmx{1}m -cp ""%APPDATA%\.minecraft\bin\*"" -Djava.library.path=""%APPDATA%\.minecraft\bin\natives"" net.minecraft.client.Minecraft {2} {3}", /*0*/ _formOptions.GetMemmoryMin(), /*1*/ _formOptions.GetMemmoryMax(), /*2*/ textBoxUsername.Text, /*3*/ sessionID));
+                        procStartInfo.Arguments = Environment.ExpandEnvironmentVariables(string.Format(@" -Xms{0}m -Xmx{1}m -cp ""%APPDATA%\.minecraft\bin\*"" -Djava.library.path=""%APPDATA%\.minecraft\bin\natives"" net.minecraft.client.Minecraft {2} {3}", /*0*/ _formOptions.GetMemmoryMin(), /*1*/ _formOptions.GetMemmoryMax(), /*2*/ username, /*3*/ sessionID));
 
 
 #if(DEBUG)
