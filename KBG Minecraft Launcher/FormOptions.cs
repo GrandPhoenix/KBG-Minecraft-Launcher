@@ -196,10 +196,13 @@ namespace KBG_Minecraft_Launcher
             try
             {
                 string LinksRTF = @"{\rtf1\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fnil\fcharset0 Segoe UI;}{\f1\fnil\fcharset0 Microsoft Sans Serif;}}";
-                LinksRTF += @"\viewkind4\uc1\pard\f0\fs18 Industrial Rage \tab - \tab http://www.killerbeesgaming.com/games.php?do=mc#industrial\par ";
-                LinksRTF += @"Endless Rage \tab - \tab http://www.killerbeesgaming.com/games.php?do=mc#endless\par ";
-                LinksRTF += @"Terrafirma Rage \tab - \tab http://www.killerbeesgaming.com/games.php?do=mc#tfcraft\par ";
-                LinksRTF += @"Vanilla Minecraft \tab - \tab https://minecraft.net/download\f1\fs17\par}";
+                LinksRTF += @"\viewkind4\uc1\pard\f0\fs18 ";//                
+                LinksRTF += @"KillerBeesGaming.com \tab -  http://www.killerbeesgaming.com/content.php\par ";
+                LinksRTF += @"KillerBees twitter page \tab -  https://twitter.com/intent/user?screen_name=KB_Gaming\par ";
+                LinksRTF += @"Industrial Rage \tab\tab -  http://www.killerbeesgaming.com/games.php?do=mc#industrial\par ";
+                LinksRTF += @"Endless Rage \tab\tab -  http://www.killerbeesgaming.com/games.php?do=mc#endless\par ";
+                LinksRTF += @"Terrafirma Rage \tab\tab -  http://www.killerbeesgaming.com/games.php?do=mc#tfcraft\par ";
+                LinksRTF += @"Vanilla Minecraft \tab\tab -  https://minecraft.net/download\f1\fs17\par}"; //
                 richTextBoxLinks.Rtf = LinksRTF;
 
                 if (_settings == null)
@@ -591,6 +594,18 @@ namespace KBG_Minecraft_Launcher
                     break;                    
             }
             return returnValue;
+        }
+
+        private void richTextBoxLinks_LinkClicked(object sender, LinkClickedEventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(e.LinkText);
+            }
+            catch (Exception ex)
+            {
+                _formMain.ErrorReporting(ex, false);
+            }
         }
     }
 

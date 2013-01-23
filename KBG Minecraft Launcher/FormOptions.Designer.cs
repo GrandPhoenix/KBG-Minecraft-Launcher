@@ -40,6 +40,12 @@
             this.label8 = new System.Windows.Forms.Label();
             this.comboBox2 = new System.Windows.Forms.ComboBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.textBoxAutoLoginAddress = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
+            this.checkBoxAutoLogin = new System.Windows.Forms.CheckBox();
+            this.comboBoxAutoLoginPack = new System.Windows.Forms.ComboBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -53,12 +59,6 @@
             this.labelAbout = new System.Windows.Forms.Label();
             this.groupBoxLinks = new System.Windows.Forms.GroupBox();
             this.richTextBoxLinks = new System.Windows.Forms.RichTextBox();
-            this.label10 = new System.Windows.Forms.Label();
-            this.textBoxAutoLoginAddress = new System.Windows.Forms.TextBox();
-            this.label11 = new System.Windows.Forms.Label();
-            this.label12 = new System.Windows.Forms.Label();
-            this.checkBoxAutoLogin = new System.Windows.Forms.CheckBox();
-            this.comboBoxAutoLoginPack = new System.Windows.Forms.ComboBox();
             this.tabControl1.SuspendLayout();
             this.tabPageMisc.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -190,6 +190,59 @@
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Auto login";
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(237, 42);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(307, 13);
+            this.label10.TabIndex = 11;
+            this.label10.Text = "Leave the address blank to disable auto-login for specific packs";
+            // 
+            // textBoxAutoLoginAddress
+            // 
+            this.textBoxAutoLoginAddress.Location = new System.Drawing.Point(423, 19);
+            this.textBoxAutoLoginAddress.Name = "textBoxAutoLoginAddress";
+            this.textBoxAutoLoginAddress.Size = new System.Drawing.Size(121, 20);
+            this.textBoxAutoLoginAddress.TabIndex = 10;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(335, 22);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(82, 13);
+            this.label11.TabIndex = 9;
+            this.label11.Text = "auto-connect to";
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(138, 22);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(64, 13);
+            this.label12.TabIndex = 8;
+            this.label12.Text = "When using";
+            // 
+            // checkBoxAutoLogin
+            // 
+            this.checkBoxAutoLogin.AutoSize = true;
+            this.checkBoxAutoLogin.Location = new System.Drawing.Point(6, 21);
+            this.checkBoxAutoLogin.Name = "checkBoxAutoLogin";
+            this.checkBoxAutoLogin.Size = new System.Drawing.Size(98, 17);
+            this.checkBoxAutoLogin.TabIndex = 7;
+            this.checkBoxAutoLogin.Text = "Use Auto-login:";
+            this.checkBoxAutoLogin.UseVisualStyleBackColor = true;
+            // 
+            // comboBoxAutoLoginPack
+            // 
+            this.comboBoxAutoLoginPack.FormattingEnabled = true;
+            this.comboBoxAutoLoginPack.Location = new System.Drawing.Point(208, 19);
+            this.comboBoxAutoLoginPack.Name = "comboBoxAutoLoginPack";
+            this.comboBoxAutoLoginPack.Size = new System.Drawing.Size(121, 21);
+            this.comboBoxAutoLoginPack.TabIndex = 6;
+            this.comboBoxAutoLoginPack.Text = "Industrial Rage";
             // 
             // groupBox2
             // 
@@ -332,9 +385,9 @@
             // groupBoxLinks
             // 
             this.groupBoxLinks.Controls.Add(this.richTextBoxLinks);
-            this.groupBoxLinks.Location = new System.Drawing.Point(6, 147);
+            this.groupBoxLinks.Location = new System.Drawing.Point(6, 117);
             this.groupBoxLinks.Name = "groupBoxLinks";
-            this.groupBoxLinks.Size = new System.Drawing.Size(544, 81);
+            this.groupBoxLinks.Size = new System.Drawing.Size(544, 111);
             this.groupBoxLinks.TabIndex = 12;
             this.groupBoxLinks.TabStop = false;
             this.groupBoxLinks.Text = "Links";
@@ -347,62 +400,10 @@
             this.richTextBoxLinks.Location = new System.Drawing.Point(3, 16);
             this.richTextBoxLinks.Name = "richTextBoxLinks";
             this.richTextBoxLinks.ReadOnly = true;
-            this.richTextBoxLinks.Size = new System.Drawing.Size(538, 62);
+            this.richTextBoxLinks.Size = new System.Drawing.Size(538, 92);
             this.richTextBoxLinks.TabIndex = 13;
             this.richTextBoxLinks.Text = "";
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(237, 42);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(307, 13);
-            this.label10.TabIndex = 11;
-            this.label10.Text = "Leave the address blank to disable auto-login for specific packs";
-            // 
-            // textBoxAutoLoginAddress
-            // 
-            this.textBoxAutoLoginAddress.Location = new System.Drawing.Point(423, 19);
-            this.textBoxAutoLoginAddress.Name = "textBoxAutoLoginAddress";
-            this.textBoxAutoLoginAddress.Size = new System.Drawing.Size(121, 20);
-            this.textBoxAutoLoginAddress.TabIndex = 10;
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(335, 22);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(82, 13);
-            this.label11.TabIndex = 9;
-            this.label11.Text = "auto-connect to";
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(138, 22);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(64, 13);
-            this.label12.TabIndex = 8;
-            this.label12.Text = "When using";
-            // 
-            // checkBoxAutoLogin
-            // 
-            this.checkBoxAutoLogin.AutoSize = true;
-            this.checkBoxAutoLogin.Location = new System.Drawing.Point(6, 21);
-            this.checkBoxAutoLogin.Name = "checkBoxAutoLogin";
-            this.checkBoxAutoLogin.Size = new System.Drawing.Size(98, 17);
-            this.checkBoxAutoLogin.TabIndex = 7;
-            this.checkBoxAutoLogin.Text = "Use Auto-login:";
-            this.checkBoxAutoLogin.UseVisualStyleBackColor = true;
-            // 
-            // comboBoxAutoLoginPack
-            // 
-            this.comboBoxAutoLoginPack.FormattingEnabled = true;
-            this.comboBoxAutoLoginPack.Location = new System.Drawing.Point(208, 19);
-            this.comboBoxAutoLoginPack.Name = "comboBoxAutoLoginPack";
-            this.comboBoxAutoLoginPack.Size = new System.Drawing.Size(121, 21);
-            this.comboBoxAutoLoginPack.TabIndex = 6;
-            this.comboBoxAutoLoginPack.Text = "Industrial Rage";
+            this.richTextBoxLinks.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBoxLinks_LinkClicked);
             // 
             // FormOptions
             // 
