@@ -18,12 +18,12 @@ namespace KBG_Minecraft_Launcher
             set { _packName = value; }
         }
 
-        private double _packVersion = 0;
-        public double Version
-        {
-            get { return _packVersion; }
-            set { _packVersion = value; }
-        }
+        //private double _packVersion = 0;
+        //public double Version
+        //{
+        //    get { return _packVersion; }
+        //    set { _packVersion = value; }
+        //}
 
         private string _packDownloadUrl = "";
         public string DownloadUrl
@@ -51,7 +51,7 @@ namespace KBG_Minecraft_Launcher
         public PackClass(string packName)
         {
             _packName = packName;
-            _packVersion = 0;
+            //_packVersion = 0;
             _packDownloadUrl = "";
             _packVersionUrl = "";            
             _packVersionFileName = "";
@@ -61,7 +61,7 @@ namespace KBG_Minecraft_Launcher
         {
 
             _packName = packName;
-            _packVersion = packVersion;
+            //_packVersion = packVersion;
             _packDownloadUrl = packDownloadUrl;
             _packVersionUrl = packVersionUrl;
             if(packVersionUrl.Contains("/"))
@@ -72,7 +72,7 @@ namespace KBG_Minecraft_Launcher
         {
 
             _packName = packName;
-            _packVersion = packVersion;
+            //_packVersion = packVersion;
             _packDownloadUrl = packDownloadUrl;
             _packVersionUrl = packVersionUrl;
             _packVersionFileName = packVersionFileName;
@@ -242,139 +242,139 @@ namespace KBG_Minecraft_Launcher
             LoadPacks();
         }
 
-        /// <summary>
-        /// Saves information about a Minecraft Pack. also used to create new.
-        /// </summary>
-        /// <param name="newPack"></param>
-        public void SavePackInfo(PackClass newPack)
-        {
-            XmlDocument xmlDoc = new XmlDocument();
-            XmlNode PackNodeList;
-            XmlNode PackNode = null;
-            XmlNode nodeName;
-            XmlNode nodeVersion;
-            XmlNode nodePackUrl;
-            XmlNode nodeVersionUrl;
+        ///// <summary>
+        ///// Saves information about a Minecraft Pack. also used to create new.
+        ///// </summary>
+        ///// <param name="newPack"></param>
+        //public void SavePackInfo(PackClass newPack)
+        //{
+        //    XmlDocument xmlDoc = new XmlDocument();
+        //    XmlNode PackNodeList;
+        //    XmlNode PackNode = null;
+        //    XmlNode nodeName;
+        //    XmlNode nodeVersion;
+        //    XmlNode nodePackUrl;
+        //    XmlNode nodeVersionUrl;
                         
-            //packs
-            //  Name
-            //  version
-            //  packUrl
-            //  versionUrl
+        //    //packs
+        //    //  Name
+        //    //  version
+        //    //  packUrl
+        //    //  versionUrl
             
-            try
-            {
-                if (!XmlFileContainsPack(newPack.Name))
-                {
-                    //add new pack
+        //    try
+        //    {
+        //        if (!XmlFileContainsPack(newPack.Name))
+        //        {
+        //            //add new pack
 
-                    EnsureXMLIntegrity();
-                    xmlDoc.Load(_settingsFile);
+        //            EnsureXMLIntegrity();
+        //            xmlDoc.Load(_settingsFile);
 
-                    PackNodeList = xmlDoc.SelectSingleNode("KBGSettings/Packs");
+        //            PackNodeList = xmlDoc.SelectSingleNode("KBGSettings/Packs");
 
-                    foreach (XmlNode pack in PackNodeList.ChildNodes)
-                    {
-                        if (pack.SelectSingleNode("Name").InnerText == newPack.Name)
-                        {
-                            PackNode = pack;
-                            break;
-                        }
-                    }
-                    if (PackNode != null)
-                        throw new Exception("The pack info your trying to add was not in the loaded Packlist, but in the xml file. This inconsistancy should not happen unless the xml have been manually edited" + Environment.NewLine + "@add new pack");
+        //            foreach (XmlNode pack in PackNodeList.ChildNodes)
+        //            {
+        //                if (pack.SelectSingleNode("Name").InnerText == newPack.Name)
+        //                {
+        //                    PackNode = pack;
+        //                    break;
+        //                }
+        //            }
+        //            if (PackNode != null)
+        //                throw new Exception("The pack info your trying to add was not in the loaded Packlist, but in the xml file. This inconsistancy should not happen unless the xml have been manually edited" + Environment.NewLine + "@add new pack");
 
-                    PackNode = xmlDoc.CreateElement("Pack");
+        //            PackNode = xmlDoc.CreateElement("Pack");
 
-                    nodeName = xmlDoc.CreateElement("Name");
-                    nodeName.InnerText = newPack.Name;
-                    PackNode.AppendChild(nodeName);
+        //            nodeName = xmlDoc.CreateElement("Name");
+        //            nodeName.InnerText = newPack.Name;
+        //            PackNode.AppendChild(nodeName);
 
-                    nodeVersion = xmlDoc.CreateElement("Version");
-                    nodeVersion.InnerText = newPack.Version.ToString();
-                    PackNode.AppendChild(nodeVersion);
+        //            nodeVersion = xmlDoc.CreateElement("Version");
+        //            nodeVersion.InnerText = newPack.Version.ToString();
+        //            PackNode.AppendChild(nodeVersion);
 
-                    nodePackUrl = xmlDoc.CreateElement("PackUrl");
-                    nodePackUrl.InnerText = newPack.DownloadUrl;
-                    PackNode.AppendChild(nodePackUrl);
+        //            nodePackUrl = xmlDoc.CreateElement("PackUrl");
+        //            nodePackUrl.InnerText = newPack.DownloadUrl;
+        //            PackNode.AppendChild(nodePackUrl);
 
-                    nodeVersionUrl = xmlDoc.CreateElement("VersionUrl");
-                    nodeVersionUrl.InnerText = newPack.VersionUrl;
-                    PackNode.AppendChild(nodeVersionUrl);
+        //            nodeVersionUrl = xmlDoc.CreateElement("VersionUrl");
+        //            nodeVersionUrl.InnerText = newPack.VersionUrl;
+        //            PackNode.AppendChild(nodeVersionUrl);
 
-                    PackNodeList.AppendChild(PackNode);
-                    using (FileStream fsxml = new FileStream(_settingsFile, FileMode.Truncate, FileAccess.Write, FileShare.ReadWrite))
-                    {
-                        xmlDoc.Save(fsxml);
-                    }
+        //            PackNodeList.AppendChild(PackNode);
+        //            using (FileStream fsxml = new FileStream(_settingsFile, FileMode.Truncate, FileAccess.Write, FileShare.ReadWrite))
+        //            {
+        //                xmlDoc.Save(fsxml);
+        //            }
 
-                    //_packList.Add(newPack);
-                }
-                else
-                {
-                    //override existing pack                    
+        //            //_packList.Add(newPack);
+        //        }
+        //        else
+        //        {
+        //            //override existing pack                    
                     
-                    EnsureXMLIntegrity();
-                    xmlDoc.Load(_settingsFile);
+        //            EnsureXMLIntegrity();
+        //            xmlDoc.Load(_settingsFile);
 
-                    PackNodeList = xmlDoc.SelectSingleNode("KBGSettings/Packs");
+        //            PackNodeList = xmlDoc.SelectSingleNode("KBGSettings/Packs");
 
-                    foreach (XmlNode pack in PackNodeList.ChildNodes)
-                    {
-                        if (pack.SelectSingleNode("Name").InnerText == newPack.Name)
-                        {
-                            PackNode = pack;
-                            break;
-                        }
-                    }
-                    if (PackNode == null)
-                        throw new Exception("The pack info your trying to add was in the loaded Packlist, but not in the xml file. This inconsistancy should not happen unless the xml have been manually edited" + Environment.NewLine + "@override existing pack");
+        //            foreach (XmlNode pack in PackNodeList.ChildNodes)
+        //            {
+        //                if (pack.SelectSingleNode("Name").InnerText == newPack.Name)
+        //                {
+        //                    PackNode = pack;
+        //                    break;
+        //                }
+        //            }
+        //            if (PackNode == null)
+        //                throw new Exception("The pack info your trying to add was in the loaded Packlist, but not in the xml file. This inconsistancy should not happen unless the xml have been manually edited" + Environment.NewLine + "@override existing pack");
 
-                    nodeName = PackNode.SelectSingleNode("Name");
-                    nodeName.InnerText = newPack.Name;
-                    PackNode.ReplaceChild(nodeName, nodeName);
+        //            nodeName = PackNode.SelectSingleNode("Name");
+        //            nodeName.InnerText = newPack.Name;
+        //            PackNode.ReplaceChild(nodeName, nodeName);
 
-                    nodeVersion = PackNode.SelectSingleNode("Version");
-                    nodeVersion.InnerText = newPack.Version.ToString();
-                    PackNode.ReplaceChild(nodeVersion, nodeVersion);
+        //            nodeVersion = PackNode.SelectSingleNode("Version");
+        //            nodeVersion.InnerText = newPack.Version.ToString();
+        //            PackNode.ReplaceChild(nodeVersion, nodeVersion);
 
-                    nodePackUrl = PackNode.SelectSingleNode("PackUrl");
-                    nodePackUrl.InnerText = newPack.DownloadUrl;
-                    PackNode.ReplaceChild(nodePackUrl, nodePackUrl);
+        //            nodePackUrl = PackNode.SelectSingleNode("PackUrl");
+        //            nodePackUrl.InnerText = newPack.DownloadUrl;
+        //            PackNode.ReplaceChild(nodePackUrl, nodePackUrl);
 
-                    nodeVersionUrl = PackNode.SelectSingleNode("VersionUrl");
-                    nodeVersionUrl.InnerText = newPack.VersionUrl;
-                    PackNode.ReplaceChild(nodeVersionUrl, nodeVersionUrl);
+        //            nodeVersionUrl = PackNode.SelectSingleNode("VersionUrl");
+        //            nodeVersionUrl.InnerText = newPack.VersionUrl;
+        //            PackNode.ReplaceChild(nodeVersionUrl, nodeVersionUrl);
 
 
-                    PackNodeList.ReplaceChild(PackNode, PackNode); //(newNode, newNode) sounds wrong, but does it work?
-                    //xmlDoc.SelectSingleNode("KBGSettings/Packs").ReplaceChild(PackNode, PackNode); //(newNode, newNode) sounds wrong, but does it work?
+        //            PackNodeList.ReplaceChild(PackNode, PackNode); //(newNode, newNode) sounds wrong, but does it work?
+        //            //xmlDoc.SelectSingleNode("KBGSettings/Packs").ReplaceChild(PackNode, PackNode); //(newNode, newNode) sounds wrong, but does it work?
 
-                    using (FileStream fsxml = new FileStream(_settingsFile, FileMode.Truncate, FileAccess.Write, FileShare.ReadWrite))
-                    {
-                        xmlDoc.Save(fsxml);
-                    }
+        //            using (FileStream fsxml = new FileStream(_settingsFile, FileMode.Truncate, FileAccess.Write, FileShare.ReadWrite))
+        //            {
+        //                xmlDoc.Save(fsxml);
+        //            }
 
-                    //foreach (PackClass pack in _packList)
-                    //{
-                    //    if (pack.Name == newPack.Name)
-                    //    {
-                    //        _packList.Remove(pack);
-                    //        _packList.Add(newPack);
-                    //        break;
-                    //    }
-                    //}
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message + Environment.NewLine + "@xmlSettings.SavePackInfo()");
-            }
-            finally
-            {
-                System.GC.Collect();
-            }
-        }
+        //            //foreach (PackClass pack in _packList)
+        //            //{
+        //            //    if (pack.Name == newPack.Name)
+        //            //    {
+        //            //        _packList.Remove(pack);
+        //            //        _packList.Add(newPack);
+        //            //        break;
+        //            //    }
+        //            //}
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message + Environment.NewLine + "@xmlSettings.SavePackInfo()");
+        //    }
+        //    finally
+        //    {
+        //        System.GC.Collect();
+        //    }
+        //}
 
         public void DeletePackInfo(PackClass pack)
         {

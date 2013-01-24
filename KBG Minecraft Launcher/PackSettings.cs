@@ -71,7 +71,7 @@ namespace KBG_Minecraft_Launcher
             else
             {
                 AddPack(new PackClass(textBoxAddNewPack.Text));
-                (ParentForm as FormOptions).Settings.SavePackInfo(new PackClass(textBoxAddNewPack.Text));
+                //(ParentForm as FormOptions).Settings.SavePackInfo(new PackClass(textBoxAddNewPack.Text));
                 textBoxAddNewPack.Text = "";
             }
         }

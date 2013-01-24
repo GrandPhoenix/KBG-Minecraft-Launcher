@@ -161,10 +161,10 @@ namespace KBG_Minecraft_Launcher
                 //information.Add("KBG Minecraft Launcher2.exe exists? " + File.Exists(Application.StartupPath + "\\KBG Minecraft Launcher2.exe").ToString());
                 //information.Add("Error occured at: " + methodProgress);
                 //information.Add("Error: " + ex.Message);
-                ex.Data.Add("CommandLineInformation", getCommandLineArgs());
-                ex.Data.Add("ExecutablePath", Application.ExecutablePath);
-                ex.Data.Add("KBG Minecraft Launcher.exe exists?", File.Exists(Application.StartupPath + "\\KBG Minecraft Launcher.exe").ToString());
-                ex.Data.Add("KBG Minecraft Launcher2.exe exists?",File.Exists(Application.StartupPath + "\\KBG Minecraft Launcher2.exe").ToString());
+                ex.Data.Add("FormMain() - CommandLineInformation", getCommandLineArgs());
+                ex.Data.Add("FormMain() - ExecutablePath", Application.ExecutablePath);
+                ex.Data.Add("FormMain() - KBG Minecraft Launcher.exe exists?", File.Exists(Application.StartupPath + "\\KBG Minecraft Launcher.exe").ToString());
+                ex.Data.Add("FormMain() - KBG Minecraft Launcher2.exe exists?", File.Exists(Application.StartupPath + "\\KBG Minecraft Launcher2.exe").ToString());
 
                 ErrorReporting(ex, true);
             }
@@ -192,8 +192,7 @@ namespace KBG_Minecraft_Launcher
             }
             catch (Exception ex)
             {
-                ex.Data.Add("ParseDateTime() info start", "");
-                ex.Data.Add("date", date);
+                ex.Data.Add("ParseDateTime() - date", date);
                 throw ex;
             }
         }
@@ -280,8 +279,7 @@ namespace KBG_Minecraft_Launcher
             }
             catch (Exception ex)
             {
-                ex.Data.Add("GetCommandLineArgsValue() info start","");
-                ex.Data.Add("ArgName",argName);
+                ex.Data.Add("GetCommandLineArgsValue() - ArgName", argName);
                 throw ex;
             }
         }
@@ -351,9 +349,8 @@ namespace KBG_Minecraft_Launcher
             }
             catch (Exception ex)
             {
-                ex.Data.Add("CopyAll() info start", "");
-                ex.Data.Add("source", source.FullName);
-                ex.Data.Add("target", target.FullName);
+                ex.Data.Add("CopyAll() - source", source.FullName);
+                ex.Data.Add("CopyAll() - target", target.FullName);
                 throw ex;
             }
         }
@@ -538,11 +535,10 @@ namespace KBG_Minecraft_Launcher
             }
             catch (Exception ex)
             {
-                ex.Data.Add("getTwitterFeeds() info start", "");
-                ex.Data.Add("url",url);
-                ex.Data.Add("Tweettime", Tweettime.ToUniversalTime());
-                ex.Data.Add("TweetText",TweetText);
-                ex.Data.Add("TweetTextAt", TweetTextAt);
+                ex.Data.Add("getTwitterFeeds() - url", url);
+                ex.Data.Add("getTwitterFeeds() - Tweettime", Tweettime.ToUniversalTime());
+                ex.Data.Add("getTwitterFeeds() - TweetText", TweetText);
+                ex.Data.Add("getTwitterFeeds() - TweetTextAt", TweetTextAt);
 
                 throw ex;
                 //Debug.WriteLine("GetTwitterFeeds() failed with the error: " + ex.Message);
@@ -661,8 +657,8 @@ namespace KBG_Minecraft_Launcher
                 //information.Add("iSize = " + iSize.ToString());
                 //information.Add("iRunningByteTotal = " + iRunningByteTotal.ToString());
                 //information.Add("Error: " + ex.Message);
-                ex.Data.Add("iSize", iSize.ToString());
-                ex.Data.Add("iRunningByteTotal", iRunningByteTotal.ToString());
+                ex.Data.Add("CheckForClientUpdate() - iSize", iSize.ToString());
+                ex.Data.Add("CheckForClientUpdate() - iRunningByteTotal", iRunningByteTotal.ToString());
 
                 ErrorReporting(ex, false);
 
@@ -699,9 +695,8 @@ namespace KBG_Minecraft_Launcher
             }
             catch (Exception ex)
             {
-                ex.Data.Add("InstallPack() info start", "");
-                ex.Data.Add("packName", packName);
-                ex.Data.Add("startGameAfterInstall", startGameAfterInstall.ToString());
+                ex.Data.Add("InstallPack() - packName", packName);
+                ex.Data.Add("InstallPack() - startGameAfterInstall", startGameAfterInstall.ToString());
                 throw ex;
             }
         }
@@ -715,9 +710,8 @@ namespace KBG_Minecraft_Launcher
                         StartGame((string)oPackName);
             }
             catch (Exception ex)
-            {
-                ex.Data.Add("DownloadInstallPackAndStartGame() info start", "");
-                ex.Data.Add("oPackName", oPackName.ToString());
+            {                
+                ex.Data.Add("DownloadInstallPackAndStartGame() - oPackName", oPackName.ToString());
                 ErrorReporting(ex, false);
             }
         }
@@ -730,9 +724,8 @@ namespace KBG_Minecraft_Launcher
                     DownloadAndInstallPackWorker((string)oPackName);
             }
             catch (Exception ex)
-            {
-                ex.Data.Add("DownloadAndInstallPack() info start", "");
-                ex.Data.Add("oPackName", oPackName.ToString());
+            {                
+                ex.Data.Add("DownloadAndInstallPack() - oPackName", oPackName.ToString());
                 ErrorReporting(ex, false);
             }
         }
@@ -748,23 +741,28 @@ namespace KBG_Minecraft_Launcher
             Uri url = null;
             string filename = "";
             bool returnValue = false;
+            string MethodProgress = "";
 
             try
             {
                 //packName = (string)oPackName;
-                //FormOptions.SupportetAutoUpdatePack pack = (FormOptions.SupportetAutoUpdatePack)oPack;                
+                //FormOptions.SupportetAutoUpdatePack pack = (FormOptions.SupportetAutoUpdatePack)oPack;     
+                MethodProgress = "creating URI";
                 url = new Uri(_formOptions.PackUpdateUrl(packName));
                 filename = url.OriginalString.Substring(url.OriginalString.LastIndexOf("/") + 1, url.OriginalString.Length - url.OriginalString.LastIndexOf("/") - 1);
 
                 //_formNews = new FormNews(_formOptions.GetVersionInfo(packName, true).UpdateNews);
                 //_formNews.Show();
                 //_formNews.Focus();
+                MethodProgress = "SetAndShowNews";
                 SetAndShowNews(_formOptions.GetVersionInfo(packName, true).UpdateNews);
 
                 //Download file
+                MethodProgress = "Downloading file";
                 returnValue = DownloadFile(url, filename);
 
                 //extract file
+                MethodProgress = "Extracting File";
                 ExtractFile(packName, filename);
 
                 //this.Invoke(new Action(delegate() { this.UpdatePackSelect(); }));
@@ -776,12 +774,12 @@ namespace KBG_Minecraft_Launcher
             catch (Exception ex)
             {
                 SetDownloadPanelVisibility(false);
-
-                ex.Data.Add("DownloadAndInstallPack() info start", "");                
-                ex.Data.Add("packName", packName);
+                
+                ex.Data.Add("DownloadAndInstallPack() - packName", packName);                
                 if (url != null)
-                    ex.Data.Add("url", url.OriginalString);
-                ex.Data.Add("filename", filename);
+                    ex.Data.Add("DownloadAndInstallPack() - url", url.OriginalString);
+                ex.Data.Add("DownloadAndInstallPack() - filename", filename);
+                ex.Data.Add("DownloadAndInstallPack() - MethodProgress", MethodProgress);
                 ErrorReporting(ex, false);
             }
                         
@@ -859,7 +857,9 @@ namespace KBG_Minecraft_Launcher
                         //cleaning out
                         MethodProgress = "Backup - Deleting";
                         if (!CloseAllThreads)
-                            Directory.Delete(_packDir + "\\" + packName + "\\.minecraft", true);
+                        {
+                            Directory.Delete(_packDir + "\\" + packName + "\\.minecraft", true);                            
+                        }
                     }
 
                     //extract the pack
@@ -927,10 +927,9 @@ namespace KBG_Minecraft_Launcher
             }
             catch (Exception ex)
             {
-                ex.Data.Add("ExtractFile() info start", "");
-                ex.Data.Add("packName", packName);
-                ex.Data.Add("filename", filename);
-                ex.Data.Add("MethodProgress", MethodProgress);
+                ex.Data.Add("ExtractFile() - packName", packName);
+                ex.Data.Add("ExtractFile() - filename", filename);
+                ex.Data.Add("ExtractFile() - MethodProgress", MethodProgress);
                 throw ex;
             }
 
@@ -944,9 +943,8 @@ namespace KBG_Minecraft_Launcher
                 DownloadFile(Url, filename);
             }
             catch (Exception ex)
-            {
-                ex.Data.Add("DownloadFile() info start", "");
-                ex.Data.Add("Url", Url.OriginalString);
+            {                
+                ex.Data.Add("DownloadFile() - Url", Url.OriginalString);
                 throw ex;
             }
         }
@@ -1076,13 +1074,11 @@ namespace KBG_Minecraft_Launcher
             }
             catch (Exception ex)
             {
-
-                ex.Data.Add("DownloadFile() info start", "");
-                ex.Data.Add("Url", url.OriginalString);
-                ex.Data.Add("filename", filename);
-                ex.Data.Add("SkipDownload", SkipDownload.ToString());
-                ex.Data.Add("iSize", iSize.ToString());
-                ex.Data.Add("iRunningByteTotal", iRunningByteTotal.ToString());
+                ex.Data.Add("DownloadFile() - Url", url.OriginalString);
+                ex.Data.Add("DownloadFile() - filename", filename);
+                ex.Data.Add("DownloadFile() - SkipDownload", SkipDownload.ToString());
+                ex.Data.Add("DownloadFile() - iSize", iSize.ToString());
+                ex.Data.Add("DownloadFile() - iRunningByteTotal", iRunningByteTotal.ToString());
 
                 throw ex;
             }
@@ -1726,8 +1722,9 @@ namespace KBG_Minecraft_Launcher
                         progressBarDownload.Style = ProgressBarStyle.Marquee;
                         panelDownload.Visible = true;
 
+                        Thread.Sleep(1);
                         //check update
-                        bool UpdateFound = VersionInfo1LargerThenInfo2(_formOptions.GetVersionInfo(selItem, false), _formOptions.GetVersionInfo(selItem, true));
+                        bool UpdateFound = VersionInfo1LargerThenInfo2(_formOptions.GetVersionInfo(selItem, true), _formOptions.GetVersionInfo(selItem, false));
 
                         if (UpdateFound)
                         {

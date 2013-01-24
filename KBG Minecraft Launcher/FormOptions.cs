@@ -23,7 +23,7 @@ namespace KBG_Minecraft_Launcher
         //private List<PackClass> _packsInfo = new List<PackClass>();
         private bool _LoadingSettings = false;
 
-#if (DEBUG)
+#if (DEBUG) //debug
         private string _KBGClientVersionUrl = "https://dl.dropbox.com/s/iu0qn58zdqxlqty/KBGClientVersion.xml";
         private string _KBGClientUpdateUrl = "https://dl.dropbox.com/s/clwfuihcnhjtchd/KBG%20Minecraft%20Launcher.exe";
 
@@ -46,22 +46,22 @@ namespace KBG_Minecraft_Launcher
 
                 
 #endif
-#if (!DEBUG)
+#if (!DEBUG) //release
 
         private string _KBGClientVersionUrl = "https://dl.dropbox.com/s/y1kjdxqwnl935fk/KBGClientVersion.xml";
         private string _KBGClientUpdateUrl = "https://dl.dropbox.com/s/fdfrns4ww5wvoxo/KBG%20Minecraft%20Launcher.exe";
         
         private const string _packIRName = "Industrial Rage";
-        private const string _packIRUpdateUrl = "https://dl.dropbox.com/s/nfeqgb9uzclztmn/IRPack.zip";
-        private const string _packIRUpdateVersionUrl = "https://dl.dropbox.com/s/6r47k4udnoy9ik0/IRVersion.xml";
+        private const string _packIRUpdateUrl = "https://dl.dropbox.com/u/32095369/IR.zip";
+        private const string _packIRUpdateVersionUrl = "https://dl.dropbox.com/u/32095369/IR.xml";
 
         private const string _packERName = "Endless Rage";
-        private const string _packERUpdateUrl = "https://dl.dropbox.com/s/sp7recyvmf2nk07/ERPack.zip";
-        private const string _packERUpdateVersionUrl = "https://dl.dropbox.com/s/363348zz0xfm49p/ERVersion.xml";
+        private const string _packERUpdateUrl = "https://dl.dropbox.com/u/32095369/ER.zip";
+        private const string _packERUpdateVersionUrl = "https://dl.dropbox.com/u/32095369/ER.xml";
 
         private const string _packTFCRName = "Terrafirma Rage";
-        private const string _packTFCRUpdateUrl = "https://dl.dropbox.com/s/vmhhspc5a2s7hw8/TFRpack.zip"; 
-        private const string _packTFCRUpdateVersionUrl = "https://dl.dropbox.com/s/8ouufgn7du0e1hy/TFRVersion.xml"; 
+        private const string _packTFCRUpdateUrl = "https://dl.dropbox.com/u/32095369/TFR.zip";
+        private const string _packTFCRUpdateVersionUrl = "https://dl.dropbox.com/u/32095369/TFR.xml"; 
 
         private const string _packVanillaName = "Vanilla";
         private const string _packVanillaUpdateUrl = "https://dl.dropbox.com/s/jp4qrfq3xnbwmdu/VanillaPack.zip";
