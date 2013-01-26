@@ -14,13 +14,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using Ionic.Zip;
-using System.Configuration;
+//using System.Configuration;
 using Microsoft.Win32;
-using System.Security.Cryptography;
 //using System.Security.Cryptography;
-using System.Xml;
-using System.Security.Cryptography.Xml;
+//using System.Security.Cryptography;
+//using System.Xml;
+//using System.Security.Cryptography.Xml;
 using System.Collections;
+
+
 
 namespace KBG_Minecraft_Launcher
 {
@@ -66,15 +68,15 @@ namespace KBG_Minecraft_Launcher
 
         //This is used to embed the Ionic.xip.dll into the project exe file, for easier deployment
         //see http://dotnetzip.codeplex.com/wikipage?title=Embed%20DotNetZip for more details
-        static System.Reflection.Assembly ResolverDotNetZip(object sender, ResolveEventArgs args)
-        {
-            Assembly a1 = Assembly.GetExecutingAssembly();
-            Stream s = a1.GetManifestResourceStream(typeof(FormMain), "Ionic.Zip.dll");
-            byte[] block = new byte[s.Length];
-            s.Read(block, 0, block.Length);
-            Assembly a2 = Assembly.Load(block);
-            return a2;
-        }
+        //static System.Reflection.Assembly ResolverDotNetZip(object sender, ResolveEventArgs args)
+        //{
+        //    Assembly a1 = Assembly.GetExecutingAssembly();
+        //    Stream s = a1.GetManifestResourceStream(typeof(FormMain), "Ionic.Zip.dll");
+        //    byte[] block = new byte[s.Length];
+        //    s.Read(block, 0, block.Length);
+        //    Assembly a2 = Assembly.Load(block);
+        //    return a2;
+        //}
         
         //constructor
 
@@ -84,21 +86,21 @@ namespace KBG_Minecraft_Launcher
 
             //If startet as KBG minecraft launcher2.exe, then delete the first exe, copy second to first, and restart the first again
             try
-            {                
+            {
                 if (getCommandLineArgs().Contains("/UpdateRestart"))
                 {
                     if (Application.ExecutablePath == Application.StartupPath + "\\KBG Minecraft Launcher2.exe")
                     {
                         //should be startet as KBG Minecraft Launcher2.exe
                         methodProgress = "UpdateRestart - start";
-                        
+
                         try
                         {
 
                             // get old process and wait UP TO 5 secs then give up!
                             Process oldProcess = Process.GetProcessById(GetCommandLineArgsValue("/UpdateRestart"));
                             oldProcess.WaitForExit(10000);
-                            
+
                         }
                         catch (Exception ex)
                         {
@@ -109,12 +111,12 @@ namespace KBG_Minecraft_Launcher
 
                         if (File.Exists(Application.StartupPath + "\\KBG Minecraft Launcher2.exe"))
                         {
-                            methodProgress = "UpdateRestart - preparing to copy";                            
-                            
+                            methodProgress = "UpdateRestart - preparing to copy";
+
                             File.Copy(Application.StartupPath + "\\KBG Minecraft Launcher2.exe", Application.StartupPath + "\\KBG Minecraft Launcher.exe", true);
 
                             methodProgress = "UpdateRestart - Application.Exiting";
-                            
+
                             Application.Exit();
                             methodProgress = "UpdateRestart - starting \\KBG Minecraft Launcher.exe..";
                             Process.Start(Application.StartupPath + "\\KBG Minecraft Launcher.exe", "/UpdateFinished " + Process.GetCurrentProcess().Id.ToString());
@@ -124,18 +126,18 @@ namespace KBG_Minecraft_Launcher
                             GC.Collect();
                         }
                         methodProgress = "UpdateRestart - end";
-                        
+
                     }
                 }
 
                 if (getCommandLineArgs().Contains("/UpdateFinished"))
                 {
                     methodProgress = "UpdateFinished - start";
-                    
+
                     try
                     {
                         Process oldProcess = Process.GetProcessById(GetCommandLineArgsValue("/UpdateFinished"));
-                        oldProcess.WaitForExit(10000);                        
+                        oldProcess.WaitForExit(10000);
                     }
                     catch (Exception ex)
                     {
@@ -150,7 +152,15 @@ namespace KBG_Minecraft_Launcher
                     _updateFinished = true;
                     methodProgress = "UpdateFinished - end";
                 }
-                
+
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                ex.Data.Add("FormMain() - CommandLineInformation", getCommandLineArgs());
+                ex.Data.Add("FormMain() - ExecutablePath", Application.ExecutablePath);
+                string message = string.Format("The program encountered a situation where it did not have enough permissions to do its work in its own folder and cannot continue to function.{0}Please make sure you put the {1} file in a folder with more permissions!{0}{0}I suggest a place like c:\\Games\\Minecraft",Environment.NewLine, new FileInfo(Application.ExecutablePath).Name);
+                MessageBox.Show(message, "Insufficiant permissions", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                ErrorReporting(ex, true);
             }
             catch (Exception ex)
             {
@@ -169,7 +179,33 @@ namespace KBG_Minecraft_Launcher
                 ErrorReporting(ex, true);
             }
 
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(ResolverDotNetZip);            
+            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
+            {
+                string resourceName = new AssemblyName(args.Name).Name + ".dll";
+                string resource = Array.Find(this.GetType().Assembly.GetManifestResourceNames(), element => element.EndsWith(resourceName));
+
+                using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
+                {
+                    Byte[] assemblyData = new Byte[stream.Length];
+                    stream.Read(assemblyData, 0, assemblyData.Length);
+                    return Assembly.Load(assemblyData);
+                }
+            };
+
+            //static System.Reflection.Assembly ResolverDotNetZip(object sender, ResolveEventArgs args)
+            //{
+            //    Assembly a1 = Assembly.GetExecutingAssembly();
+            //    Stream s = a1.GetManifestResourceStream(typeof(FormMain), "Ionic.Zip.dll");
+            //    byte[] block = new byte[s.Length];
+            //    s.Read(block, 0, block.Length);
+            //    
+            //    return Assembly.Load(block);
+            //}
+
+
+
+
+            //AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(ResolverDotNetZip);            
             InitializeComponent();
         }
 
@@ -1090,8 +1126,10 @@ namespace KBG_Minecraft_Launcher
             try
             {
                 SetDownloadLabelText("Logging in");
-
+                this.Invoke(new Action(delegate() { this.Update(); }));
                 ProcessStartInfo procStartInfo = new ProcessStartInfo();
+                Process proc = new Process();
+                DateTime gameStartTime = new DateTime();
 
                 string session = generateSession(textBoxUsername.Text, textBoxPassword.Text, 5000);
                 string sessionID = "";
@@ -1122,18 +1160,93 @@ namespace KBG_Minecraft_Launcher
                     {
                         //FINALLY i got it to work. Damm it was a pain
                         SetDownloadLabelText("Starting game");
+                        this.Invoke(new Action(delegate() { this.Update(); }));
                         procStartInfo.FileName = GetJavaInstallationPath() + @"\bin\javaw.exe";
                         Environment.SetEnvironmentVariable("APPDATA", _packDir + "\\" + selItem);
-                        procStartInfo.Arguments = Environment.ExpandEnvironmentVariables(string.Format(@" -Xms{0}m -Xmx{1}m -cp ""%APPDATA%\.minecraft\bin\*"" -Djava.library.path=""%APPDATA%\.minecraft\bin\natives"" net.minecraft.client.Minecraft {2} {3}", /*0*/ _formOptions.GetMemmoryMin(), /*1*/ _formOptions.GetMemmoryMax(), /*2*/ username, /*3*/ sessionID));
+/*no error*/            procStartInfo.Arguments = Environment.ExpandEnvironmentVariables(string.Format(@" -Xms{0}m -Xmx{1}m -cp ""%APPDATA%\.minecraft\bin\*"" -Djava.library.path=""%APPDATA%\.minecraft\bin\natives"" net.minecraft.client.Minecraft {2} {3}", /*0*/ _formOptions.GetMemmoryMin(), /*1*/ _formOptions.GetMemmoryMax(), /*2*/ username, /*3*/ sessionID));
+/*error*/               //procStartInfo.Arguments = Environment.ExpandEnvironmentVariables(string.Format(@" -Xms{0}m -Xmx{1}m -cp %APPDATA%\.minecraft\bin\*"" -Djava.library.path=""%APPDATA%\.minecraft\bin\natives"" net.minecraft.client.Minecraft {2} {3}", /*0*/ _formOptions.GetMemmoryMin(), /*1*/ _formOptions.GetMemmoryMax(), /*2*/ username, /*3*/ sessionID));
 
+                        procStartInfo.RedirectStandardOutput = true;
+                        procStartInfo.RedirectStandardError = true;
+                        procStartInfo.UseShellExecute = false;
+                        
 
 #if(DEBUG)
                     MessageBox.Show("DEBUG - Game startet");
 #else
+                        gameStartTime = DateTime.Now;
+                        proc.StartInfo = procStartInfo;
+                        proc.Start();
 
-                        Process.Start(procStartInfo);
+                        //Process.Start(procStartInfo);
 
-                        this.Invoke(new Action(delegate() { this.Close(); }));
+                        this.Invoke(new Action(delegate() { this.Hide(); }));
+
+                        try
+                        {
+                            using (FileStream fstream = new FileStream(Application.StartupPath + "\\GameLog.txt", FileMode.Create, FileAccess.Write, FileShare.Read))
+                            {
+                                using (TextWriter writer = new StreamWriter(fstream))
+                                {
+                                    do
+                                    {
+                                        writer.Write(proc.StandardError.ReadLine() + Environment.NewLine);
+                                    }
+                                    while (!proc.StandardError.EndOfStream);
+                                }
+                            }
+
+
+
+                            //string standardError = proc.StandardError.ReadToEnd();
+                            //if (standardError == "")
+                            //{
+                            //    if (File.Exists(Application.StartupPath + "\\GameLog1.txt"))
+                            //        File.Delete(Application.StartupPath + "\\GameLog1.txt");
+                            //}
+                            //else
+                            //{
+                            //    using (FileStream fstream = new FileStream(Application.StartupPath + "\\GameLog1.txt", FileMode.Create, FileAccess.Write, FileShare.None))
+                            //    {
+                            //        using (TextWriter writer = new StreamWriter(fstream))
+                            //        {
+                            //            writer.Write(standardError);
+                            //        }
+                            //    }
+                            //}
+
+                            //string standardOutput = proc.StandardOutput.ReadToEnd();
+                            //if (standardOutput == "")
+                            //{
+                            //    if (File.Exists(Application.StartupPath + "\\GameLog2.txt"))
+                            //        File.Delete(Application.StartupPath + "\\GameLog2.txt");
+                            //}
+                            //else
+                            //{
+                            //    using (FileStream fstream = new FileStream(Application.StartupPath + "\\GameLog2.txt", FileMode.Create, FileAccess.Write, FileShare.None))
+                            //    {
+                            //        using (TextWriter writer = new StreamWriter(fstream))
+                            //        {
+                            //            writer.Write(standardOutput);
+                            //        }
+                            //    }
+                            //}
+
+                        }
+                        catch (Exception ex)
+                        {
+                            //just absorps the exception
+                        }
+
+                        proc.WaitForExit();
+                        //this.Invoke(new Action(delegate() { this.Close(); }));
+                        this.Invoke(new Action(delegate() { this.Show(); }));
+                        TimeSpan timespan =  DateTime.Now - gameStartTime;
+                        if (timespan.TotalSeconds < 1)
+                        {
+                            string message = "It looks like the game failed to start correctly. " + Environment.NewLine + "A GameLog file have been created with more information." + Environment.NewLine + "This file can be found in the same folder as the launcher";
+                            MessageBox.Show(message, "An error occured (possibly and very likely)",MessageBoxButtons.OK,MessageBoxIcon.Information);
+                        }
 #endif
                     }
                     else
@@ -1649,9 +1762,22 @@ namespace KBG_Minecraft_Launcher
                 //MessageBox.Show(getCommandLineArgs());
                 //Application.Exit();
                 //int asdf = int.Parse("SDFG");
-                throw new Exception("DEMO critical exception");
+                //throw new Exception("DEMO DEMO critical exception");
                 //MessageBox.Show(double.Parse(textBoxDebug.Text, System.Globalization.NumberFormatInfo.InvariantInfo).ToString());
                 //File.Replace(Application.StartupPath + "\\KBG Minecraft Launcher2.exe", Application.StartupPath + "\\KBG Minecraft Launcher.exe", Application.StartupPath + "\\KBG Minecraft Launcher.backup", true);
+
+
+                //OAuthTokens tokens = new OAuthTokens();
+                //tokens.ConsumerKey = "Consumer Key";
+                //tokens.ConsumerSecret = "Consumer Secret";
+                //tokens.AccessToken = "Access Key";
+                //tokens.AccessTokenSecret = "Access Secret";
+
+                //TwitterStatusCollection homeTimeline = TwitterStatus.GetHomeTimeline(tokens);
+
+                //HttpUtility.UrlEncodeUnicode  = "";
+                //System.Web. 
+
 
 
             }
@@ -1659,7 +1785,7 @@ namespace KBG_Minecraft_Launcher
             {
                 //ex.Data.Add("button1_Click_1() start info", "");
                 //ex.Data.Add("F U ALL :P", "value");
-                ErrorReporting(ex, true);
+                ErrorReporting(ex, false);
             }
 
         }
@@ -1722,7 +1848,7 @@ namespace KBG_Minecraft_Launcher
                         progressBarDownload.Style = ProgressBarStyle.Marquee;
                         panelDownload.Visible = true;
 
-                        Thread.Sleep(1);
+                        this.Update();
                         //check update
                         bool UpdateFound = VersionInfo1LargerThenInfo2(_formOptions.GetVersionInfo(selItem, true), _formOptions.GetVersionInfo(selItem, false));
 

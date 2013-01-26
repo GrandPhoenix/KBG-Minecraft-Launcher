@@ -274,6 +274,13 @@ namespace KBG_Minecraft_Launcher
 
                 _LoadingSettings = false;
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                ex.Data.Add("FormOptions() - ExecutablePath", Application.ExecutablePath);
+                string message = string.Format("The program encountered a situation where it did not have enough permissions to do its work in its own folder and cannot continue to function.{0}Please make sure you put the {1} file in a folder with more permissions!{0}{0}I suggest a place like c:\\Games\\Minecraft", Environment.NewLine, new FileInfo(Application.ExecutablePath).Name);
+                MessageBox.Show(message, "Insufficiant permissions", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                _formMain.ErrorReporting(ex, true);
+            }
             catch (Exception ex)
             {
                 _formMain.ErrorReporting(ex, true);

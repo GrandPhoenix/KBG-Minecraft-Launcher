@@ -503,7 +503,7 @@ namespace KBG_Minecraft_Launcher
             }
             catch (Exception Ex)
             {
-                throw new Exception(Ex.Message + Environment.NewLine + "@xmlSettings.CreateNewSettingsFile()");
+                throw Ex;
             }
             finally
             {
