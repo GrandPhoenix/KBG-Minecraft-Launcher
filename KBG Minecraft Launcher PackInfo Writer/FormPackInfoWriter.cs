@@ -10,6 +10,7 @@ using System.Reflection;
 using System.IO;
 //using PhoenixRTB;
 using System.Xml;
+using System.Diagnostics;
 
 namespace KBG_Minecraft_Launcher_NewsWriter
 {
@@ -57,6 +58,7 @@ namespace KBG_Minecraft_Launcher_NewsWriter
                     xDoc.Load(oFileDialog.FileName);
                     string tmpString = "";
                     int tmpInt = 0;
+                    bool tmpBool = false;
                     XmlNodeList Excludes;
                     XmlNode tmpNode;
 
@@ -111,6 +113,18 @@ namespace KBG_Minecraft_Launcher_NewsWriter
 
                     if (tmpNode != null)
                         tmpString = tmpNode.InnerText;
+
+                    //PreventPackDownload
+                    tmpNode = xDoc.SelectSingleNode("KBGVersionInfo/PreventPackDownload");
+
+                    if (tmpNode != null)
+                    {
+                        bool.TryParse(tmpNode.InnerText, out tmpBool);
+                        checkBoxPreventPackDownload.Checked = tmpBool;
+                    }
+                    else
+                        checkBoxPreventPackDownload.Checked = false;
+
 
                     try
                     {
@@ -182,8 +196,6 @@ namespace KBG_Minecraft_Launcher_NewsWriter
 
             try 
             {
-                //RootNode = xmlDoc.ro
-
                 XmlDocument xmlDoc = new XmlDocument();
                 string textContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" + Environment.NewLine;
                 //textContent += @"<!-- Mess with this file at your own risk!!! -->" + Environment.NewLine;
@@ -193,6 +205,7 @@ namespace KBG_Minecraft_Launcher_NewsWriter
                 textContent += string.Format("<{0}>{1}</{0}>{2}", "VersionMinor", numericUpDownMinor.Value.ToString(), Environment.NewLine);
                 textContent += string.Format("<{0}>{1}</{0}>{2}", "VersionRevision", numericUpDownRevision.Value.ToString(), Environment.NewLine);
                 textContent += string.Format("<{0}>{1}</{0}>{2}", "VersionPack", numericUpDownPack.Value.ToString(), Environment.NewLine);
+                textContent += string.Format("<{0}>{1}</{0}>{2}", "PreventPackDownload", checkBoxPreventPackDownload.Checked.ToString(), Environment.NewLine);
                 textContent += string.Format("<{0}>{1}</{0}>{2}", "News", phoenixRichTextBoxNews.Rtf, Environment.NewLine);
                 foreach(string item in listBoxExcludes.Items)
                     textContent += string.Format("<{0}>{1}</{0}>{2}", "ExcludeFromUpdate", item, Environment.NewLine);
@@ -292,6 +305,16 @@ namespace KBG_Minecraft_Launcher_NewsWriter
             listBoxExcludes.Items.Add(textBoxExclude.Text);
             if(_openFile != "")
                 buttonSave.Enabled = true;
+        }
+
+        private void FormPackInfoWriter_Load(object sender, EventArgs e)
+        {
+            Assembly ass = Assembly.GetExecutingAssembly();
+            if (ass != null)
+            {
+                FileVersionInfo FVI = FileVersionInfo.GetVersionInfo(ass.Location);
+                this.Text = string.Format("KBG PackInfo Writer v.{0}.{1}", FVI.FileMajorPart, FVI.FileMinorPart);
+            }
         }
 
           

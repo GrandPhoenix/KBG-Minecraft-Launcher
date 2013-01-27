@@ -49,6 +49,7 @@
             this.labelIR = new System.Windows.Forms.Label();
             this.labelER = new System.Windows.Forms.Label();
             this.groupBoxServerStatus = new System.Windows.Forms.GroupBox();
+            this.buttonRefreshTwitterFeeds = new System.Windows.Forms.Button();
             this.progressBarMinecraftLoginServers = new System.Windows.Forms.ProgressBar();
             this.progressBarMinecraftdotnet = new System.Windows.Forms.ProgressBar();
             this.progressBarTFCR = new System.Windows.Forms.ProgressBar();
@@ -61,7 +62,7 @@
             this.labelERResult = new System.Windows.Forms.Label();
             this.labelMiningResult = new System.Windows.Forms.Label();
             this.labelIRResult = new System.Windows.Forms.Label();
-            this.buttonRefresh = new System.Windows.Forms.Button();
+            this.buttonRefreshServerStatus = new System.Windows.Forms.Button();
             this.buttonDebug = new System.Windows.Forms.Button();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.panelDownload = new System.Windows.Forms.Panel();
@@ -258,6 +259,7 @@
             // 
             // groupBoxServerStatus
             // 
+            this.groupBoxServerStatus.Controls.Add(this.buttonRefreshTwitterFeeds);
             this.groupBoxServerStatus.Controls.Add(this.progressBarMinecraftLoginServers);
             this.groupBoxServerStatus.Controls.Add(this.progressBarMinecraftdotnet);
             this.groupBoxServerStatus.Controls.Add(this.progressBarTFCR);
@@ -271,7 +273,7 @@
             this.groupBoxServerStatus.Controls.Add(this.labelMiningResult);
             this.groupBoxServerStatus.Controls.Add(this.labelIRResult);
             this.groupBoxServerStatus.Controls.Add(this.labelMinecraftLoginServers);
-            this.groupBoxServerStatus.Controls.Add(this.buttonRefresh);
+            this.groupBoxServerStatus.Controls.Add(this.buttonRefreshServerStatus);
             this.groupBoxServerStatus.Controls.Add(this.labelMinecraftdotnet);
             this.groupBoxServerStatus.Controls.Add(this.labelIR);
             this.groupBoxServerStatus.Controls.Add(this.labelMining);
@@ -283,6 +285,16 @@
             this.groupBoxServerStatus.TabIndex = 3;
             this.groupBoxServerStatus.TabStop = false;
             this.groupBoxServerStatus.Text = "Server status";
+            // 
+            // buttonRefreshTwitterFeeds
+            // 
+            this.buttonRefreshTwitterFeeds.Location = new System.Drawing.Point(6, 149);
+            this.buttonRefreshTwitterFeeds.Name = "buttonRefreshTwitterFeeds";
+            this.buttonRefreshTwitterFeeds.Size = new System.Drawing.Size(132, 23);
+            this.buttonRefreshTwitterFeeds.TabIndex = 31;
+            this.buttonRefreshTwitterFeeds.Text = "Refresh Twitter feeds";
+            this.buttonRefreshTwitterFeeds.UseVisualStyleBackColor = true;
+            this.buttonRefreshTwitterFeeds.Click += new System.EventHandler(this.buttonRefreshTwitterFeeds_Click);
             // 
             // progressBarMinecraftLoginServers
             // 
@@ -399,15 +411,15 @@
             this.labelIRResult.Text = "labelIR";
             this.labelIRResult.Visible = false;
             // 
-            // buttonRefresh
+            // buttonRefreshServerStatus
             // 
-            this.buttonRefresh.Location = new System.Drawing.Point(9, 149);
-            this.buttonRefresh.Name = "buttonRefresh";
-            this.buttonRefresh.Size = new System.Drawing.Size(273, 23);
-            this.buttonRefresh.TabIndex = 1;
-            this.buttonRefresh.Text = "Refresh";
-            this.buttonRefresh.UseVisualStyleBackColor = true;
-            this.buttonRefresh.Click += new System.EventHandler(this.buttonRefresh_Click);
+            this.buttonRefreshServerStatus.Location = new System.Drawing.Point(150, 149);
+            this.buttonRefreshServerStatus.Name = "buttonRefreshServerStatus";
+            this.buttonRefreshServerStatus.Size = new System.Drawing.Size(132, 23);
+            this.buttonRefreshServerStatus.TabIndex = 1;
+            this.buttonRefreshServerStatus.Text = "Refresh server status";
+            this.buttonRefreshServerStatus.UseVisualStyleBackColor = true;
+            this.buttonRefreshServerStatus.Click += new System.EventHandler(this.buttonRefresh_Click);
             // 
             // buttonDebug
             // 
@@ -499,9 +511,9 @@
             this.Controls.Add(this.textBoxDebug);
             this.Controls.Add(this.panelDownload);
             this.Controls.Add(this.buttonDebug);
-            this.Controls.Add(this.groupBoxServerStatus);
             this.Controls.Add(this.groupBoxTwitter);
             this.Controls.Add(this.groupBoxLogin);
+            this.Controls.Add(this.groupBoxServerStatus);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
@@ -509,7 +521,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "KBG Minecraft Client";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
-            this.Load += new System.EventHandler(this.Form1_Load);
+            this.Load += new System.EventHandler(this.FormMain_Load);
             this.Shown += new System.EventHandler(this.FormMain_Shown);
             this.groupBoxLogin.ResumeLayout(false);
             this.groupBoxLogin.PerformLayout();
@@ -540,7 +552,7 @@
         internal System.Windows.Forms.Label labelER;
         internal System.Windows.Forms.Label labelMining;
         internal System.Windows.Forms.Label labelIR;
-        private System.Windows.Forms.Button buttonRefresh;
+        private System.Windows.Forms.Button buttonRefreshServerStatus;
         private System.Windows.Forms.Label labelMinecraftLoginServersResult;
         private System.Windows.Forms.Label labelMinecraftdotnetResult;
         private System.Windows.Forms.Label labelTFCRResult;
@@ -566,6 +578,7 @@
         private System.Windows.Forms.TextBox textBoxDebug;
         private System.Windows.Forms.Label labelDownloadProgress;
         private System.Windows.Forms.Label labelDownloadSpeed;
+        private System.Windows.Forms.Button buttonRefreshTwitterFeeds;
     }
 }
 

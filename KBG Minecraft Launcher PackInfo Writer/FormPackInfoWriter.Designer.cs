@@ -43,23 +43,26 @@
             this.buttonRemoveExclude = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.groupBoxVersion = new System.Windows.Forms.GroupBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.numericUpDownPack = new System.Windows.Forms.NumericUpDown();
             this.label3 = new System.Windows.Forms.Label();
             this.numericUpDownRevision = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
             this.numericUpDownMinor = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
             this.numericUpDownMajor = new System.Windows.Forms.NumericUpDown();
-            this.label4 = new System.Windows.Forms.Label();
-            this.numericUpDownPack = new System.Windows.Forms.NumericUpDown();
-            this.label5 = new System.Windows.Forms.Label();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.checkBoxPreventPackDownload = new System.Windows.Forms.CheckBox();
             this.groupBoxNews.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBoxVersion.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPack)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRevision)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMinor)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMajor)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPack)).BeginInit();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBoxNews
@@ -132,10 +135,10 @@
             // 
             this.listBoxExcludes.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.listBoxExcludes.FormattingEnabled = true;
-            this.listBoxExcludes.Location = new System.Drawing.Point(3, 85);
+            this.listBoxExcludes.Location = new System.Drawing.Point(3, 83);
             this.listBoxExcludes.Name = "listBoxExcludes";
             this.listBoxExcludes.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
-            this.listBoxExcludes.Size = new System.Drawing.Size(301, 303);
+            this.listBoxExcludes.Size = new System.Drawing.Size(301, 251);
             this.listBoxExcludes.Sorted = true;
             this.listBoxExcludes.TabIndex = 7;
             this.listBoxExcludes.TabStop = false;
@@ -148,9 +151,9 @@
             this.groupBox2.Controls.Add(this.buttonAddExclude);
             this.groupBox2.Controls.Add(this.buttonRemoveExclude);
             this.groupBox2.Controls.Add(this.listBoxExcludes);
-            this.groupBox2.Location = new System.Drawing.Point(524, 12);
+            this.groupBox2.Location = new System.Drawing.Point(524, 66);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(307, 391);
+            this.groupBox2.Size = new System.Drawing.Size(307, 337);
             this.groupBox2.TabIndex = 8;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Excludes (what not to overwrite when updating) (Packs only)";
@@ -225,6 +228,38 @@
             this.groupBoxVersion.TabStop = false;
             this.groupBoxVersion.Text = "Version";
             // 
+            // label5
+            // 
+            this.label5.Location = new System.Drawing.Point(6, 42);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(494, 13);
+            this.label5.TabIndex = 8;
+            this.label5.Text = "* Syntax \"<Major>.<Minor>.<Revision>.<Pack>\".  (x.x.x.y) use x for Mc version. y " +
+                "for pack version";
+            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label4
+            // 
+            this.label4.Location = new System.Drawing.Point(376, 19);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(60, 13);
+            this.label4.TabIndex = 7;
+            this.label4.Text = "Pack:";
+            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // numericUpDownPack
+            // 
+            this.numericUpDownPack.Location = new System.Drawing.Point(442, 17);
+            this.numericUpDownPack.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.numericUpDownPack.Name = "numericUpDownPack";
+            this.numericUpDownPack.Size = new System.Drawing.Size(45, 20);
+            this.numericUpDownPack.TabIndex = 6;
+            this.numericUpDownPack.ValueChanged += new System.EventHandler(this.control_SomethingChanged);
+            // 
             // label3
             // 
             this.label3.Location = new System.Drawing.Point(220, 19);
@@ -291,43 +326,33 @@
             this.numericUpDownMajor.TabIndex = 0;
             this.numericUpDownMajor.ValueChanged += new System.EventHandler(this.control_SomethingChanged);
             // 
-            // label4
+            // groupBox1
             // 
-            this.label4.Location = new System.Drawing.Point(376, 19);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(60, 13);
-            this.label4.TabIndex = 7;
-            this.label4.Text = "Pack:";
-            this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.groupBox1.Controls.Add(this.checkBoxPreventPackDownload);
+            this.groupBox1.Location = new System.Drawing.Point(524, 12);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(307, 48);
+            this.groupBox1.TabIndex = 11;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Misc.";
             // 
-            // numericUpDownPack
+            // checkBoxPreventPackDownload
             // 
-            this.numericUpDownPack.Location = new System.Drawing.Point(442, 17);
-            this.numericUpDownPack.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            this.numericUpDownPack.Name = "numericUpDownPack";
-            this.numericUpDownPack.Size = new System.Drawing.Size(45, 20);
-            this.numericUpDownPack.TabIndex = 6;
-            this.numericUpDownPack.ValueChanged += new System.EventHandler(this.control_SomethingChanged);
-            // 
-            // label5
-            // 
-            this.label5.Location = new System.Drawing.Point(6, 42);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(494, 13);
-            this.label5.TabIndex = 8;
-            this.label5.Text = "* Syntax \"<Major>.<Minor>.<Revision>.<Pack>\".  (x.x.x.y) use x for Mc version. y " +
-                "for pack version";
-            this.label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.checkBoxPreventPackDownload.AutoSize = true;
+            this.checkBoxPreventPackDownload.Location = new System.Drawing.Point(15, 23);
+            this.checkBoxPreventPackDownload.Name = "checkBoxPreventPackDownload";
+            this.checkBoxPreventPackDownload.Size = new System.Drawing.Size(284, 17);
+            this.checkBoxPreventPackDownload.TabIndex = 0;
+            this.checkBoxPreventPackDownload.Text = "Prevent the launcher from updating/downloading pack";
+            this.checkBoxPreventPackDownload.UseVisualStyleBackColor = true;
+            this.checkBoxPreventPackDownload.CheckedChanged += new System.EventHandler(this.control_SomethingChanged);
             // 
             // FormPackInfoWriter
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(842, 414);
+            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.groupBoxVersion);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
@@ -337,15 +362,18 @@
             this.Name = "FormPackInfoWriter";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "KBG PackInfo Writer";
+            this.Load += new System.EventHandler(this.FormPackInfoWriter_Load);
             this.groupBoxNews.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBoxVersion.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPack)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRevision)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMinor)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMajor)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPack)).EndInit();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -375,6 +403,8 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.NumericUpDown numericUpDownPack;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.CheckBox checkBoxPreventPackDownload;
     }
 }
 
