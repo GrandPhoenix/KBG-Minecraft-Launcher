@@ -44,7 +44,7 @@
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.labelMinecraftLoginServers = new System.Windows.Forms.Label();
             this.labelMinecraftdotnet = new System.Windows.Forms.Label();
-            this.labelMining = new System.Windows.Forms.Label();
+            this.labelKBGEvent = new System.Windows.Forms.Label();
             this.labelTFCR = new System.Windows.Forms.Label();
             this.labelIR = new System.Windows.Forms.Label();
             this.labelER = new System.Windows.Forms.Label();
@@ -54,13 +54,13 @@
             this.progressBarMinecraftdotnet = new System.Windows.Forms.ProgressBar();
             this.progressBarTFCR = new System.Windows.Forms.ProgressBar();
             this.progressBarER = new System.Windows.Forms.ProgressBar();
-            this.progressBarMining = new System.Windows.Forms.ProgressBar();
+            this.progressBarKBGEvent = new System.Windows.Forms.ProgressBar();
             this.progressBarIR = new System.Windows.Forms.ProgressBar();
             this.labelMinecraftLoginServersResult = new System.Windows.Forms.Label();
             this.labelMinecraftdotnetResult = new System.Windows.Forms.Label();
             this.labelTFCRResult = new System.Windows.Forms.Label();
             this.labelERResult = new System.Windows.Forms.Label();
-            this.labelMiningResult = new System.Windows.Forms.Label();
+            this.labelKBGEventResult = new System.Windows.Forms.Label();
             this.labelIRResult = new System.Windows.Forms.Label();
             this.buttonRefreshServerStatus = new System.Windows.Forms.Button();
             this.buttonDebug = new System.Windows.Forms.Button();
@@ -73,6 +73,8 @@
             this.progressBarDownload = new System.Windows.Forms.ProgressBar();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.textBoxDebug = new System.Windows.Forms.TextBox();
+            this.linkLabelKB_Gaming = new System.Windows.Forms.LinkLabel();
+            this.linkLabelCredits = new System.Windows.Forms.LinkLabel();
             this.groupBoxLogin.SuspendLayout();
             this.groupBoxTwitter.SuspendLayout();
             this.groupBoxServerStatus.SuspendLayout();
@@ -91,6 +93,7 @@
             // 
             // groupBoxLogin
             // 
+            this.groupBoxLogin.Controls.Add(this.linkLabelCredits);
             this.groupBoxLogin.Controls.Add(this.checkBoxRememberLoginInfo);
             this.groupBoxLogin.Controls.Add(this.comboBoxPackSelect);
             this.groupBoxLogin.Controls.Add(this.labelPassword);
@@ -169,15 +172,17 @@
             // 
             // groupBoxTwitter
             // 
+            this.groupBoxTwitter.Controls.Add(this.linkLabelKB_Gaming);
             this.groupBoxTwitter.Controls.Add(this.progressBarTwitter);
             this.groupBoxTwitter.Controls.Add(this.richTextBox1);
             this.groupBoxTwitter.Location = new System.Drawing.Point(12, 12);
             this.groupBoxTwitter.Margin = new System.Windows.Forms.Padding(3, 5, 3, 3);
             this.groupBoxTwitter.Name = "groupBoxTwitter";
+            this.groupBoxTwitter.Padding = new System.Windows.Forms.Padding(4, 6, 4, 4);
             this.groupBoxTwitter.Size = new System.Drawing.Size(306, 307);
             this.groupBoxTwitter.TabIndex = 2;
             this.groupBoxTwitter.TabStop = false;
-            this.groupBoxTwitter.Text = "Twitter - Following KB_Gaming";
+            this.groupBoxTwitter.Text = "Twitter - KB_Gaming";
             // 
             // progressBarTwitter
             // 
@@ -193,11 +198,11 @@
             // 
             this.richTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.richTextBox1.Location = new System.Drawing.Point(3, 16);
+            this.richTextBox1.Location = new System.Drawing.Point(4, 19);
             this.richTextBox1.Name = "richTextBox1";
             this.richTextBox1.ReadOnly = true;
             this.richTextBox1.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
-            this.richTextBox1.Size = new System.Drawing.Size(300, 288);
+            this.richTextBox1.Size = new System.Drawing.Size(298, 284);
             this.richTextBox1.TabIndex = 0;
             this.richTextBox1.TabStop = false;
             this.richTextBox1.Text = "";
@@ -221,14 +226,14 @@
             this.labelMinecraftdotnet.TabIndex = 16;
             this.labelMinecraftdotnet.Text = "Minecraft.net:";
             // 
-            // labelMining
+            // labelKBGEvent
             // 
-            this.labelMining.AutoSize = true;
-            this.labelMining.Location = new System.Drawing.Point(71, 39);
-            this.labelMining.Name = "labelMining";
-            this.labelMining.Size = new System.Drawing.Size(72, 13);
-            this.labelMining.TabIndex = 13;
-            this.labelMining.Text = "Mining World:";
+            this.labelKBGEvent.AutoSize = true;
+            this.labelKBGEvent.Location = new System.Drawing.Point(80, 39);
+            this.labelKBGEvent.Name = "labelKBGEvent";
+            this.labelKBGEvent.Size = new System.Drawing.Size(63, 13);
+            this.labelKBGEvent.TabIndex = 13;
+            this.labelKBGEvent.Text = "KBG Event:";
             // 
             // labelTFCR
             // 
@@ -264,19 +269,19 @@
             this.groupBoxServerStatus.Controls.Add(this.progressBarMinecraftdotnet);
             this.groupBoxServerStatus.Controls.Add(this.progressBarTFCR);
             this.groupBoxServerStatus.Controls.Add(this.progressBarER);
-            this.groupBoxServerStatus.Controls.Add(this.progressBarMining);
+            this.groupBoxServerStatus.Controls.Add(this.progressBarKBGEvent);
             this.groupBoxServerStatus.Controls.Add(this.progressBarIR);
             this.groupBoxServerStatus.Controls.Add(this.labelMinecraftLoginServersResult);
             this.groupBoxServerStatus.Controls.Add(this.labelMinecraftdotnetResult);
             this.groupBoxServerStatus.Controls.Add(this.labelTFCRResult);
             this.groupBoxServerStatus.Controls.Add(this.labelERResult);
-            this.groupBoxServerStatus.Controls.Add(this.labelMiningResult);
+            this.groupBoxServerStatus.Controls.Add(this.labelKBGEventResult);
             this.groupBoxServerStatus.Controls.Add(this.labelIRResult);
             this.groupBoxServerStatus.Controls.Add(this.labelMinecraftLoginServers);
             this.groupBoxServerStatus.Controls.Add(this.buttonRefreshServerStatus);
             this.groupBoxServerStatus.Controls.Add(this.labelMinecraftdotnet);
             this.groupBoxServerStatus.Controls.Add(this.labelIR);
-            this.groupBoxServerStatus.Controls.Add(this.labelMining);
+            this.groupBoxServerStatus.Controls.Add(this.labelKBGEvent);
             this.groupBoxServerStatus.Controls.Add(this.labelER);
             this.groupBoxServerStatus.Controls.Add(this.labelTFCR);
             this.groupBoxServerStatus.Location = new System.Drawing.Point(328, 12);
@@ -332,14 +337,14 @@
             this.progressBarER.TabIndex = 27;
             this.progressBarER.Visible = false;
             // 
-            // progressBarMining
+            // progressBarKBGEvent
             // 
-            this.progressBarMining.Location = new System.Drawing.Point(152, 39);
-            this.progressBarMining.Name = "progressBarMining";
-            this.progressBarMining.Size = new System.Drawing.Size(63, 13);
-            this.progressBarMining.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-            this.progressBarMining.TabIndex = 26;
-            this.progressBarMining.Visible = false;
+            this.progressBarKBGEvent.Location = new System.Drawing.Point(152, 39);
+            this.progressBarKBGEvent.Name = "progressBarKBGEvent";
+            this.progressBarKBGEvent.Size = new System.Drawing.Size(63, 13);
+            this.progressBarKBGEvent.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            this.progressBarKBGEvent.TabIndex = 26;
+            this.progressBarKBGEvent.Visible = false;
             // 
             // progressBarIR
             // 
@@ -391,15 +396,15 @@
             this.labelERResult.Text = "label3";
             this.labelERResult.Visible = false;
             // 
-            // labelMiningResult
+            // labelKBGEventResult
             // 
-            this.labelMiningResult.AutoSize = true;
-            this.labelMiningResult.Location = new System.Drawing.Point(149, 39);
-            this.labelMiningResult.Name = "labelMiningResult";
-            this.labelMiningResult.Size = new System.Drawing.Size(35, 13);
-            this.labelMiningResult.TabIndex = 19;
-            this.labelMiningResult.Text = "label2";
-            this.labelMiningResult.Visible = false;
+            this.labelKBGEventResult.AutoSize = true;
+            this.labelKBGEventResult.Location = new System.Drawing.Point(149, 39);
+            this.labelKBGEventResult.Name = "labelKBGEventResult";
+            this.labelKBGEventResult.Size = new System.Drawing.Size(35, 13);
+            this.labelKBGEventResult.TabIndex = 19;
+            this.labelKBGEventResult.Text = "label2";
+            this.labelKBGEventResult.Visible = false;
             // 
             // labelIRResult
             // 
@@ -423,7 +428,7 @@
             // 
             // buttonDebug
             // 
-            this.buttonDebug.Location = new System.Drawing.Point(552, 305);
+            this.buttonDebug.Location = new System.Drawing.Point(117, 304);
             this.buttonDebug.Name = "buttonDebug";
             this.buttonDebug.Size = new System.Drawing.Size(75, 23);
             this.buttonDebug.TabIndex = 25;
@@ -497,11 +502,35 @@
             // 
             // textBoxDebug
             // 
-            this.textBoxDebug.Location = new System.Drawing.Point(446, 307);
+            this.textBoxDebug.Location = new System.Drawing.Point(11, 306);
             this.textBoxDebug.Name = "textBoxDebug";
             this.textBoxDebug.Size = new System.Drawing.Size(100, 20);
             this.textBoxDebug.TabIndex = 27;
             this.textBoxDebug.Visible = false;
+            // 
+            // linkLabelKB_Gaming
+            // 
+            this.linkLabelKB_Gaming.AutoSize = true;
+            this.linkLabelKB_Gaming.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
+            this.linkLabelKB_Gaming.Location = new System.Drawing.Point(9, 1);
+            this.linkLabelKB_Gaming.Name = "linkLabelKB_Gaming";
+            this.linkLabelKB_Gaming.Size = new System.Drawing.Size(131, 13);
+            this.linkLabelKB_Gaming.TabIndex = 28;
+            this.linkLabelKB_Gaming.TabStop = true;
+            this.linkLabelKB_Gaming.Text = "Visit KB_Gaming on twitter";
+            this.linkLabelKB_Gaming.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelKB_Gaming_LinkClicked);
+            // 
+            // linkLabelCredits
+            // 
+            this.linkLabelCredits.AutoSize = true;
+            this.linkLabelCredits.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
+            this.linkLabelCredits.Location = new System.Drawing.Point(219, 99);
+            this.linkLabelCredits.Name = "linkLabelCredits";
+            this.linkLabelCredits.Size = new System.Drawing.Size(39, 13);
+            this.linkLabelCredits.TabIndex = 29;
+            this.linkLabelCredits.TabStop = true;
+            this.linkLabelCredits.Text = "Credits";
+            this.linkLabelCredits.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelCredits_LinkClicked);
             // 
             // FormMain
             // 
@@ -526,6 +555,7 @@
             this.groupBoxLogin.ResumeLayout(false);
             this.groupBoxLogin.PerformLayout();
             this.groupBoxTwitter.ResumeLayout(false);
+            this.groupBoxTwitter.PerformLayout();
             this.groupBoxServerStatus.ResumeLayout(false);
             this.groupBoxServerStatus.PerformLayout();
             this.panelDownload.ResumeLayout(false);
@@ -550,14 +580,14 @@
         internal System.Windows.Forms.Label labelMinecraftdotnet;
         internal System.Windows.Forms.Label labelTFCR;
         internal System.Windows.Forms.Label labelER;
-        internal System.Windows.Forms.Label labelMining;
+        internal System.Windows.Forms.Label labelKBGEvent;
         internal System.Windows.Forms.Label labelIR;
         private System.Windows.Forms.Button buttonRefreshServerStatus;
         private System.Windows.Forms.Label labelMinecraftLoginServersResult;
         private System.Windows.Forms.Label labelMinecraftdotnetResult;
         private System.Windows.Forms.Label labelTFCRResult;
         private System.Windows.Forms.Label labelERResult;
-        private System.Windows.Forms.Label labelMiningResult;
+        private System.Windows.Forms.Label labelKBGEventResult;
         private System.Windows.Forms.Label labelIRResult;
         private System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.ProgressBar progressBarIR;
@@ -567,7 +597,7 @@
         private System.Windows.Forms.ProgressBar progressBarMinecraftdotnet;
         private System.Windows.Forms.ProgressBar progressBarTFCR;
         private System.Windows.Forms.ProgressBar progressBarER;
-        private System.Windows.Forms.ProgressBar progressBarMining;
+        private System.Windows.Forms.ProgressBar progressBarKBGEvent;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.CheckBox checkBoxRememberLoginInfo;
         private System.Windows.Forms.Panel panelDownload;
@@ -579,6 +609,8 @@
         private System.Windows.Forms.Label labelDownloadProgress;
         private System.Windows.Forms.Label labelDownloadSpeed;
         private System.Windows.Forms.Button buttonRefreshTwitterFeeds;
+        private System.Windows.Forms.LinkLabel linkLabelKB_Gaming;
+        private System.Windows.Forms.LinkLabel linkLabelCredits;
     }
 }
 

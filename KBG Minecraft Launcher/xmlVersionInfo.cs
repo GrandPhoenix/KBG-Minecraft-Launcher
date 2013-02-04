@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using System.IO;
 
 namespace KBG_Minecraft_Launcher
 {
@@ -14,7 +15,8 @@ namespace KBG_Minecraft_Launcher
         private int _versionPack = 0;
         private List<string> _excludeFromUpdate = new List<string>();
         private bool _preventPackDownload = false;
-        private string _updateNews;
+        private string _updateNews = "";
+        private string _credits = "";
 
         public List<string> ExcludeFromUpdate
         {
@@ -51,6 +53,11 @@ namespace KBG_Minecraft_Launcher
             get { return _preventPackDownload; }
             set { _preventPackDownload = value; }
         }
+        public string Credits
+        {
+            get { return _credits; }
+            set { _credits = value; }
+        }
         
         public xmlVersionInfo() { }
 
@@ -64,6 +71,7 @@ namespace KBG_Minecraft_Launcher
                 XmlNode versionPack;
                 XmlNode updateNews;
                 XmlNode preventPackDownload;
+                XmlNode credits;
                 XmlNodeList Excludes;
                 XmlDocument xmlDoc = new XmlDocument();
                                 
@@ -73,19 +81,26 @@ namespace KBG_Minecraft_Launcher
                     //webaddress ie. https://dl.dropbox.com/s/0fd399zvu72dkmb/KBGClientVersion.txt
                     using (System.Net.WebClient client = new System.Net.WebClient())
                     {
+                        
                         xmlDoc.LoadXml(client.DownloadString(url));
                     }
                 }
                 else
                 {
                     //Locas address ie. c:\games\something\KBGClientVersion.txt
-                    xmlDoc.Load(url);
+                    string blankXml = "<?xml version=\"1.0\" encoding=\"utf-8\"?><KBGVersionInfo></KBGVersionInfo>";
+
+                    if (File.Exists(url))
+                        xmlDoc.Load(url);
+                    else
+                        xmlDoc.LoadXml(blankXml);
                 }
                 versionMajor = xmlDoc.SelectSingleNode("KBGVersionInfo/VersionMajor");
                 versionMinor = xmlDoc.SelectSingleNode("KBGVersionInfo/VersionMinor");
                 versionRevision = xmlDoc.SelectSingleNode("KBGVersionInfo/VersionRevision");
                 versionPack = xmlDoc.SelectSingleNode("KBGVersionInfo/VersionPack");
                 updateNews = xmlDoc.SelectSingleNode("KBGVersionInfo/News");
+                credits = xmlDoc.SelectSingleNode("KBGVersionInfo/Credits");
                 preventPackDownload = xmlDoc.SelectSingleNode("KBGVersionInfo/PreventPackDownload");
                 Excludes = xmlDoc.SelectNodes("KBGVersionInfo/ExcludeFromUpdate");
 
@@ -116,6 +131,9 @@ namespace KBG_Minecraft_Launcher
 
                 if (preventPackDownload != null)
                     _preventPackDownload = bool.Parse(preventPackDownload.InnerText);
+
+                if (credits != null)
+                    _credits = credits.InnerText;
 
                 if (Excludes != null)
                 {

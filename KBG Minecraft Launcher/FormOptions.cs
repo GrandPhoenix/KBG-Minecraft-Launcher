@@ -299,42 +299,129 @@ namespace KBG_Minecraft_Launcher
             information.Add("_settings null? " + (_settings == null).ToString());
             information.Add("_loadingSettings = " + _LoadingSettings.ToString());
 
-            information.Add("_KBGClientVersionUrl = " + _KBGClientVersionUrl);
-            information.Add("_KBGClientUpdateUrl = " + _KBGClientUpdateUrl);
+            //information.Add("_KBGClientVersionUrl = " + _KBGClientVersionUrl);
+            //information.Add("_KBGClientUpdateUrl = " + _KBGClientUpdateUrl);
 
-            information.Add("_packIRName = " + _packIRName);
-            information.Add("_packIRUpdateUrl = " + _packIRUpdateUrl);
-            information.Add("_packIRUpdateVersionUrl = " + _packIRUpdateVersionUrl);
+            //information.Add("_packIRName = " + _packIRName);
+            //information.Add("_packIRUpdateUrl = " + _packIRUpdateUrl);
+            //information.Add("_packIRUpdateVersionUrl = " + _packIRUpdateVersionUrl);
 
-            information.Add("_packERName = " + _packERName);
-            information.Add("_packERUpdateUrl = " + _packERUpdateUrl);
-            information.Add("_packERUpdateVersionUrl = " + _packERUpdateVersionUrl);
+            //information.Add("_packERName = " + _packERName);
+            //information.Add("_packERUpdateUrl = " + _packERUpdateUrl);
+            //information.Add("_packERUpdateVersionUrl = " + _packERUpdateVersionUrl);
 
-            information.Add("_packTFCRName = " + _packTFCRName);
-            information.Add("_packTFCRUpdateUrl = " + _packTFCRUpdateUrl);
-            information.Add("_packTFCRUpdateVersionUrl = " + _packTFCRUpdateVersionUrl);
+            //information.Add("_packTFCRName = " + _packTFCRName);
+            //information.Add("_packTFCRUpdateUrl = " + _packTFCRUpdateUrl);
+            //information.Add("_packTFCRUpdateVersionUrl = " + _packTFCRUpdateVersionUrl);
 
-            information.Add("_packVanillaName = " + _packVanillaName);
-            information.Add("_packVanillaUpdateUrl = " + _packVanillaUpdateUrl);
-            information.Add("_packVanillaUpdateVersionUrl = " + _packVanillaUpdateVersionUrl);
+            //information.Add("_packVanillaName = " + _packVanillaName);
+            //information.Add("_packVanillaUpdateUrl = " + _packVanillaUpdateUrl);
+            //information.Add("_packVanillaUpdateVersionUrl = " + _packVanillaUpdateVersionUrl);
+
+
+            information.Add(Environment.NewLine + "Pack Information" + Environment.NewLine + "{");
+            if (Directory.Exists(Application.StartupPath + "\\Minecraft Packs"))            
+                foreach (string path in Directory.GetDirectories(Application.StartupPath + "\\Minecraft Packs"))
+                    foreach (string path2 in Directory.GetDirectories(path))
+                        information.Add(path2.Replace(Application.StartupPath, ""));
+            information.Add("}");
+           
+
 
             return information;
         }
 
-        private string GetJavaVersion()
+        public String GetJavaInstallationPath()
         {
+            RegistryKey regkey = null;
+            String currentVersion = "";
             try
             {
+                //String javaKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
+                //regkey = Registry.LocalMachine.OpenSubKey(javaKey);
+
+                ////using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(javaKey))
+                ////using (var baseKey = Registry.LocalMachine.OpenSubKey(javaKey))
+
+                ////using(var baseKey = regkey)
+                ////{
+                //currentVersion = regkey.GetValue("CurrentVersion").ToString();
+                //using (var homeKey = regkey.OpenSubKey(currentVersion))
+                //    return homeKey.GetValue("JavaHome").ToString();
+                //}
                 String javaKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
-                using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(javaKey))
-                {
-                    return baseKey.GetValue("CurrentVersion").ToString();
-                    //using (var homeKey = baseKey.OpenSubKey(currentVersion))
-                    //    return homeKey.GetValue("JavaHome").ToString();
-                }
+
+                RegistryKey localMachineRegistry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32);
+
+                //MessageBox.Show(string.IsNullOrEmpty(javaKey) ? localMachineRegistry : localMachineRegistry.OpenSubKey(javaKey));
+
+
+
+                regkey = localMachineRegistry.OpenSubKey(javaKey);
+
+                //using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(javaKey))
+                //using (var baseKey = Registry.LocalMachine.OpenSubKey(javaKey))
+
+                //using(var baseKey = regkey)
+                //{
+                currentVersion = regkey.GetValue("CurrentVersion").ToString();
+                using (var homeKey = regkey.OpenSubKey(currentVersion))
+                    return homeKey.GetValue("JavaHome").ToString();
+
             }
             catch (Exception ex)
             {
+                ex.Data.Add("GetJavaInstallationPath() - currentVersion", currentVersion);
+                ex.Data.Add("GetJavaInstallationPath() - regkey null?", regkey == null);
+                throw ex;
+            }
+        }
+
+
+        private string GetJavaVersion()
+        {
+            RegistryKey regkey = null;
+            string currentVersion = "";
+            try
+            {
+                //String javaKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
+                ////using (var baseKey = Registry.LocalMachine.OpenSubKey(javaKey))
+                //regkey = Registry.LocalMachine.OpenSubKey(javaKey);
+                ////RegistryKey regKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                //if (regkey == null)
+                //    return "unknown, wotking on a fix";
+                //else
+                //    //using (var baseKey = regkey.OpenSubKey(javaKey))
+                //    //{
+                //        //if(baseKey == null)
+                //        //    return "unknown, wotking on a fix";
+                //        //else
+                //            return regkey.GetValue("CurrentVersion").ToString();
+                //        //using (var homeKey = baseKey.OpenSubKey(currentVersion))
+                //        //    return homeKey.GetValue("JavaHome").ToString();
+                //    //}
+                String javaKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
+
+                RegistryKey localMachineRegistry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32);
+
+                //MessageBox.Show(string.IsNullOrEmpty(javaKey) ? localMachineRegistry : localMachineRegistry.OpenSubKey(javaKey));
+
+
+
+                regkey = localMachineRegistry.OpenSubKey(javaKey);
+
+                //using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(javaKey))
+                //using (var baseKey = Registry.LocalMachine.OpenSubKey(javaKey))
+
+                //using(var baseKey = regkey)
+                //{
+                return regkey.GetValue("CurrentVersion").ToString();
+                //using (var homeKey = regkey.OpenSubKey(currentVersion))
+                //    MessageBox.Show(homeKey.GetValue("JavaHome").ToString());
+            }
+            catch (Exception ex)
+            {
+                ex.Data.Add("GetJavaInstallationPath() - regkey null?", regkey == null);
                 throw ex;
             }
         }
@@ -371,8 +458,7 @@ namespace KBG_Minecraft_Launcher
         {
             xmlVersionInfo returnInfo = new xmlVersionInfo();
             try
-            {
-                
+            {                
                 switch (packName)
                 {                    
                     case _packIRName:

@@ -56,7 +56,8 @@ namespace KBG_Minecraft_Launcher_NewsWriter
                 try
                 {
                     xDoc.Load(oFileDialog.FileName);
-                    string tmpString = "";
+                    string tmpNews = "";
+                    string tmpCredits = "";
                     int tmpInt = 0;
                     bool tmpBool = false;
                     XmlNodeList Excludes;
@@ -112,7 +113,15 @@ namespace KBG_Minecraft_Launcher_NewsWriter
                     tmpNode = xDoc.SelectSingleNode("KBGVersionInfo/News");
 
                     if (tmpNode != null)
-                        tmpString = tmpNode.InnerText;
+                        tmpNews = tmpNode.InnerText;
+
+
+                    //News
+                    tmpNode = xDoc.SelectSingleNode("KBGVersionInfo/Credits");
+
+                    if (tmpNode != null)
+                        tmpCredits = tmpNode.InnerText;
+
 
                     //PreventPackDownload
                     tmpNode = xDoc.SelectSingleNode("KBGVersionInfo/PreventPackDownload");
@@ -128,15 +137,18 @@ namespace KBG_Minecraft_Launcher_NewsWriter
 
                     try
                     {
-                        phoenixRichTextBoxNews.Rtf = tmpString;
+                        phoenixRichTextBoxNews.Rtf = tmpNews;
+                        phoenixRichTextBoxCredits.Rtf = tmpCredits;
                     }
                     catch (FormatException)            
                     {
-                        phoenixRichTextBoxNews.Text = tmpString;
+                        phoenixRichTextBoxNews.Text = tmpNews;
+                        phoenixRichTextBoxCredits.Text = tmpCredits;
                     }
                     catch (ArgumentException)
                     {
-                        phoenixRichTextBoxNews.Text = tmpString;
+                        phoenixRichTextBoxNews.Text = tmpNews;
+                        phoenixRichTextBoxCredits.Text = tmpCredits;
                     }
                     catch (Exception)
                     {
@@ -207,6 +219,7 @@ namespace KBG_Minecraft_Launcher_NewsWriter
                 textContent += string.Format("<{0}>{1}</{0}>{2}", "VersionPack", numericUpDownPack.Value.ToString(), Environment.NewLine);
                 textContent += string.Format("<{0}>{1}</{0}>{2}", "PreventPackDownload", checkBoxPreventPackDownload.Checked.ToString(), Environment.NewLine);
                 textContent += string.Format("<{0}>{1}</{0}>{2}", "News", phoenixRichTextBoxNews.Rtf, Environment.NewLine);
+                textContent += string.Format("<{0}>{1}</{0}>{2}", "Credits", phoenixRichTextBoxCredits.Rtf, Environment.NewLine);
                 foreach(string item in listBoxExcludes.Items)
                     textContent += string.Format("<{0}>{1}</{0}>{2}", "ExcludeFromUpdate", item, Environment.NewLine);
                 
@@ -318,5 +331,20 @@ namespace KBG_Minecraft_Launcher_NewsWriter
         }
 
           
+    }
+
+    public class MyTabControl : TabControl
+    {
+        public override System.Drawing.Rectangle DisplayRectangle
+        {
+            get
+            {
+                Rectangle r = base.DisplayRectangle;
+                //r.Inflate(4, 3);
+                r.Inflate(1, 1);
+                r.Offset(-1, 0);
+                return r;
+            }
+        }
     }
 }

@@ -23,6 +23,10 @@ using Microsoft.Win32;
 using System.Collections;
 using System.Web;
 using System.Security.Cryptography;
+using System.Xml;
+using System.Windows.Shell;
+using Hammock.Authentication.OAuth;
+using Hammock;
 
 
 
@@ -36,8 +40,10 @@ namespace KBG_Minecraft_Launcher
         private FormOptions _formOptions;
         private FormNews _formNews;
         private FormError _formError = new FormError();
+        private FormCredits _formCredits = new FormCredits();
 
         private bool _updateFinished = false;
+        private bool _useTaskbarProgressBar = false;
         
         private string _packDir;
         private bool _abortDownload = false;
@@ -48,7 +54,7 @@ namespace KBG_Minecraft_Launcher
         Thread TweetThread;
         Thread pingIRThread;
         Thread pingERThread;
-        Thread pingMiningThread;
+        Thread pingKBGEventThread;
         Thread pingTFCRThread;
         Thread pingMinecraftDotNetThread;
         Thread pingMinecraftLoginServersThread;
@@ -70,27 +76,52 @@ namespace KBG_Minecraft_Launcher
 
         //This is used to embed the Ionic.xip.dll into the project exe file, for easier deployment
         //see http://dotnetzip.codeplex.com/wikipage?title=Embed%20DotNetZip for more details
-        //static System.Reflection.Assembly ResolverDotNetZip(object sender, ResolveEventArgs args)
-        //{
-        //    Assembly a1 = Assembly.GetExecutingAssembly();
-        //    Stream s = a1.GetManifestResourceStream(typeof(FormMain), "Ionic.Zip.dll");
-        //    byte[] block = new byte[s.Length];
-        //    s.Read(block, 0, block.Length);
-        //    Assembly a2 = Assembly.Load(block);
-        //    return a2;
-        //}
-        
+        static System.Reflection.Assembly ResolverDotNetZip(object sender, ResolveEventArgs args)
+        {
+            Assembly a1 = Assembly.GetExecutingAssembly();
+            Stream s = a1.GetManifestResourceStream(typeof(FormMain), "Ionic.Zip.dll");
+            byte[] block = new byte[s.Length];
+            s.Read(block, 0, block.Length);
+            Assembly a2 = Assembly.Load(block);
+            return a2;
+        }
+
+        static System.Reflection.Assembly ResolverHammock(object sender, ResolveEventArgs args)
+        {
+            Assembly a1 = Assembly.GetExecutingAssembly();
+            Stream s = a1.GetManifestResourceStream(typeof(FormMain), "Hammock.dll");
+            byte[] block = new byte[s.Length];
+            s.Read(block, 0, block.Length);
+            Assembly a2 = Assembly.Load(block);
+            return a2;
+        }
+
         //constructor
 
         public FormMain()
         {
-            string methodProgress = ""; //this is used to find out where in the method the error occurred
-
-            //If startet as KBG minecraft launcher2.exe, then delete the first exe, copy second to first, and restart the first again
+            //StreamWriter sw = new StreamWriter(new FileStream("Debug2.txt", FileMode.Create));
             try
             {
+                string methodProgress = ""; //this is used to find out where in the method the error occurred
+
+                _useTaskbarProgressBar = Environment.OSVersion.Version.Build >= 6000;
+                    
+
+                                
+                //Console.SetOut(sw);
+                ////Console.SetOut(new StreamWriter(new FileStream(Application.StartupPath + "\\debug.txt", FileMode.Create)));
+                //Console.WriteLine("FormMain start");
+                //Debug.WriteLine("Formmain start");
+                //StreamWriter sw2 = new StreamWriter(new FileStream("Debug3.txt", FileMode.Create));
+                //sw2.Close();
+
+                //If startet as KBG minecraft launcher2.exe, then delete the first exe, copy second to first, and restart the first again
                 if (getCommandLineArgs().Contains("/UpdateRestart"))
                 {
+                    //sw2 = new StreamWriter(new FileStream("DebugUpdateRestart.txt", FileMode.Create));
+                    //sw2.Close();
+                    //Console.WriteLine("/UpdateRestart start");
                     if (Application.ExecutablePath == Application.StartupPath + "\\KBG Minecraft Launcher2.exe")
                     {
                         //should be startet as KBG Minecraft Launcher2.exe
@@ -134,6 +165,9 @@ namespace KBG_Minecraft_Launcher
 
                 if (getCommandLineArgs().Contains("/UpdateFinished"))
                 {
+                    //sw2 = new StreamWriter(new FileStream("DebugUpdateFinished.txt", FileMode.Create));
+                    //sw2.Close();
+                    Console.WriteLine("/UpdateFinished start");
                     methodProgress = "UpdateFinished - start";
 
                     try
@@ -155,12 +189,40 @@ namespace KBG_Minecraft_Launcher
                     methodProgress = "UpdateFinished - end";
                 }
 
+
+                //sw2 = new StreamWriter(new FileStream("DebugAssemblyRecolver.txt", FileMode.Create));
+                //Console.SetOut(sw2);
+                //Console.WriteLine("AssemblyRecolver");
+
+                //AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(AssemblyResolver);    
+
+                //static System.Reflection.Assembly ResolverDotNetZip(object sender, ResolveEventArgs args)
+                //{
+                //    Assembly a1 = Assembly.GetExecutingAssembly();
+                //    Stream s = a1.GetManifestResourceStream(typeof(FormMain), "Ionic.Zip.dll");
+                //    byte[] block = new byte[s.Length];
+                //    s.Read(block, 0, block.Length);
+                //    
+                //    return Assembly.Load(block);
+                //}
+
+
+
+
+                AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(ResolverDotNetZip);
+                AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(ResolverHammock);       
+                //Console.WriteLine("InitializeComponent");
+                //sw2 = new StreamWriter(new FileStream("DebugInitializeComponent.txt", FileMode.Create));
+                //sw2.Close();
+                InitializeComponent();
+                
             }
             catch (UnauthorizedAccessException ex)
             {
+                //Console.WriteLine("exception catch: " + ex.Message);
                 ex.Data.Add("FormMain() - CommandLineInformation", getCommandLineArgs());
                 ex.Data.Add("FormMain() - ExecutablePath", Application.ExecutablePath);
-                string message = string.Format("The program encountered a situation where it did not have enough permissions to do its work in its own folder and cannot continue to function.{0}Please make sure you put the {1} file in a folder with more permissions!{0}{0}I suggest a place like c:\\Games\\Minecraft",Environment.NewLine, new FileInfo(Application.ExecutablePath).Name);
+                string message = string.Format("The program encountered a situation where it did not have enough permissions to do its work in its own folder and cannot continue to function.{0}Please make sure you put the {1} file in a folder with more permissions!{0}{0}I suggest a place like c:\\Games\\Minecraft", Environment.NewLine, new FileInfo(Application.ExecutablePath).Name);
                 MessageBox.Show(message, "Insufficiant permissions", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 ErrorReporting(ex, true);
             }
@@ -180,37 +242,62 @@ namespace KBG_Minecraft_Launcher
 
                 ErrorReporting(ex, true);
             }
-
-            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
-            {
-                string resourceName = new AssemblyName(args.Name).Name + ".dll";
-                string resource = Array.Find(this.GetType().Assembly.GetManifestResourceNames(), element => element.EndsWith(resourceName));
-
-                using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
-                {
-                    Byte[] assemblyData = new Byte[stream.Length];
-                    stream.Read(assemblyData, 0, assemblyData.Length);
-                    return Assembly.Load(assemblyData);
-                }
-            };
-
-            //static System.Reflection.Assembly ResolverDotNetZip(object sender, ResolveEventArgs args)
+            //finally
             //{
-            //    Assembly a1 = Assembly.GetExecutingAssembly();
-            //    Stream s = a1.GetManifestResourceStream(typeof(FormMain), "Ionic.Zip.dll");
-            //    byte[] block = new byte[s.Length];
-            //    s.Read(block, 0, block.Length);
-            //    
-            //    return Assembly.Load(block);
+            //    sw.Close();
             //}
-
-
-
-
-            //AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(ResolverDotNetZip);            
-            InitializeComponent();
         }
 
+
+        static System.Reflection.Assembly AssemblyResolver(object sender, ResolveEventArgs args)
+        {
+            try
+            {
+                StreamWriter sw2 = new StreamWriter(new FileStream("Just ignore this file.txt", FileMode.Create));
+                //sw2.Close();
+
+                string resourceName = new AssemblyName(args.Name).Name + ".dll";
+                string resource = "";
+                //sw2 = new StreamWriter(new FileStream("DebugLine2 - " + resourceName + ".txt", FileMode.Create));
+                //sw2.Close();
+                //string resource = Array.Find(this.GetType().Assembly.GetManifestResourceNames(), element => element.EndsWith(resourceName));
+                //sw2 = new StreamWriter(new FileStream("DebugBeforeGetManifestResourceNames.txt", FileMode.Create)); 
+                //Console.WriteLine("");
+
+                string[] resourceNames = typeof(FormMain).Assembly.GetManifestResourceNames();
+                //sw2 = new StreamWriter(new FileStream("DebugAfterGetManifestResourceNames.txt", FileMode.Create)); 
+                
+                foreach (string str in resourceNames)
+                {
+                    if (str.EndsWith(resourceName))
+                    {
+                        resource = str;
+                        //sw2 = new StreamWriter(new FileStream("DebugResource - " + str + ".txt", FileMode.Create)); 
+                        break;
+                    }
+                }
+                //sw2 = new StreamWriter(new FileStream("DebugAfterForeach.txt", FileMode.Create)); 
+                using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
+                {
+                    //sw2 = new StreamWriter(new FileStream("DebugLine3.txt", FileMode.Create));
+                    //sw2.Close();
+                    Byte[] assemblyData = new Byte[stream.Length];
+
+                    //sw2 = new StreamWriter(new FileStream("DebugLine4.txt", FileMode.Create));
+                    //sw2.Close();
+                    stream.Read(assemblyData, 0, assemblyData.Length);
+
+                    //sw2 = new StreamWriter(new FileStream("DebugLine5.txt", FileMode.Create));
+                    //sw2.Close();
+                    return Assembly.Load(assemblyData);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
 
         //methods almost directly copy-paste from teh interwebs
 
@@ -337,23 +424,7 @@ namespace KBG_Minecraft_Launcher
             }
         }
 
-        private String GetJavaInstallationPath()
-        {
-            try
-            {
-                String javaKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
-                using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(javaKey))
-                {
-                    String currentVersion = baseKey.GetValue("CurrentVersion").ToString();
-                    using (var homeKey = baseKey.OpenSubKey(currentVersion))
-                        return homeKey.GetValue("JavaHome").ToString();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+        
 
         public static void CopyAll(DirectoryInfo source, DirectoryInfo target)
         {
@@ -428,6 +499,42 @@ namespace KBG_Minecraft_Launcher
             }
         }
 
+        /// <summary>
+        /// The set of characters that are unreserved in RFC 2396 but are NOT unreserved in RFC 3986.
+        /// code thanks to http://stackoverflow.com/questions/846487/how-to-get-uri-escapedatastring-to-comply-with-rfc-3986
+        /// </summary>
+        private static readonly string[] UriRfc3986CharsToEscape = new[] { "!", "*", "'", "(", ")" };
+
+        /// <summary>
+        /// Escapes a string according to the URI data string rules given in RFC 3986.
+        /// </summary>
+        /// <param name="value">The value to escape.</param>
+        /// <returns>The escaped value.</returns>
+        /// <remarks>
+        /// The <see cref="Uri.EscapeDataString"/> method is <i>supposed</i> to take on
+        /// RFC 3986 behavior if certain elements are present in a .config file.  Even if this
+        /// actually worked (which in my experiments it <i>doesn't</i>), we can't rely on every
+        /// host actually having this configuration element present.
+        /// code thanks to http://stackoverflow.com/questions/846487/how-to-get-uri-escapedatastring-to-comply-with-rfc-3986
+        /// </remarks>
+        internal static string EscapeUriDataStringRfc3986(string value)
+        {
+            // Start with RFC 2396 escaping by calling the .NET method to do the work.
+            // This MAY sometimes exhibit RFC 3986 behavior (according to the documentation).
+            // If it does, the escaping we do that follows it will be a no-op since the
+            // characters we search for to replace can't possibly exist in the string.
+            StringBuilder escaped = new StringBuilder(Uri.EscapeDataString(value));
+
+            // Upgrade the escaping to RFC 3986, if necessary.
+            for (int i = 0; i < UriRfc3986CharsToEscape.Length; i++)
+            {
+                escaped.Replace(UriRfc3986CharsToEscape[i], Uri.HexEscape(UriRfc3986CharsToEscape[i][0]));
+            }
+
+            // Return the fully-RFC3986-escaped string.
+            return escaped.ToString();
+        }
+
 
         //general methods
 
@@ -461,7 +568,7 @@ namespace KBG_Minecraft_Launcher
 
                     //add tweet
                     rtf += "\\cf1\\f0\\fs18 " + _TweetList[i].Headline;
-                    rtf += "\\cf0\\fs17  " + _TweetList[i].Text;
+                    rtf += "\\cf0\\fs17 " + _TweetList[i].Text;
                     rtf += "\\par\r\n\\cf1\\fs14 " + _TweetList[i].Time;
                 }
 
@@ -483,9 +590,10 @@ namespace KBG_Minecraft_Launcher
             {
                 if (HasConnection())
                 {
+                    //209.105.230.50:25568
                     ServerAccessClass pingIR = new ServerAccessClass("ir.industrial-craft.net", 25565, labelIRResult, progressBarIR, this);
                     ServerAccessClass pingER = new ServerAccessClass("209.105.230.53", 25565, labelERResult, progressBarER, this);
-                    ServerAccessClass pingMining = new ServerAccessClass("mining.industrial-craft.net", 25565, labelMiningResult, progressBarMining, this);
+                    ServerAccessClass pingKBGEvent = new ServerAccessClass("209.105.230.50", 25568, labelKBGEventResult, progressBarKBGEvent, this);
                     ServerAccessClass pingTFCR = new ServerAccessClass("209.105.230.51", 25565, labelTFCRResult, progressBarTFCR, this);
                     ServerAccessClass pingMinecraftDotNet = new ServerAccessClass("Minecraft.Net", 80, labelMinecraftdotnetResult, progressBarMinecraftdotnet, this);
                     ServerAccessClass pingMinecraftLoginServers = new ServerAccessClass("Login.minecraft.net", 80, labelMinecraftLoginServersResult, progressBarMinecraftLoginServers, this);
@@ -496,9 +604,9 @@ namespace KBG_Minecraft_Launcher
                     pingERThread = new Thread(new ThreadStart(pingER.StartCheck));
                     pingERThread.Start();
                     while (!pingERThread.IsAlive) ;
-                    pingMiningThread = new Thread(new ThreadStart(pingMining.StartCheck));
-                    pingMiningThread.Start();
-                    while (!pingMiningThread.IsAlive) ;
+                    pingKBGEventThread = new Thread(new ThreadStart(pingKBGEvent.StartCheck));
+                    pingKBGEventThread.Start();
+                    while (!pingKBGEventThread.IsAlive) ;
                     pingTFCRThread = new Thread(new ThreadStart(pingTFCR.StartCheck));
                     pingTFCRThread.Start();
                     while (!pingTFCRThread.IsAlive) ;
@@ -527,43 +635,63 @@ namespace KBG_Minecraft_Launcher
             //var xml = XDocument.Load("http://www.dreamincode.net/forums/xml.php?showuser=1253");
 
             string url = "http://api.twitter.com/1/statuses/user_timeline.xml?screen_name=KB_Gaming&count=12";
-            XDocument doc;
+            XDocument doc = new XDocument();
             DateTime Tweettime = new DateTime();
             string TweetText = "";
             string TweetTextAt = "";
+            bool webclientError = false;
             try
             {
+                //using (var httpClient = new HttpClient())
                 using (var webClient = new WebClient())
                 {
-                    doc = XDocument.Parse(webClient.DownloadString(url));
-                    foreach (XElement element in doc.Descendants("status"))
+                    try
                     {
-                        TweetTextAt = "";
+                        webClient.Encoding = Encoding.UTF8;
+                        webClient.Proxy = null;
+                        doc = XDocument.Parse(webClient.DownloadString(url));
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("The server returned an error while getting twitter feeds." + Environment.NewLine + "Error: " + ex.Message);
+                        webclientError = true;
+                    }
 
-                        //Tweet text
-                        TweetText = element.Element("text").Value;
-                        if (TweetText.StartsWith("@"))
+                    if (!webclientError)
+                    {
+                        foreach (XElement element in doc.Descendants("status"))
                         {
-                            TweetTextAt = TweetText.Substring(0, TweetText.IndexOf(" "));
-                            TweetText = TweetText.Remove(0, TweetText.IndexOf(" ")).Trim();                            
-                        }
+                            TweetTextAt = "";
 
-                        //tweet date
-                        Tweettime = ParseDateTime(element.Element("created_at").Value);
+                            //Tweet text
+                            TweetText = element.Element("text").Value;
+                            if (TweetText.StartsWith("@"))
+                            {
+                                TweetTextAt = TweetText.Substring(0, TweetText.IndexOf(" "));
+                                TweetText = TweetText.Remove(0, TweetText.IndexOf(" ")).Trim();
+                            }
 
-                        TimeSpan TSpan = DateTime.Now - Tweettime;
-                        
-                        if (TSpan.TotalHours < 24)
-                        {
-                            _TweetList.Add(new TweetItem(TweetTextAt, TweetText,  Math.Floor(TSpan.TotalHours).ToString() + " hours ago"));
-                        }
-                        else if (TSpan.TotalHours < 48)
-                        {
-                            _TweetList.Add(new TweetItem(TweetTextAt, TweetText, "yesterday"));
-                        }
-                        else
-                        {
-                            _TweetList.Add(new TweetItem(TweetTextAt, TweetText, TSpan.Days.ToString() + " days ago"));
+                            //tweet date
+                            Tweettime = ParseDateTime(element.Element("created_at").Value);
+
+                            TimeSpan TSpan = DateTime.Now - Tweettime;
+
+                            if (TSpan.TotalHours < 1)
+                            {
+                                _TweetList.Add(new TweetItem(TweetTextAt, TweetText, Math.Floor(TSpan.TotalMinutes).ToString() + " minuts ago"));
+                            }
+                            else if (TSpan.TotalHours < 24)
+                            {
+                                _TweetList.Add(new TweetItem(TweetTextAt, TweetText, Math.Floor(TSpan.TotalHours).ToString() + " hours ago"));
+                            }
+                            else if (TSpan.TotalHours < 48)
+                            {
+                                _TweetList.Add(new TweetItem(TweetTextAt, TweetText, "yesterday"));
+                            }
+                            else
+                            {
+                                _TweetList.Add(new TweetItem(TweetTextAt, TweetText, TSpan.Days.ToString() + " days ago"));
+                            }
                         }
                     }
                 }
@@ -877,7 +1005,13 @@ namespace KBG_Minecraft_Launcher
                                         //tmpStr2 = tmpStr2;
                                     }
                                     MethodProgress = "Backup - moving - Directory";
-                                    Directory.Move(fullPath, tmpStr);
+                                    if (Directory.Exists(tmpStr))
+                                    {
+                                        CopyAll(new DirectoryInfo(fullPath), new DirectoryInfo(tmpStr));
+                                        Directory.Delete(fullPath, true);
+                                    }
+                                    else
+                                        Directory.Move(fullPath, tmpStr);
                                 }
                                 else
                                 {
@@ -1125,22 +1259,25 @@ namespace KBG_Minecraft_Launcher
 
         private void StartGame(string selItem)
         {
+            string DebugMethodProgress = "";
             try
             {
+                DebugMethodProgress = "Line1";
                 SetDownloadLabelText("Logging in");
                 this.Invoke(new Action(delegate() { this.Update(); }));
                 ProcessStartInfo procStartInfo = new ProcessStartInfo();
                 Process proc = new Process();
                 DateTime gameStartTime = new DateTime();
 
+                DebugMethodProgress = "Line2";
                 string session = generateSession(textBoxUsername.Text, textBoxPassword.Text, 5000);
                 string sessionID = "";
                 string username = "";
 
+                DebugMethodProgress = "Line3";
                 if (session.ToLower().Contains("bad login"))
                 {
                     MessageBox.Show("Invalid Username and/or Password." + Environment.NewLine + "Please make sure you typed in the right information", "Invalid Username and/or Password",MessageBoxButtons.OK,MessageBoxIcon.Asterisk);
-
                 }
                 else if (session == "Account migrated, use e-mail as username.")
                 {
@@ -1149,22 +1286,33 @@ namespace KBG_Minecraft_Launcher
                 else
                 {
                     //assumes that a valid session was retrieved. Might need more work here
+                    DebugMethodProgress = "Line4";
                     if (session.Contains(":"))
-                        sessionID = session.Split(':')[3];
+                        if (session.Split(':').Length < 4)
+                            throw new Exception("Session was not in the expected format. Session was: " + session);
+                        else
+                            sessionID = session.Split(':')[3];
 
+                    DebugMethodProgress = "Line5";
                     if (textBoxUsername.Text.Contains("@"))                    
-                        username = session.Split(':')[2];
+                        if(session.Split(':').Length < 3)
+                            throw new Exception("Session was not in the expected format Session was: " + session);
+                        else
+                            username = session.Split(':')[2];
                     else
                         username = textBoxUsername.Text;
 
-
+                    DebugMethodProgress = "Line6";
                     if (File.Exists(_packDir + "\\" + selItem + "\\.Minecraft\\bin\\minecraft.jar"))
                     {
                         //FINALLY i got it to work. Damm it was a pain
                         SetDownloadLabelText("Starting game");
                         this.Invoke(new Action(delegate() { this.Update(); }));
-                        procStartInfo.FileName = GetJavaInstallationPath() + @"\bin\javaw.exe";
+                        DebugMethodProgress = "Line7";
+                        procStartInfo.FileName = _formOptions.GetJavaInstallationPath() + @"\bin\javaw.exe";
+                        DebugMethodProgress = "Line8";
                         Environment.SetEnvironmentVariable("APPDATA", _packDir + "\\" + selItem);
+                        DebugMethodProgress = "Line9";
 /*no error*/            procStartInfo.Arguments = Environment.ExpandEnvironmentVariables(string.Format(@" -Xms{0}m -Xmx{1}m -cp ""%APPDATA%\.minecraft\bin\*"" -Djava.library.path=""%APPDATA%\.minecraft\bin\natives"" net.minecraft.client.Minecraft {2} {3}", /*0*/ _formOptions.GetMemmoryMin(), /*1*/ _formOptions.GetMemmoryMax(), /*2*/ username, /*3*/ sessionID));
 /*error*/               //procStartInfo.Arguments = Environment.ExpandEnvironmentVariables(string.Format(@" -Xms{0}m -Xmx{1}m -cp %APPDATA%\.minecraft\bin\*"" -Djava.library.path=""%APPDATA%\.minecraft\bin\natives"" net.minecraft.client.Minecraft {2} {3}", /*0*/ _formOptions.GetMemmoryMin(), /*1*/ _formOptions.GetMemmoryMax(), /*2*/ username, /*3*/ sessionID));
 
@@ -1173,11 +1321,12 @@ namespace KBG_Minecraft_Launcher
                         procStartInfo.UseShellExecute = false;
                         
 
-#if(DEBUG)
-                    MessageBox.Show("DEBUG - Game startet");
-#else
+//#if(DEBUG)
+//                    MessageBox.Show("DEBUG - Game startet");
+//#else
                         gameStartTime = DateTime.Now;
                         proc.StartInfo = procStartInfo;
+                        DebugMethodProgress = "Line10";
                         proc.Start();
 
                         //Process.Start(procStartInfo);
@@ -1239,7 +1388,7 @@ namespace KBG_Minecraft_Launcher
                         {
                             //just absorps the exception
                         }
-
+                        DebugMethodProgress = "Line11";
                         proc.WaitForExit();
                         //this.Invoke(new Action(delegate() { this.Close(); }));
                         this.Invoke(new Action(delegate() { this.Show(); }));
@@ -1249,7 +1398,7 @@ namespace KBG_Minecraft_Launcher
                             string message = "It looks like the game failed to start correctly. " + Environment.NewLine + "A GameLog file have been created with more information." + Environment.NewLine + "This file can be found in the same folder as the launcher";
                             MessageBox.Show(message, "An error occured (possibly and very likely)",MessageBoxButtons.OK,MessageBoxIcon.Information);
                         }
-#endif
+//#endif
                     }
                     else
                     {
@@ -1259,6 +1408,7 @@ namespace KBG_Minecraft_Launcher
             }
             catch (Exception ex)
             {
+                ex.Data.Add("StartGame() - DebugMethodProgress", DebugMethodProgress);
                 throw ex;
             }
 
@@ -1374,6 +1524,9 @@ namespace KBG_Minecraft_Launcher
             //error information
             try
             {
+                if (_formError == null || _formError.IsDisposed)
+                    _formError = new FormError();
+
                 _formError.AddInfoLine("Error: " + ex.Message + Environment.NewLine);
 
                 _formError.AddInfoLine("Error Occured at: " + Environment.NewLine + ex.StackTrace);
@@ -1404,13 +1557,12 @@ namespace KBG_Minecraft_Launcher
 
                     foreach (string info in information)
                     {
-                        _formError.AddInfoLine("    " + info);
+                        _formError.AddInfoLine(info);
                     }
                 }
 
 
-                if (_formError == null)
-                    _formError = new FormError();
+                
                 _formError.CriticalError = criticalError;
                 ShowErrorWindow(criticalError);
             }
@@ -1474,7 +1626,7 @@ namespace KBG_Minecraft_Launcher
                     //_formOptions.GetClientUpdateInfo().UpdateNews                    
                     if (HasConnection())
                     {
-                        if (_formNews == null)
+                        if (_formNews == null || _formNews.IsDisposed)
                             _formNews = new FormNews(_formOptions.GetClientUpdateInfo().UpdateNews);
                         _formNews.Show();
                         _formNews.Focus();
@@ -1557,8 +1709,8 @@ namespace KBG_Minecraft_Launcher
             //    pingIRThread.Abort();
             //if (pingERThread != null)
             //    pingERThread.Abort();
-            //if (pingMiningThread != null)
-            //    pingMiningThread.Abort();
+            //if (pingKBGEventThread != null)
+            //    pingKBGEventThread.Abort();
             //if (pingTFCRThread != null)
             //    pingTFCRThread.Abort();
             //if (pingMinecraftDotNetThread != null)
@@ -1580,8 +1732,8 @@ namespace KBG_Minecraft_Launcher
             //    while (pingIRThread.IsAlive) ;
             //if (pingERThread != null)
             //    while (pingERThread.IsAlive) ;
-            //if (pingMiningThread != null)
-            //    while (pingMiningThread.IsAlive) ;
+            //if (pingKBGEventThread != null)
+            //    while (pingKBGEventThread.IsAlive) ;
             //if (pingTFCRThread != null)
             //    while (pingTFCRThread.IsAlive) ;
             //if (pingMinecraftDotNetThread != null)
@@ -1621,7 +1773,7 @@ namespace KBG_Minecraft_Launcher
 
         private void button1_Click_1(object sender, EventArgs e)
         {
-            #region OldTestCode
+            #region OldOldTestCode
             //progressBarIR.Visible = true;
             //progressBarER.Visible = true;
             //progressBarMinecraftdotnet.Visible = true;
@@ -1733,8 +1885,10 @@ namespace KBG_Minecraft_Launcher
 
             //packConfigSection.Save(ConfigurationSaveMode.Full);
             //config.Save();
-            //PackClass packClass = packConfigSection.Packs[0];
+            //PackClass packClass = packConfigSection.Packs[0]
+            
             #endregion OldTestCode
+
             DateTime old = DateTime.Now;
 
             try
@@ -1743,13 +1897,11 @@ namespace KBG_Minecraft_Launcher
                     _formOptions.Settings = new xmlSettings();
                 //_settings.CreateNewSettingsFile();
                 //_settings.Username = "HAHAHA";
-
                 
-
-
+                #region OldTestCode
 
                 //string asdf = _formOptions.Settings.Username;
-                TimeSpan span = DateTime.Now - old;
+                //TimeSpan span = DateTime.Now - old;
                 //_formOptions.Settings.SavePackInfo(new PackClass("navn3", 0.3333, "packurl3333", "www.something.com/versionurl3333.rar"));
                 //_formOptions.Settings.Username = "GrandPhoenix82";
 
@@ -1803,111 +1955,203 @@ namespace KBG_Minecraft_Launcher
                  * get Consumer secret (application secret) and OAuth token secret
                 step 6. Calculating the signature
 
-
+                //screen_name=KB_Gaming&count=12"
 
                 */
                 //GS - Get the oAuth params
                 //string status = "your status";
                 //string postBody = "status=" + Uri.EscapeDataString(status);
 
-                //string oauth_consumer_key = "YourKey";
-                //string oauth_nonce = Convert.ToBase64String( new ASCIIEncoding().GetBytes( DateTime.Now.Ticks.ToString()));
+                /*
+                WebRequest request = WebRequest.Create(get.AbsoluteUri + args);
+                request.Method = "GET";
+                using (WebResponse response = request.GetResponse())
+                {
+                    using (Stream stream = response.GetResponseStream())
+                    {
+                        XmlTextReader reader = new XmlTextReader(stream);
+                        ...
+                    }
+                }
 
-                //string oauth_signature_method = "HMAC-SHA1";
-                //string oauth_token = "YourToken";
 
-                //TimeSpan ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
 
-                //string oauth_timestamp = Convert.ToInt64(ts.TotalSeconds).ToString();
 
-                //string oauth_version = "1.0";
+                */
+                /*
+              string oauth_consumer_key = "yZn137jIlAEmy1e6Gcqztg";
+              //string oauth_nonce = Convert.ToBase64String( new ASCIIEncoding().GetBytes( DateTime.Now.Ticks.ToString()));
+              string oauth_nonce = "YSQ2pTgmZeNu2VS4cg" + Convert.ToBase64String( new ASCIIEncoding().GetBytes( DateTime.Now.Ticks.ToString()));
 
-                ////GS - When building the signature string the params
-                ////must be in alphabetical order. I can't be bothered
-                ////with that, get SortedDictionary to do it's thing
-                //SortedDictionary<string, string> sd = new SortedDictionary<string, string>();
+              string oauth_signature_method = "HMAC-SHA1";
+              string oauth_token = "1121629825-olJ9TeIvv7tYhzojfZhMuv09449oGjyExxaz1tN";
 
-                //sd.Add("status", status);
-                //sd.Add("oauth_version", oauth_version);
-                //sd.Add("oauth_consumer_key", oauth_consumer_key);
-                //sd.Add("oauth_nonce", oauth_nonce);
-                //sd.Add("oauth_signature_method", oauth_signature_method);
-                //sd.Add("oauth_timestamp", oauth_timestamp);
-                //sd.Add("oauth_token", oauth_token);
+              TimeSpan ts = DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
 
-                ////GS - Build the signature string
-                //string baseString = "GET" + "&" + Uri.EscapeDataString("https://api.twitter.com/1.1/statuses/user_timeline.xml") + "&";
+              string oauth_timestamp = Convert.ToInt64(ts.TotalSeconds).ToString();
 
-                //foreach (KeyValuePair<string, string> entry in sd)
-                //{
-                //    baseString += Uri.EscapeDataString(entry.Key + "=" + entry.Value + "&");
-                //}
+              string oauth_version = "1.0";
 
-                ////GS - Remove the trailing ambersand char, remember 
-                ////it's been urlEncoded so you have to remove the 
-                ////last 3 chars - %26
-                //baseString = baseString.Substring(0, baseString.Length - 3);
+              //GS - When building the signature string the params
+              //must be in alphabetical order. I can't be bothered
+              //with that, get SortedDictionary to do it's thing
+              SortedDictionary<string, string> sd = new SortedDictionary<string, string>();
 
-                ////GS - Build the signing key
-                //string consumerSecret = "YourSecret";
+              //sd.Add("status", status);
+              sd.Add("oauth_version", oauth_version);
+              sd.Add("oauth_consumer_key", oauth_consumer_key);
+              sd.Add("oauth_nonce", oauth_nonce);
+              sd.Add("oauth_signature_method", oauth_signature_method);
+              sd.Add("oauth_timestamp", oauth_timestamp);
+              sd.Add("oauth_token", oauth_token);
 
-                //string oauth_token_secret = "YOurToken";
+              //GS - Build the signature string
+              string baseString = "GET" + "&" + EscapeUriDataStringRfc3986("http://api.twitter.com/1.1/statuses/user_timeline.json") + "&";
 
-                //string signingKey = Uri.EscapeDataString(consumerSecret) + "&" + Uri.EscapeDataString(oauth_token_secret);
+              foreach (KeyValuePair<string, string> entry in sd)
+              {
+                  baseString += EscapeUriDataStringRfc3986(entry.Key + "=" + entry.Value + "&");
+              }
+              baseString += EscapeUriDataStringRfc3986("screen_name=JonasBalling&");//KB_Gaming
+              baseString += EscapeUriDataStringRfc3986("count=12");
 
-                ////GS - Sign the request
-                //HMACSHA1 hasher = new HMACSHA1(new ASCIIEncoding().GetBytes(signingKey));
 
-                //string signatureString = Convert.ToBase64String(hasher.ComputeHash(new ASCIIEncoding().GetBytes(baseString)));
+              //GS - Remove the trailing ambersand char, remember 
+              //it's been urlEncoded so you have to remove the 
+              //last 3 chars - %26
+              //baseString = baseString.Substring(0, baseString.Length - 3);
 
-                ////GS - Tell Twitter we don't do the 100 continue thing
-                //ServicePointManager.Expect100Continue = false;
+              //GS - Build the signing key
+              string consumerSecret = rm.GetString("consumerSecret");
 
-                ////GS - Instantiate a web request and populate the 
-                ////authorization header
-                //HttpWebRequest hwr = (HttpWebRequest)WebRequest.Create(@"https://api.twitter.com/1.1/statuses/user_timeline.xml");
+              string oauth_token_secret = rm.GetString("oauth_token_secret");
 
-                //string authorizationHeaderParams = String.Empty;
-                //authorizationHeaderParams += "OAuth ";
-                //authorizationHeaderParams += "oauth_nonce=" + "\"" + Uri.EscapeDataString(oauth_nonce) + "\",";
+              string signingKey = EscapeUriDataStringRfc3986(consumerSecret) + "&" + EscapeUriDataStringRfc3986(oauth_token_secret);
 
-                //authorizationHeaderParams += "oauth_signature_method=" + "\"" + Uri.EscapeDataString(oauth_signature_method) + "\",";
+              //GS - Sign the request
+              HMACSHA1 hasher = new HMACSHA1(new ASCIIEncoding().GetBytes(signingKey));
 
-                //authorizationHeaderParams += "oauth_timestamp=" + "\"" + Uri.EscapeDataString(oauth_timestamp) + "\",";
+              string signatureString = Convert.ToBase64String(hasher.ComputeHash(new ASCIIEncoding().GetBytes(baseString)));
+                
 
-                //authorizationHeaderParams += "oauth_consumer_key=" + "\"" + Uri.EscapeDataString(oauth_consumer_key) + "\",";
 
-                //authorizationHeaderParams += "oauth_token=" + "\"" + Uri.EscapeDataString(oauth_token) + "\",";
 
-                //authorizationHeaderParams += "oauth_signature=" + "\"" + Uri.EscapeDataString(signatureString) + "\",";
+              //GS - Tell Twitter we don't do the 100 continue thing
+              ServicePointManager.Expect100Continue = false;
 
-                //authorizationHeaderParams += "oauth_version=" + "\"" + Uri.EscapeDataString(oauth_version) + "\"";
+              //GS - Instantiate a web request and populate the 
+              //authorization header
+              //HttpWebRequest hwr = (HttpWebRequest)WebRequest.Create(@"https://api.twitter.com/1.1/statuses/user_timeline.json");
 
-                //hwr.Headers.Add("Authorization", authorizationHeaderParams);
+              string authorizationHeaderParams = String.Empty;
+              authorizationHeaderParams += "OAuth ";
+
+              authorizationHeaderParams += "oauth_consumer_key=" + "\"" + EscapeUriDataStringRfc3986(oauth_consumer_key) + "\",";
+
+              authorizationHeaderParams += "oauth_nonce=" + "\"" + EscapeUriDataStringRfc3986(oauth_nonce) + "\",";
+
+              authorizationHeaderParams += "oauth_signature=" + "\"" + EscapeUriDataStringRfc3986(signatureString) + "\",";
+
+              authorizationHeaderParams += "oauth_signature_method=" + "\"" + EscapeUriDataStringRfc3986(oauth_signature_method) + "\",";
+
+              authorizationHeaderParams += "oauth_timestamp=" + "\"" + EscapeUriDataStringRfc3986(oauth_timestamp) + "\",";
+
+              authorizationHeaderParams += "oauth_token=" + "\"" + EscapeUriDataStringRfc3986(oauth_token) + "\",";
+
+              authorizationHeaderParams += "oauth_version=" + "\"" + EscapeUriDataStringRfc3986(oauth_version) + "\"";
+
+              //hwr.Headers.Add("Authorization", authorizationHeaderParams);
 
                 
-                //hwr.Method = "GET";
-                //hwr.ContentType = "application/x-www-form-urlencoded";
-                //Stream stream = hwr.GetRequestStream();
-                //byte[] bodyBytes = new ASCIIEncoding().GetBytes(postBody);
+              //hwr.Method = "GET";
+              //hwr.ContentType = "application/x-www-form-urlencoded";
 
-                //stream.Write(bodyBytes, 0, bodyBytes.Length);
-                //stream.Flush();
-                //stream.Close();
 
-                ////GS - Allow us a reasonable timeout in case
-                ////Twitter's busy
-                //hwr.Timeout = 3 * 60 * 1000;
+                
 
-                //try
-                //{
-                //    HttpWebResponse rsp = hwr.GetResponse() as HttpWebResponse;
-                //    //GS - Do something with the return here...
-                //}
-                //catch (WebException e)
-                //{
-                //    //GS - Do some clever error handling here...
-                //}
+
+              HttpWebRequest request = WebRequest.Create(@"http://api.twitter.com/1.1/statuses/user_timeline.json") as HttpWebRequest;
+              request.KeepAlive = false;
+              request.Method = "GET";
+              request.ServicePoint.Expect100Continue = false;
+              request.Headers.Add("Authorization", authorizationHeaderParams);
+              //request.ContentType = "application/x-www-form-urlencoded";
+
+              using (WebResponse response = request.GetResponse())
+              {
+                  using (Stream stream = response.GetResponseStream())
+                  {
+                      XmlTextReader reader = new XmlTextReader(stream);
+                  }
+              }
+                
+
+              //using (Stream stream = hwr.GetRequestStream())
+              //{
+
+              //    //Stream stream = hwr.GetRequestStream();
+              //    byte[] bodyBytes = new ASCIIEncoding().GetBytes("");
+
+              //    stream.Write(bodyBytes, 0, bodyBytes.Length);
+              //}
+              //stream.Flush();
+              //stream.Close();
+
+              //GS - Allow us a reasonable timeout in case
+              //Twitter's busy
+              //hwr.Timeout = 3 * 60 * 1000;
+
+              try
+              {
+                  //HttpWebResponse rsp = hwr.GetResponse() as HttpWebResponse;
+                  //GS - Do something with the return here...
+              }
+              catch (WebException ex)
+              {
+                  //GS - Do some clever error handling here...
+              }*/
+                //KBG_Minecraft_Launcher.Properties.Resources. .Properties.Resources
+
+                System.Resources.ResourceManager rm = new System.Resources.ResourceManager("KBG_Minecraft_Launcher.Properties.Secrets", System.Reflection.Assembly.GetExecutingAssembly());
+                rm.GetString("consumerSecret");
+                #endregion
+                /*
+                string consumerKey = "ABCD7EM9qNGwQmRBxCcX";
+                string consumerSecret = rm.GetString("consumerSecret");
+                string callBackUrl = "http://localhost/mycallbackurl.aspx";
+
+                // Use Hammock to set up our authentication credentials
+                OAuthCredentials credentials = new OAuthCredentials()
+                {
+                    Type = OAuthType.RequestToken,
+                    SignatureMethod = OAuthSignatureMethod.HmacSha1,
+                    ParameterHandling = OAuthParameterHandling.HttpAuthorizationHeader,
+                    ConsumerKey = consumerKey,
+                    ConsumerSecret = consumerSecret,
+                    CallbackUrl = callBackUrl
+                };
+
+                // Use Hammock to create a rest client
+                var client = new RestClient
+                {
+                    Authority = "http://twitter.com/oauth",
+                    Credentials = credentials
+                };
+
+                // Use Hammock to create a request
+                var request = new RestRequest
+                {
+                    Path = "request_token"
+                };
+
+                // Get the response from the request
+                var response = client.Request(request);
+
+
+                var url = SERVICE_SPECIFIC_AUTHORIZE_URL_STUB + oauth["token"];
+                webBrowser1.Url = new Uri(url);
+                */
+
 
             }
             catch (Exception ex)
@@ -1947,6 +2191,8 @@ namespace KBG_Minecraft_Launcher
                 if (!_loadingSettings)
                 {
                     _formOptions.Settings.LastPlayedServer = comboBoxPackSelect.SelectedItem.ToString();
+
+                    linkLabelCredits.Visible = _formOptions.CheckNameForAutoUpdateSupport(comboBoxPackSelect.SelectedItem.ToString());                         
                 }
             }
             catch (Exception ex)
@@ -2206,6 +2452,15 @@ namespace KBG_Minecraft_Launcher
             {
                 if (!CloseAllThreads) 
                     this.Invoke(new Action(delegate() { this.progressBarDownload.Value = value; }));
+
+                if(_useTaskbarProgressBar)
+                {
+                    TaskbarItemInfo Tii = new TaskbarItemInfo();
+                    Tii.ProgressState = TaskbarItemProgressState.Normal;
+                    Tii.ProgressValue = value;
+                    
+
+                }
             }
             catch (Exception ex)
             {
@@ -2235,6 +2490,42 @@ namespace KBG_Minecraft_Launcher
             _TweetList.Clear();
             richTextBox1.Text = "";
             GenerateTweetList();
+        }
+
+        private void linkLabelKB_Gaming_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start("https://twitter.com/intent/user?screen_name=KB_Gaming");
+            }
+            catch (Exception ex)
+            {
+                ErrorReporting(ex, false);
+            }
+        }
+
+        private void linkLabelCredits_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            try
+            {
+                if (_formCredits == null || _formCredits.IsDisposed)
+                    _formCredits = new FormCredits();
+
+                //string selitem = comboBoxPackSelect.SelectedItem.ToString();
+                //_formOptions.GetVersionInfo(selitem, false);
+                xmlVersionInfo versionInfo = _formOptions.GetVersionInfo(comboBoxPackSelect.SelectedItem.ToString(), true);
+
+                if (versionInfo.Credits != "")
+                    _formCredits.SetCredits(versionInfo.Credits);
+                else
+                    _formCredits.SetCredits(@"{\rtf1\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fnil\fcharset0 Microsoft Sans Serif;}}\viewkind4\uc1\pard\f0\fs17 Credits Missing\par}");
+
+                _formCredits.Show();
+            }
+            catch (Exception ex)
+            {
+                ErrorReporting(ex, false);
+            }
         }
 
 
