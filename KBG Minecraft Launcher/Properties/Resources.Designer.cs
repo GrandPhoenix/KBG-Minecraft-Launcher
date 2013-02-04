@@ -59,12 +59,5 @@ namespace KBG_Minecraft_Launcher.Properties {
                 resourceCulture = value;
             }
         }
-        
-        internal static byte[] Ionic_Zip {
-            get {
-                object obj = ResourceManager.GetObject("Ionic_Zip", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
     }
 }

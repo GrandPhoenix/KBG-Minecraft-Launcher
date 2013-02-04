@@ -49,7 +49,6 @@
             this.tabControl1 = new KBG_Minecraft_Launcher_NewsWriter.MyTabControl();
             this.tabPageNews = new System.Windows.Forms.TabPage();
             this.groupBoxNews = new System.Windows.Forms.GroupBox();
-            this.phoenixRichTextBoxNews = new PhoenixRTB.PhoenixRichTextBox();
             this.tabPageExcludes = new System.Windows.Forms.TabPage();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.textBoxExclude = new System.Windows.Forms.TextBox();
@@ -59,6 +58,7 @@
             this.listBoxExcludes = new System.Windows.Forms.ListBox();
             this.tabPageCredits = new System.Windows.Forms.TabPage();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.phoenixRichTextBoxNews = new PhoenixRTB.PhoenixRichTextBox();
             this.phoenixRichTextBoxCredits = new PhoenixRTB.PhoenixRichTextBox();
             this.groupBox3.SuspendLayout();
             this.groupBoxVersion.SuspendLayout();
@@ -300,22 +300,6 @@
             this.groupBoxNews.TabStop = false;
             this.groupBoxNews.Text = "News";
             // 
-            // phoenixRichTextBoxNews
-            // 
-            this.phoenixRichTextBoxNews.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.phoenixRichTextBoxNews.CompactMode = true;
-            this.phoenixRichTextBoxNews.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.phoenixRichTextBoxNews.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.phoenixRichTextBoxNews.Location = new System.Drawing.Point(3, 16);
-            this.phoenixRichTextBoxNews.MinimumSize = new System.Drawing.Size(342, 50);
-            this.phoenixRichTextBoxNews.Name = "phoenixRichTextBoxNews";
-            this.phoenixRichTextBoxNews.Rtf = "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fnil\\fcharset0 Microsoft S" +
-                "ans Serif;}}\r\n\\viewkind4\\uc1\\pard\\f0\\fs17\\par\r\n}\r\n";
-            this.phoenixRichTextBoxNews.Size = new System.Drawing.Size(801, 303);
-            this.phoenixRichTextBoxNews.TabIndex = 0;
-            this.phoenixRichTextBoxNews.ToolStripRenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.phoenixRichTextBoxNews.RichTextChanged += new PhoenixRTB.PhoenixRichTextBox.EventHandler(this.control_SomethingChanged);
-            // 
             // tabPageExcludes
             // 
             this.tabPageExcludes.BackColor = System.Drawing.SystemColors.Control;
@@ -415,6 +399,21 @@
             this.groupBox4.TabIndex = 1;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Credits";
+            // 
+            // phoenixRichTextBoxNews
+            // 
+            this.phoenixRichTextBoxNews.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.phoenixRichTextBoxNews.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.phoenixRichTextBoxNews.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.phoenixRichTextBoxNews.Location = new System.Drawing.Point(3, 16);
+            this.phoenixRichTextBoxNews.MinimumSize = new System.Drawing.Size(342, 50);
+            this.phoenixRichTextBoxNews.Name = "phoenixRichTextBoxNews";
+            this.phoenixRichTextBoxNews.Rtf = "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fnil\\fcharset0 Microsoft S" +
+                "ans Serif;}}\r\n\\viewkind4\\uc1\\pard\\f0\\fs17\\par\r\n}\r\n";
+            this.phoenixRichTextBoxNews.Size = new System.Drawing.Size(801, 303);
+            this.phoenixRichTextBoxNews.TabIndex = 0;
+            this.phoenixRichTextBoxNews.ToolStripRenderMode = System.Windows.Forms.ToolStripRenderMode.System;
+            this.phoenixRichTextBoxNews.RichTextChanged += new PhoenixRTB.PhoenixRichTextBox.EventHandler(this.control_SomethingChanged);
             // 
             // phoenixRichTextBoxCredits
             // 

@@ -13,7 +13,7 @@ using System.Xml.Linq;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using Ionic.Zip;
+//using Ionic.Zip;
 //using System.Configuration;
 using Microsoft.Win32;
 //using System.Security.Cryptography;
@@ -27,6 +27,7 @@ using System.Xml;
 using System.Windows.Shell;
 using Hammock.Authentication.OAuth;
 using Hammock;
+using Ionic.Zip;
 
 
 
@@ -79,7 +80,7 @@ namespace KBG_Minecraft_Launcher
         static System.Reflection.Assembly ResolverDotNetZip(object sender, ResolveEventArgs args)
         {
             Assembly a1 = Assembly.GetExecutingAssembly();
-            Stream s = a1.GetManifestResourceStream(typeof(FormMain), "Ionic.Zip.dll");
+            Stream s = a1.GetManifestResourceStream(typeof(FormMain), "Lib.Ionic.Zip.dll");
             byte[] block = new byte[s.Length];
             s.Read(block, 0, block.Length);
             Assembly a2 = Assembly.Load(block);
@@ -89,7 +90,7 @@ namespace KBG_Minecraft_Launcher
         static System.Reflection.Assembly ResolverHammock(object sender, ResolveEventArgs args)
         {
             Assembly a1 = Assembly.GetExecutingAssembly();
-            Stream s = a1.GetManifestResourceStream(typeof(FormMain), "Hammock.dll");
+            Stream s = a1.GetManifestResourceStream(typeof(FormMain), "Lib.Hammock.dll");
             byte[] block = new byte[s.Length];
             s.Read(block, 0, block.Length);
             Assembly a2 = Assembly.Load(block);
@@ -101,6 +102,9 @@ namespace KBG_Minecraft_Launcher
         public FormMain()
         {
             //StreamWriter sw = new StreamWriter(new FileStream("Debug2.txt", FileMode.Create));
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(ResolverDotNetZip);
+            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(ResolverHammock);  
+
             try
             {
                 string methodProgress = ""; //this is used to find out where in the method the error occurred
@@ -209,8 +213,7 @@ namespace KBG_Minecraft_Launcher
 
 
 
-                AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(ResolverDotNetZip);
-                AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(ResolverHammock);       
+                     
                 //Console.WriteLine("InitializeComponent");
                 //sw2 = new StreamWriter(new FileStream("DebugInitializeComponent.txt", FileMode.Create));
                 //sw2.Close();
@@ -249,55 +252,55 @@ namespace KBG_Minecraft_Launcher
         }
 
 
-        static System.Reflection.Assembly AssemblyResolver(object sender, ResolveEventArgs args)
-        {
-            try
-            {
-                StreamWriter sw2 = new StreamWriter(new FileStream("Just ignore this file.txt", FileMode.Create));
-                //sw2.Close();
+        //static System.Reflection.Assembly AssemblyResolver(object sender, ResolveEventArgs args)
+        //{
+        //    try
+        //    {
+        //        StreamWriter sw2 = new StreamWriter(new FileStream("Just ignore this file.txt", FileMode.Create));
+        //        //sw2.Close();
 
-                string resourceName = new AssemblyName(args.Name).Name + ".dll";
-                string resource = "";
-                //sw2 = new StreamWriter(new FileStream("DebugLine2 - " + resourceName + ".txt", FileMode.Create));
-                //sw2.Close();
-                //string resource = Array.Find(this.GetType().Assembly.GetManifestResourceNames(), element => element.EndsWith(resourceName));
-                //sw2 = new StreamWriter(new FileStream("DebugBeforeGetManifestResourceNames.txt", FileMode.Create)); 
-                //Console.WriteLine("");
+        //        string resourceName = new AssemblyName(args.Name).Name + ".dll";
+        //        string resource = "";
+        //        //sw2 = new StreamWriter(new FileStream("DebugLine2 - " + resourceName + ".txt", FileMode.Create));
+        //        //sw2.Close();
+        //        //string resource = Array.Find(this.GetType().Assembly.GetManifestResourceNames(), element => element.EndsWith(resourceName));
+        //        //sw2 = new StreamWriter(new FileStream("DebugBeforeGetManifestResourceNames.txt", FileMode.Create)); 
+        //        //Console.WriteLine("");
 
-                string[] resourceNames = typeof(FormMain).Assembly.GetManifestResourceNames();
-                //sw2 = new StreamWriter(new FileStream("DebugAfterGetManifestResourceNames.txt", FileMode.Create)); 
+        //        string[] resourceNames = typeof(FormMain).Assembly.GetManifestResourceNames();
+        //        //sw2 = new StreamWriter(new FileStream("DebugAfterGetManifestResourceNames.txt", FileMode.Create)); 
                 
-                foreach (string str in resourceNames)
-                {
-                    if (str.EndsWith(resourceName))
-                    {
-                        resource = str;
-                        //sw2 = new StreamWriter(new FileStream("DebugResource - " + str + ".txt", FileMode.Create)); 
-                        break;
-                    }
-                }
-                //sw2 = new StreamWriter(new FileStream("DebugAfterForeach.txt", FileMode.Create)); 
-                using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
-                {
-                    //sw2 = new StreamWriter(new FileStream("DebugLine3.txt", FileMode.Create));
-                    //sw2.Close();
-                    Byte[] assemblyData = new Byte[stream.Length];
+        //        foreach (string str in resourceNames)
+        //        {
+        //            if (str.EndsWith(resourceName))
+        //            {
+        //                resource = str;
+        //                //sw2 = new StreamWriter(new FileStream("DebugResource - " + str + ".txt", FileMode.Create)); 
+        //                break;
+        //            }
+        //        }
+        //        //sw2 = new StreamWriter(new FileStream("DebugAfterForeach.txt", FileMode.Create)); 
+        //        using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resource))
+        //        {
+        //            //sw2 = new StreamWriter(new FileStream("DebugLine3.txt", FileMode.Create));
+        //            //sw2.Close();
+        //            Byte[] assemblyData = new Byte[stream.Length];
 
-                    //sw2 = new StreamWriter(new FileStream("DebugLine4.txt", FileMode.Create));
-                    //sw2.Close();
-                    stream.Read(assemblyData, 0, assemblyData.Length);
+        //            //sw2 = new StreamWriter(new FileStream("DebugLine4.txt", FileMode.Create));
+        //            //sw2.Close();
+        //            stream.Read(assemblyData, 0, assemblyData.Length);
 
-                    //sw2 = new StreamWriter(new FileStream("DebugLine5.txt", FileMode.Create));
-                    //sw2.Close();
-                    return Assembly.Load(assemblyData);
-                }
+        //            //sw2 = new StreamWriter(new FileStream("DebugLine5.txt", FileMode.Create));
+        //            //sw2.Close();
+        //            return Assembly.Load(assemblyData);
+        //        }
 
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
 
         //methods almost directly copy-paste from teh interwebs
 

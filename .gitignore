@@ -1,4 +1,5 @@
 [Bb]in
 obj/
 .zip
-[Ss]ecrets
+Secrets.resx
+Secrets.Designer.cs
