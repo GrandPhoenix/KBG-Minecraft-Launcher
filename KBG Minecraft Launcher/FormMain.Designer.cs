@@ -524,12 +524,12 @@
             // 
             this.linkLabelCredits.AutoSize = true;
             this.linkLabelCredits.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
-            this.linkLabelCredits.Location = new System.Drawing.Point(219, 99);
+            this.linkLabelCredits.Location = new System.Drawing.Point(206, 99);
             this.linkLabelCredits.Name = "linkLabelCredits";
-            this.linkLabelCredits.Size = new System.Drawing.Size(39, 13);
+            this.linkLabelCredits.Size = new System.Drawing.Size(67, 13);
             this.linkLabelCredits.TabIndex = 29;
             this.linkLabelCredits.TabStop = true;
-            this.linkLabelCredits.Text = "Credits";
+            this.linkLabelCredits.Text = "Pack Credits";
             this.linkLabelCredits.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelCredits_LinkClicked);
             // 
             // FormMain
