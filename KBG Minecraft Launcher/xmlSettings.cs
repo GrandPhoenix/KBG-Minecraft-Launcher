@@ -578,6 +578,7 @@ namespace KBG_Minecraft_Launcher
             
                 newNode = xmlDoc.SelectSingleNode("KBGSettings/Settings/" + settingsName);
                 
+                //newNode.InnerText = System.Security.SecurityElement.Escape(value); //use this if someone gets problems with characters " < > ' or &
                 newNode.InnerText = value;
                 xmlDoc.SelectSingleNode("KBGSettings/Settings").ReplaceChild(newNode, newNode); //(newNode, newNode) sounds wrong, but seems to work!
 

@@ -210,21 +210,17 @@ namespace KBG_Minecraft_Launcher_NewsWriter
             {
                 XmlDocument xmlDoc = new XmlDocument();
                 string textContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" + Environment.NewLine;
-                //textContent += @"<!-- Mess with this file at your own risk!!! -->" + Environment.NewLine;
                 textContent += @"<KBGVersionInfo>" + Environment.NewLine;
-                //textContent += @"<Settings>" + Environment.NewLine;
-                textContent += string.Format("<{0}>{1}</{0}>{2}", "VersionMajor", numericUpDownMajor.Value.ToString(), Environment.NewLine); //The "" here is for default values
+                textContent += string.Format("<{0}>{1}</{0}>{2}", "VersionMajor", numericUpDownMajor.Value.ToString(), Environment.NewLine);
                 textContent += string.Format("<{0}>{1}</{0}>{2}", "VersionMinor", numericUpDownMinor.Value.ToString(), Environment.NewLine);
                 textContent += string.Format("<{0}>{1}</{0}>{2}", "VersionRevision", numericUpDownRevision.Value.ToString(), Environment.NewLine);
                 textContent += string.Format("<{0}>{1}</{0}>{2}", "VersionPack", numericUpDownPack.Value.ToString(), Environment.NewLine);
                 textContent += string.Format("<{0}>{1}</{0}>{2}", "PreventPackDownload", checkBoxPreventPackDownload.Checked.ToString(), Environment.NewLine);
-                textContent += string.Format("<{0}>{1}</{0}>{2}", "News", phoenixRichTextBoxNews.Rtf, Environment.NewLine);
-                textContent += string.Format("<{0}>{1}</{0}>{2}", "Credits", phoenixRichTextBoxCredits.Rtf, Environment.NewLine);
+                textContent += string.Format("<{0}>{1}</{0}>{2}", "News", System.Security.SecurityElement.Escape(phoenixRichTextBoxNews.Rtf), Environment.NewLine);
+                textContent += string.Format("<{0}>{1}</{0}>{2}", "Credits", System.Security.SecurityElement.Escape(phoenixRichTextBoxCredits.Rtf), Environment.NewLine);
                 foreach(string item in listBoxExcludes.Items)
                     textContent += string.Format("<{0}>{1}</{0}>{2}", "ExcludeFromUpdate", item, Environment.NewLine);
                 
-                //textContent += @"</Settings>" + Environment.NewLine;
-                //textContent += @"<Packs></Packs>";
                 textContent += @"</KBGVersionInfo>" + Environment.NewLine;
 
                 xmlDoc.LoadXml(textContent);

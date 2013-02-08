@@ -2516,13 +2516,13 @@ namespace KBG_Minecraft_Launcher
 
                 //string selitem = comboBoxPackSelect.SelectedItem.ToString();
                 //_formOptions.GetVersionInfo(selitem, false);
-                xmlVersionInfo versionInfo = _formOptions.GetVersionInfo(comboBoxPackSelect.SelectedItem.ToString(), true);
+                //xmlVersionInfo versionInfo = _formOptions.GetVersionInfo(comboBoxPackSelect.SelectedItem.ToString(), true);
 
-                if (versionInfo.Credits != "")
-                    _formCredits.SetCredits(versionInfo.Credits);
-                else
-                    _formCredits.SetCredits(@"{\rtf1\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fnil\fcharset0 Microsoft Sans Serif;}}\viewkind4\uc1\pard\f0\fs17 Credits Missing\par}");
-
+                //if (versionInfo.Credits != "")
+                //    _formCredits.SetCredits(versionInfo.Credits);
+                //else
+                //    _formCredits.SetCredits(@"{\rtf1\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fnil\fcharset0 Microsoft Sans Serif;}}\viewkind4\uc1\pard\f0\fs17 Credits Missing\par}");
+                _formCredits.GetAndShowCredits(comboBoxPackSelect.SelectedItem.ToString(), _formOptions);
                 _formCredits.Show();
             }
             catch (Exception ex)
