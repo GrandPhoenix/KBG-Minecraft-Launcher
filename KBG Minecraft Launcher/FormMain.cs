@@ -944,9 +944,7 @@ namespace KBG_Minecraft_Launcher
             {
                 SetDownloadPanelVisibility(false);
                 
-                ex.Data.Add("DownloadAndInstallPack() - packName", packName);                
-                if (url != null)
-                    ex.Data.Add("DownloadAndInstallPack() - url", url.OriginalString);
+                ex.Data.Add("DownloadAndInstallPack() - packName", packName);                  
                 ex.Data.Add("DownloadAndInstallPack() - filename", filename);
                 ex.Data.Add("DownloadAndInstallPack() - MethodProgress", MethodProgress);
                 ErrorReporting(ex, false);

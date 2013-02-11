@@ -52,16 +52,16 @@ namespace KBG_Minecraft_Launcher
         private string _KBGClientUpdateUrl = "https://dl.dropbox.com/s/fdfrns4ww5wvoxo/KBG%20Minecraft%20Launcher.exe";
         
         private const string _packIRName = "Industrial Rage";
-        private const string _packIRUpdateUrl = "https://dl.dropbox.com/u/32095369/IR.zip";
-        private const string _packIRUpdateVersionUrl = "https://dl.dropbox.com/u/32095369/IR.xml";
+        private const string _packIRUpdateUrl = "http://www.killerbeesgaming.com/IR.zip";
+        private const string _packIRUpdateVersionUrl = "http://www.killerbeesgaming.com/IR.xml";
 
         private const string _packERName = "Endless Rage";
-        private const string _packERUpdateUrl = "https://dl.dropbox.com/u/32095369/ER.zip";
-        private const string _packERUpdateVersionUrl = "https://dl.dropbox.com/u/32095369/ER.xml";
+        private const string _packERUpdateUrl = "http://www.killerbeesgaming.com/ER.zip";
+        private const string _packERUpdateVersionUrl = "http://www.killerbeesgaming.com/ER.xml";
 
         private const string _packTFCRName = "Terrafirma Rage";
-        private const string _packTFCRUpdateUrl = "https://dl.dropbox.com/u/32095369/TFR.zip";
-        private const string _packTFCRUpdateVersionUrl = "https://dl.dropbox.com/u/32095369/TFR.xml"; 
+        private const string _packTFCRUpdateUrl = "http://www.killerbeesgaming.com/TFR.zip";
+        private const string _packTFCRUpdateVersionUrl = "http://www.killerbeesgaming.com/TFR.xml"; 
 
         private const string _packVanillaName = "Vanilla";
         private const string _packVanillaUpdateUrl = "https://dl.dropbox.com/s/jp4qrfq3xnbwmdu/VanillaPack.zip";
