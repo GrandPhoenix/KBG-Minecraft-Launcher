@@ -144,7 +144,7 @@ namespace KBG_Minecraft_Launcher
             }
             catch (Exception ex)
             {
-                throw new Exception(string.Format("xmlVersionInfo() failed.{0}Url: {1}{0}Error: {2}", Environment.NewLine, url, ex.Message), ex.InnerException);
+                throw new Exception(string.Format("xmlVersionInfo() failed.{0}Error: {1}", Environment.NewLine, ex.Message), ex.InnerException);
             }
         }
 

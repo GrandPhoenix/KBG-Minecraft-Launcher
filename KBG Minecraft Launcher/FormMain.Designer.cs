@@ -32,6 +32,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             this.buttonLogin = new System.Windows.Forms.Button();
             this.groupBoxLogin = new System.Windows.Forms.GroupBox();
+            this.linkLabelCredits = new System.Windows.Forms.LinkLabel();
             this.checkBoxRememberLoginInfo = new System.Windows.Forms.CheckBox();
             this.comboBoxPackSelect = new System.Windows.Forms.ComboBox();
             this.labelPassword = new System.Windows.Forms.Label();
@@ -39,7 +40,15 @@
             this.labelUsername = new System.Windows.Forms.Label();
             this.textBoxUsername = new System.Windows.Forms.TextBox();
             this.buttonOptions = new System.Windows.Forms.Button();
+            this.panelDownload = new System.Windows.Forms.Panel();
+            this.labelDownloadProgress = new System.Windows.Forms.Label();
+            this.labelDownloadSpeed = new System.Windows.Forms.Label();
+            this.buttonDownloadCancel = new System.Windows.Forms.Button();
+            this.labelDownload = new System.Windows.Forms.Label();
+            this.progressBarDownload = new System.Windows.Forms.ProgressBar();
             this.groupBoxTwitter = new System.Windows.Forms.GroupBox();
+            this.labelNoTwitterConnection = new System.Windows.Forms.Label();
+            this.linkLabelKB_Gaming = new System.Windows.Forms.LinkLabel();
             this.progressBarTwitter = new System.Windows.Forms.ProgressBar();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.labelMinecraftLoginServers = new System.Windows.Forms.Label();
@@ -65,25 +74,17 @@
             this.buttonRefreshServerStatus = new System.Windows.Forms.Button();
             this.buttonDebug = new System.Windows.Forms.Button();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.panelDownload = new System.Windows.Forms.Panel();
-            this.labelDownloadProgress = new System.Windows.Forms.Label();
-            this.labelDownloadSpeed = new System.Windows.Forms.Label();
-            this.buttonDownloadCancel = new System.Windows.Forms.Button();
-            this.labelDownload = new System.Windows.Forms.Label();
-            this.progressBarDownload = new System.Windows.Forms.ProgressBar();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.textBoxDebug = new System.Windows.Forms.TextBox();
-            this.linkLabelKB_Gaming = new System.Windows.Forms.LinkLabel();
-            this.linkLabelCredits = new System.Windows.Forms.LinkLabel();
             this.groupBoxLogin.SuspendLayout();
+            this.panelDownload.SuspendLayout();
             this.groupBoxTwitter.SuspendLayout();
             this.groupBoxServerStatus.SuspendLayout();
-            this.panelDownload.SuspendLayout();
             this.SuspendLayout();
             // 
             // buttonLogin
             // 
-            this.buttonLogin.Location = new System.Drawing.Point(196, 73);
+            this.buttonLogin.Location = new System.Drawing.Point(196, 74);
             this.buttonLogin.Name = "buttonLogin";
             this.buttonLogin.Size = new System.Drawing.Size(86, 23);
             this.buttonLogin.TabIndex = 0;
@@ -97,17 +98,29 @@
             this.groupBoxLogin.Controls.Add(this.checkBoxRememberLoginInfo);
             this.groupBoxLogin.Controls.Add(this.comboBoxPackSelect);
             this.groupBoxLogin.Controls.Add(this.labelPassword);
+            this.groupBoxLogin.Controls.Add(this.buttonLogin);
             this.groupBoxLogin.Controls.Add(this.textBoxPassword);
             this.groupBoxLogin.Controls.Add(this.labelUsername);
             this.groupBoxLogin.Controls.Add(this.textBoxUsername);
             this.groupBoxLogin.Controls.Add(this.buttonOptions);
-            this.groupBoxLogin.Controls.Add(this.buttonLogin);
             this.groupBoxLogin.Location = new System.Drawing.Point(328, 198);
             this.groupBoxLogin.Name = "groupBoxLogin";
             this.groupBoxLogin.Size = new System.Drawing.Size(289, 121);
             this.groupBoxLogin.TabIndex = 1;
             this.groupBoxLogin.TabStop = false;
             this.groupBoxLogin.Text = "Login";
+            // 
+            // linkLabelCredits
+            // 
+            this.linkLabelCredits.AutoSize = true;
+            this.linkLabelCredits.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
+            this.linkLabelCredits.Location = new System.Drawing.Point(206, 99);
+            this.linkLabelCredits.Name = "linkLabelCredits";
+            this.linkLabelCredits.Size = new System.Drawing.Size(67, 13);
+            this.linkLabelCredits.TabIndex = 29;
+            this.linkLabelCredits.TabStop = true;
+            this.linkLabelCredits.Text = "Pack Credits";
+            this.linkLabelCredits.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelCredits_LinkClicked);
             // 
             // checkBoxRememberLoginInfo
             // 
@@ -170,8 +183,68 @@
             this.buttonOptions.UseVisualStyleBackColor = true;
             this.buttonOptions.Click += new System.EventHandler(this.buttonOptions_Click);
             // 
+            // panelDownload
+            // 
+            this.panelDownload.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelDownload.Controls.Add(this.labelDownloadProgress);
+            this.panelDownload.Controls.Add(this.labelDownloadSpeed);
+            this.panelDownload.Controls.Add(this.buttonDownloadCancel);
+            this.panelDownload.Controls.Add(this.labelDownload);
+            this.panelDownload.Controls.Add(this.progressBarDownload);
+            this.panelDownload.Location = new System.Drawing.Point(328, 198);
+            this.panelDownload.Name = "panelDownload";
+            this.panelDownload.Size = new System.Drawing.Size(289, 121);
+            this.panelDownload.TabIndex = 26;
+            this.panelDownload.Visible = false;
+            // 
+            // labelDownloadProgress
+            // 
+            this.labelDownloadProgress.Location = new System.Drawing.Point(189, 75);
+            this.labelDownloadProgress.Name = "labelDownloadProgress";
+            this.labelDownloadProgress.Size = new System.Drawing.Size(92, 13);
+            this.labelDownloadProgress.TabIndex = 4;
+            this.labelDownloadProgress.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // labelDownloadSpeed
+            // 
+            this.labelDownloadSpeed.Location = new System.Drawing.Point(5, 75);
+            this.labelDownloadSpeed.Name = "labelDownloadSpeed";
+            this.labelDownloadSpeed.Size = new System.Drawing.Size(87, 13);
+            this.labelDownloadSpeed.TabIndex = 3;
+            this.labelDownloadSpeed.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // buttonDownloadCancel
+            // 
+            this.buttonDownloadCancel.ForeColor = System.Drawing.Color.Red;
+            this.buttonDownloadCancel.Location = new System.Drawing.Point(265, 3);
+            this.buttonDownloadCancel.Name = "buttonDownloadCancel";
+            this.buttonDownloadCancel.Size = new System.Drawing.Size(19, 21);
+            this.buttonDownloadCancel.TabIndex = 2;
+            this.buttonDownloadCancel.Text = "X";
+            this.toolTip1.SetToolTip(this.buttonDownloadCancel, "Cancel action");
+            this.buttonDownloadCancel.UseVisualStyleBackColor = true;
+            this.buttonDownloadCancel.Visible = false;
+            this.buttonDownloadCancel.Click += new System.EventHandler(this.buttonDownloadCancel_Click);
+            // 
+            // labelDownload
+            // 
+            this.labelDownload.Location = new System.Drawing.Point(5, 8);
+            this.labelDownload.Name = "labelDownload";
+            this.labelDownload.Size = new System.Drawing.Size(276, 61);
+            this.labelDownload.TabIndex = 1;
+            this.labelDownload.Text = "label1";
+            this.labelDownload.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // progressBarDownload
+            // 
+            this.progressBarDownload.Location = new System.Drawing.Point(5, 91);
+            this.progressBarDownload.Name = "progressBarDownload";
+            this.progressBarDownload.Size = new System.Drawing.Size(276, 23);
+            this.progressBarDownload.TabIndex = 0;
+            // 
             // groupBoxTwitter
             // 
+            this.groupBoxTwitter.Controls.Add(this.labelNoTwitterConnection);
             this.groupBoxTwitter.Controls.Add(this.linkLabelKB_Gaming);
             this.groupBoxTwitter.Controls.Add(this.progressBarTwitter);
             this.groupBoxTwitter.Controls.Add(this.richTextBox1);
@@ -183,6 +256,28 @@
             this.groupBoxTwitter.TabIndex = 2;
             this.groupBoxTwitter.TabStop = false;
             this.groupBoxTwitter.Text = "Twitter - KB_Gaming";
+            // 
+            // labelNoTwitterConnection
+            // 
+            this.labelNoTwitterConnection.AutoSize = true;
+            this.labelNoTwitterConnection.Location = new System.Drawing.Point(71, 154);
+            this.labelNoTwitterConnection.Name = "labelNoTwitterConnection";
+            this.labelNoTwitterConnection.Size = new System.Drawing.Size(164, 13);
+            this.labelNoTwitterConnection.TabIndex = 29;
+            this.labelNoTwitterConnection.Text = "No Internet Connection Detected";
+            this.labelNoTwitterConnection.Visible = false;
+            // 
+            // linkLabelKB_Gaming
+            // 
+            this.linkLabelKB_Gaming.AutoSize = true;
+            this.linkLabelKB_Gaming.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
+            this.linkLabelKB_Gaming.Location = new System.Drawing.Point(9, 1);
+            this.linkLabelKB_Gaming.Name = "linkLabelKB_Gaming";
+            this.linkLabelKB_Gaming.Size = new System.Drawing.Size(131, 13);
+            this.linkLabelKB_Gaming.TabIndex = 28;
+            this.linkLabelKB_Gaming.TabStop = true;
+            this.linkLabelKB_Gaming.Text = "Visit KB_Gaming on twitter";
+            this.linkLabelKB_Gaming.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelKB_Gaming_LinkClicked);
             // 
             // progressBarTwitter
             // 
@@ -441,65 +536,6 @@
             // 
             this.timer1.Interval = 5000;
             // 
-            // panelDownload
-            // 
-            this.panelDownload.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelDownload.Controls.Add(this.labelDownloadProgress);
-            this.panelDownload.Controls.Add(this.labelDownloadSpeed);
-            this.panelDownload.Controls.Add(this.buttonDownloadCancel);
-            this.panelDownload.Controls.Add(this.labelDownload);
-            this.panelDownload.Controls.Add(this.progressBarDownload);
-            this.panelDownload.Location = new System.Drawing.Point(222, 121);
-            this.panelDownload.Name = "panelDownload";
-            this.panelDownload.Size = new System.Drawing.Size(200, 100);
-            this.panelDownload.TabIndex = 26;
-            this.panelDownload.Visible = false;
-            // 
-            // labelDownloadProgress
-            // 
-            this.labelDownloadProgress.Location = new System.Drawing.Point(101, 54);
-            this.labelDownloadProgress.Name = "labelDownloadProgress";
-            this.labelDownloadProgress.Size = new System.Drawing.Size(92, 13);
-            this.labelDownloadProgress.TabIndex = 4;
-            this.labelDownloadProgress.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // labelDownloadSpeed
-            // 
-            this.labelDownloadSpeed.Location = new System.Drawing.Point(8, 54);
-            this.labelDownloadSpeed.Name = "labelDownloadSpeed";
-            this.labelDownloadSpeed.Size = new System.Drawing.Size(87, 13);
-            this.labelDownloadSpeed.TabIndex = 3;
-            this.labelDownloadSpeed.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // buttonDownloadCancel
-            // 
-            this.buttonDownloadCancel.ForeColor = System.Drawing.Color.Red;
-            this.buttonDownloadCancel.Location = new System.Drawing.Point(175, 3);
-            this.buttonDownloadCancel.Name = "buttonDownloadCancel";
-            this.buttonDownloadCancel.Size = new System.Drawing.Size(19, 21);
-            this.buttonDownloadCancel.TabIndex = 2;
-            this.buttonDownloadCancel.Text = "X";
-            this.toolTip1.SetToolTip(this.buttonDownloadCancel, "Cancel action");
-            this.buttonDownloadCancel.UseVisualStyleBackColor = true;
-            this.buttonDownloadCancel.Visible = false;
-            this.buttonDownloadCancel.Click += new System.EventHandler(this.buttonDownloadCancel_Click);
-            // 
-            // labelDownload
-            // 
-            this.labelDownload.Location = new System.Drawing.Point(2, 8);
-            this.labelDownload.Name = "labelDownload";
-            this.labelDownload.Size = new System.Drawing.Size(193, 42);
-            this.labelDownload.TabIndex = 1;
-            this.labelDownload.Text = "label1";
-            this.labelDownload.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // progressBarDownload
-            // 
-            this.progressBarDownload.Location = new System.Drawing.Point(5, 69);
-            this.progressBarDownload.Name = "progressBarDownload";
-            this.progressBarDownload.Size = new System.Drawing.Size(188, 23);
-            this.progressBarDownload.TabIndex = 0;
-            // 
             // textBoxDebug
             // 
             this.textBoxDebug.Location = new System.Drawing.Point(11, 306);
@@ -508,57 +544,33 @@
             this.textBoxDebug.TabIndex = 27;
             this.textBoxDebug.Visible = false;
             // 
-            // linkLabelKB_Gaming
-            // 
-            this.linkLabelKB_Gaming.AutoSize = true;
-            this.linkLabelKB_Gaming.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
-            this.linkLabelKB_Gaming.Location = new System.Drawing.Point(9, 1);
-            this.linkLabelKB_Gaming.Name = "linkLabelKB_Gaming";
-            this.linkLabelKB_Gaming.Size = new System.Drawing.Size(131, 13);
-            this.linkLabelKB_Gaming.TabIndex = 28;
-            this.linkLabelKB_Gaming.TabStop = true;
-            this.linkLabelKB_Gaming.Text = "Visit KB_Gaming on twitter";
-            this.linkLabelKB_Gaming.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelKB_Gaming_LinkClicked);
-            // 
-            // linkLabelCredits
-            // 
-            this.linkLabelCredits.AutoSize = true;
-            this.linkLabelCredits.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
-            this.linkLabelCredits.Location = new System.Drawing.Point(206, 99);
-            this.linkLabelCredits.Name = "linkLabelCredits";
-            this.linkLabelCredits.Size = new System.Drawing.Size(67, 13);
-            this.linkLabelCredits.TabIndex = 29;
-            this.linkLabelCredits.TabStop = true;
-            this.linkLabelCredits.Text = "Pack Credits";
-            this.linkLabelCredits.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelCredits_LinkClicked);
-            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(629, 331);
-            this.Controls.Add(this.textBoxDebug);
             this.Controls.Add(this.panelDownload);
+            this.Controls.Add(this.groupBoxLogin);
+            this.Controls.Add(this.textBoxDebug);
             this.Controls.Add(this.buttonDebug);
             this.Controls.Add(this.groupBoxTwitter);
-            this.Controls.Add(this.groupBoxLogin);
             this.Controls.Add(this.groupBoxServerStatus);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "FormMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "KBG Minecraft Client";
+            this.Text = "KBG Launcher";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
             this.Load += new System.EventHandler(this.FormMain_Load);
             this.Shown += new System.EventHandler(this.FormMain_Shown);
             this.groupBoxLogin.ResumeLayout(false);
             this.groupBoxLogin.PerformLayout();
+            this.panelDownload.ResumeLayout(false);
             this.groupBoxTwitter.ResumeLayout(false);
             this.groupBoxTwitter.PerformLayout();
             this.groupBoxServerStatus.ResumeLayout(false);
             this.groupBoxServerStatus.PerformLayout();
-            this.panelDownload.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -611,6 +623,7 @@
         private System.Windows.Forms.Button buttonRefreshTwitterFeeds;
         private System.Windows.Forms.LinkLabel linkLabelKB_Gaming;
         private System.Windows.Forms.LinkLabel linkLabelCredits;
+        private System.Windows.Forms.Label labelNoTwitterConnection;
     }
 }
 

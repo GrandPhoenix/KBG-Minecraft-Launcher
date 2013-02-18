@@ -28,6 +28,8 @@ using System.Windows.Shell;
 using Hammock.Authentication.OAuth;
 using Hammock;
 using Ionic.Zip;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 
 
 
@@ -43,8 +45,12 @@ namespace KBG_Minecraft_Launcher
         private FormError _formError = new FormError();
         private FormCredits _formCredits = new FormCredits();
 
+
         private bool _updateFinished = false;
         private bool _useTaskbarProgressBar = false;
+        private bool _offlineMode = false;
+        private bool _forceNoLoginConnection = false;
+        
         
         private string _packDir;
         private bool _abortDownload = false;
@@ -61,6 +67,12 @@ namespace KBG_Minecraft_Launcher
         Thread pingMinecraftLoginServersThread;
         Thread packThread;
         Thread updateThread;
+
+
+        public bool OfflineMode
+        {
+            get { return _offlineMode; }
+        }
 
         [DllImport("wininet", CharSet = CharSet.Auto)]
 	    static extern bool InternetGetConnectedState(ref ConnectionStatusEnum flags, int dw);
@@ -110,8 +122,12 @@ namespace KBG_Minecraft_Launcher
                 string methodProgress = ""; //this is used to find out where in the method the error occurred
 
                 _useTaskbarProgressBar = Environment.OSVersion.Version.Build >= 6000;
-                    
 
+                _offlineMode = getCommandLineArgs().Contains("/Offline");
+                _forceNoLoginConnection = getCommandLineArgs().Contains("/NoLoginConnection");
+                //else
+                //    _offlineMode = !IsNetworkAvailable();
+                //_offlineMode = true; //debugging overwrite
                                 
                 //Console.SetOut(sw);
                 ////Console.SetOut(new StreamWriter(new FileStream(Application.StartupPath + "\\debug.txt", FileMode.Create)));
@@ -126,7 +142,7 @@ namespace KBG_Minecraft_Launcher
                     //sw2 = new StreamWriter(new FileStream("DebugUpdateRestart.txt", FileMode.Create));
                     //sw2.Close();
                     //Console.WriteLine("/UpdateRestart start");
-                    if (Application.ExecutablePath == Application.StartupPath + "\\KBG Minecraft Launcher2.exe")
+                    if (Application.ExecutablePath == Application.StartupPath + "\\KBG Launcher2.exe")
                     {
                         //should be startet as KBG Minecraft Launcher2.exe
                         methodProgress = "UpdateRestart - start";
@@ -146,17 +162,24 @@ namespace KBG_Minecraft_Launcher
                             methodProgress = "UpdateRestart oldProcess exception: " + ex.Message;
                         }
 
-                        if (File.Exists(Application.StartupPath + "\\KBG Minecraft Launcher2.exe"))
+                        if (File.Exists(Application.StartupPath + "\\KBG Minecraft Launcher2.exe")) //switching names, removing 'Minecraft'
+                        {
+                            methodProgress = "UpdateRestart - preparing to copy old filename to new filename";
+
+                            File.Copy(Application.StartupPath + "\\KBG Minecraft Launcher2.exe", Application.StartupPath + "\\KBG Launcher2.exe", true);
+                        }
+
+                        if (File.Exists(Application.StartupPath + "\\KBG Launcher2.exe"))
                         {
                             methodProgress = "UpdateRestart - preparing to copy";
 
-                            File.Copy(Application.StartupPath + "\\KBG Minecraft Launcher2.exe", Application.StartupPath + "\\KBG Minecraft Launcher.exe", true);
+                            File.Copy(Application.StartupPath + "\\KBG Launcher2.exe", Application.StartupPath + "\\KBG Launcher.exe", true);
 
                             methodProgress = "UpdateRestart - Application.Exiting";
 
                             Application.Exit();
-                            methodProgress = "UpdateRestart - starting \\KBG Minecraft Launcher.exe..";
-                            Process.Start(Application.StartupPath + "\\KBG Minecraft Launcher.exe", "/UpdateFinished " + Process.GetCurrentProcess().Id.ToString());
+                            methodProgress = "UpdateRestart - starting \\KBG Launcher.exe..";
+                            Process.Start(Application.StartupPath + "\\KBG Launcher.exe", "/UpdateFinished " + Process.GetCurrentProcess().Id.ToString());
                             methodProgress = "UpdateRestart - Environment.Exit";
                             Environment.Exit(0);
                             methodProgress = "UpdateRestart - GC.Collect";
@@ -185,9 +208,16 @@ namespace KBG_Minecraft_Launcher
                         // the process did not exist - probably already closed!
                         //TODO: --> LOG
                     }
+                    //removing old file with old filename scheme
                     methodProgress = "UpdateFinished - Deleting KBG Minecraft Launcher2.exe";
                     if (File.Exists(Application.StartupPath + "\\KBG Minecraft Launcher2.exe"))
                         File.Delete(Application.StartupPath + "\\KBG Minecraft Launcher2.exe");
+
+                    //removing old file with new filename scheme
+                    methodProgress = "UpdateFinished - Deleting KBG Launcher2.exe";
+                    if (File.Exists(Application.StartupPath + "\\KBG Launcher2.exe"))
+                        File.Delete(Application.StartupPath + "\\KBG Launcher2.exe");
+
                     methodProgress = "UpdateFinished - Update finished";
                     _updateFinished = true;
                     methodProgress = "UpdateFinished - end";
@@ -250,6 +280,7 @@ namespace KBG_Minecraft_Launcher
             //    sw.Close();
             //}
         }
+        
 
 
         //static System.Reflection.Assembly AssemblyResolver(object sender, ResolveEventArgs args)
@@ -326,33 +357,86 @@ namespace KBG_Minecraft_Launcher
         }
 
         //Testing for an Internet connection. Thanks to http://www.dreamincode.net/forums/topic/71263-using-the-ping-class-in-c%23/
-        private static bool HasConnection()
+        //private static bool HasConnection()
+        //{
+        //    try
+        //    {
+        //        //instance of our ConnectionStatusEnum
+        //        ConnectionStatusEnum state = 0;
+
+        //        //call the API
+        //        InternetGetConnectedState(ref state, 0);
+
+        //        //check the status, if not offline and the returned state
+        //        //isnt 0 then we have a connection
+        //        if (((int)ConnectionStatusEnum.INTERNET_CONNECTION_OFFLINE & (int)state) != 0)
+        //        {
+        //            //return true, we have a connection
+        //            return false;
+        //        }
+        //        //return false, no connection available
+        //        return true;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
+
+        //thanks to http://stackoverflow.com/questions/520347/c-sharp-how-do-i-check-for-a-network-connection
+        /// <summary>
+        /// Indicates whether any network connection is available
+        /// Filter connections below a specified speed, as well as virtual network cards.
+        /// </summary>
+        /// <returns>
+        ///     <c>true</c> if a network connection is available; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsNetworkAvailable()
         {
-            try
-            {
-                //instance of our ConnectionStatusEnum
-                ConnectionStatusEnum state = 0;
-
-                //call the API
-                InternetGetConnectedState(ref state, 0);
-
-                //check the status, if not offline and the returned state
-                //isnt 0 then we have a connection
-                if (((int)ConnectionStatusEnum.INTERNET_CONNECTION_OFFLINE & (int)state) != 0)
-                {
-                    //return true, we have a connection
-                    return false;
-                }
-                //return false, no connection available
-                return true;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            return IsNetworkAvailable(0);
         }
 
-        //cole help thanks to http://social.msdn.microsoft.com/forums/en-US/netfxnetcom/thread/ff098248-551c-4da9-8ba5-358a9f8ccc57/
+        /// <summary>
+        /// Indicates whether any network connection is available.
+        /// Filter connections below a specified speed, as well as virtual network cards.
+        /// </summary>
+        /// <param name="minimumSpeed">The minimum speed required. Passing 0 will not filter connection using speed.</param>
+        /// <returns>
+        ///     <c>true</c> if a network connection is available; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsNetworkAvailable(long minimumSpeed)
+        {
+            if (!NetworkInterface.GetIsNetworkAvailable())
+                return false;
+
+            foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                // discard because of standard reasons
+                if ((ni.OperationalStatus != OperationalStatus.Up) ||
+                    (ni.NetworkInterfaceType == NetworkInterfaceType.Loopback) ||
+                    (ni.NetworkInterfaceType == NetworkInterfaceType.Tunnel))
+                    continue;
+
+                // this allow to filter modems, serial, etc.
+                // I use 10000000 as a minimum speed for most cases
+                if (ni.Speed < minimumSpeed)
+                    continue;
+
+                // discard virtual cards (virtual box, virtual pc, etc.)
+                if ((ni.Description.IndexOf("virtual", StringComparison.OrdinalIgnoreCase) >= 0) ||
+                    (ni.Name.IndexOf("virtual", StringComparison.OrdinalIgnoreCase) >= 0))
+                    continue;
+
+                // discard "Microsoft Loopback Adapter", it will not show as NetworkInterfaceType.Loopback but as Ethernet Card.
+                if (ni.Description.Equals("Microsoft Loopback Adapter", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                return true;
+            }
+            return false;
+        }
+        
+        //code help thanks to http://social.msdn.microsoft.com/forums/en-US/netfxnetcom/thread/ff098248-551c-4da9-8ba5-358a9f8ccc57/
         public static bool SetAllowUnsafeHeaderParsing20()
         {
             try
@@ -412,20 +496,42 @@ namespace KBG_Minecraft_Launcher
             }
         }
 
-        static string getCommandLineArgs()
+        static List<string> getCommandLineArgs()
         {
             try
             {
                 Queue<string> args = new Queue<string>(Environment.GetCommandLineArgs());
 
                 args.Dequeue(); // args[0] is always exe path/filename
-                return string.Join(" ", args.ToArray());
+                //return string.Join(" ", args.ToArray());
+                return new List<string>(args.ToArray());
             }
             catch (Exception ex)
             {
                 throw ex;
             }
         }
+
+        //private bool IsCommandArgOfflineMode()
+        //{
+        //    try
+        //    {
+        //        Queue<string> args = new Queue<string>(Environment.GetCommandLineArgs());
+
+        //        args.Dequeue(); // args[0] is always exe path/filename
+        //        List<string> argsList = new List<string>(args.ToArray());
+        //        return argsList.Contains("/OfflineMode");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
+
+
+        
+
+
 
         
 
@@ -545,10 +651,20 @@ namespace KBG_Minecraft_Launcher
         {
             try
             {
-                TweetThread = new Thread(new ThreadStart(this.getTwitterFeeds));
-                progressBarTwitter.Visible = true;
-                TweetThread.Start();
-                while (!TweetThread.IsAlive) ;
+                if (HasInternetConnection())
+                {
+                    labelNoTwitterConnection.Visible = false;
+                    progressBarTwitter.Visible = true;
+                    TweetThread = new Thread(new ThreadStart(this.getTwitterFeeds));
+                    progressBarTwitter.Visible = true;
+                    TweetThread.Start();
+                    while (!TweetThread.IsAlive) ;
+                }
+                else
+                {
+                    labelNoTwitterConnection.Visible = true;
+                    progressBarTwitter.Visible = false;
+                }
             }
             catch (Exception ex)
             {
@@ -591,7 +707,7 @@ namespace KBG_Minecraft_Launcher
         {
             try
             {
-                if (HasConnection())
+                if (HasInternetConnection())
                 {
                     //209.105.230.50:25568
                     ServerAccessClass pingIR = new ServerAccessClass("ir.industrial-craft.net", 25565, labelIRResult, progressBarIR, this);
@@ -631,6 +747,7 @@ namespace KBG_Minecraft_Launcher
             }
         }
 
+
         private void getTwitterFeeds()
         {
             //http://api.twitter.com/1/statuses/user_timeline.xml?screen_name=KB_Gaming
@@ -646,17 +763,37 @@ namespace KBG_Minecraft_Launcher
             try
             {
                 //using (var httpClient = new HttpClient())
+
                 using (var webClient = new WebClient())
                 {
                     try
                     {
+                        //string responseString = "";
+                        //HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                        //request.Method = "GET";
+                        //request.ServicePoint.Expect100Continue = false;
+                        //request.ContentType = "application/x-www-form-urlencoded";
+
+                        //using (WebResponse response = request.GetResponse())
+                        //{
+                        //    using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+                        //    {
+                        //        responseString = reader.ReadToEnd();
+                        //    }
+                        //}
+
+
                         webClient.Encoding = Encoding.UTF8;
                         webClient.Proxy = null;
                         doc = XDocument.Parse(webClient.DownloadString(url));
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("The server returned an error while getting twitter feeds." + Environment.NewLine + "Error: " + ex.Message);
+                        if (ex.Message == "The remote server returned an error: (400) Bad Request.")
+                            MessageBox.Show("It seems like Twitters Rate Limit has been reached for your network." + Environment.NewLine + "Twitter only allows for 150 requests pr. hour", "Twitter request limit reached", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        else
+                            MessageBox.Show("The server returned an error while getting twitter feeds." + Environment.NewLine + "Error: " + ex.Message);
+                            
                         webclientError = true;
                     }
 
@@ -698,8 +835,9 @@ namespace KBG_Minecraft_Launcher
                         }
                     }
                 }
-                if (!CloseAllThreads) 
+                if (!CloseAllThreads)
                     this.Invoke(new Action(delegate() { this.ShowTweets(); }));
+                
                 //ShowTweets();                
             }
             catch (Exception ex)
@@ -714,8 +852,7 @@ namespace KBG_Minecraft_Launcher
             }
             Thread.CurrentThread.Abort();
         }
-
-
+        
         /// <summary>
         /// returns true if info1 is larger then info2
         /// </summary>
@@ -737,6 +874,59 @@ namespace KBG_Minecraft_Launcher
             return returnValue;
         }
 
+        private bool HasInternetAndLoginConnection()
+        {
+            try
+            {
+                if (HasInternetConnection())
+                {
+                    if (_forceNoLoginConnection)
+                        return false;
+                    else
+                    {
+                        //can connect to mojang servers?
+                        //ServerAccessClass pingMinecraftLoginServers = new ServerAccessClass("Login.minecraft.net", 80, labelMinecraftLoginServersResult, progressBarMinecraftLoginServers, this);
+                        System.Net.Sockets.TcpClient client = new TcpClient();
+                        try
+                        {
+                            client.Connect("Login.minecraft.net", 80);
+                            //connected
+                            client.Close();
+                            return true;
+                        }
+                        catch (SocketException ex)
+                        {
+                            client.Close();
+                            return false;
+                        }
+                    }
+                }
+                else
+                    return false;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        private bool HasInternetConnection()
+        {
+            try
+            {
+                if (_offlineMode)
+                    return false;
+                else
+                {
+                    return IsNetworkAvailable();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         private void CheckForClientUpdate()
         {
             Int64 iSize = 0;
@@ -748,80 +938,83 @@ namespace KBG_Minecraft_Launcher
                 SetDownloadProgressbarMarqueueStyle(ProgressBarStyle.Marquee);
                 //buttonDownloadCancel.Visible = true;
                 SetDownloadPanelVisibility(true);
-
+                if (HasInternetConnection())
+                {
 #if(DEBUG)
-                xmlVersionInfo local = _formOptions.GetClientVersion();
-                xmlVersionInfo remote = _formOptions.GetClientUpdateInfo();
-                MessageBox.Show(string.Format("local: {0}.{1}.{2}.{3} - remote: {4}.{5}.{6}.{7}", local.VersionMajor, local.VersionMinor, local.VersionRevision, local.VersionPack, remote.VersionMajor, remote.VersionMinor, remote.VersionRevision, remote.VersionPack));
+                    xmlVersionInfo local = _formOptions.GetClientVersion();
+                    xmlVersionInfo remote = _formOptions.GetClientUpdateInfo();
+                    MessageBox.Show(string.Format("local: {0}.{1}.{2}.{3} - remote: {4}.{5}.{6}.{7}", local.VersionMajor, local.VersionMinor, local.VersionRevision, local.VersionPack, remote.VersionMajor, remote.VersionMinor, remote.VersionRevision, remote.VersionPack));
 #endif
 
-                if (VersionInfo1LargerThenInfo2(_formOptions.GetClientUpdateInfo(), _formOptions.GetClientVersion()))
-                {
-                    if (MessageBox.Show("A new version of the client is avalible. Update now?", "New update available", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.Yes)
+                    if (VersionInfo1LargerThenInfo2(_formOptions.GetClientUpdateInfo(), _formOptions.GetClientVersion()))
                     {
-
-                        SetDownloadLabelText("Updating client");
-                        SetDownloadProgressbarMarqueueStyle(ProgressBarStyle.Blocks);
-
-                        System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(_formOptions.KBGClientUpdateUrl);
-                        SetAllowUnsafeHeaderParsing20();
-                        System.Net.HttpWebResponse response = (System.Net.HttpWebResponse)request.GetResponse();
-                        response.Close();
-
-                        iSize = response.ContentLength;  // gets the size of the file in bytes                        
-                        iRunningByteTotal = 0; // keeps track of the total bytes downloaded so we can update the progress bar
-
-                        //download the update
-
-                        using (System.Net.WebClient client = new System.Net.WebClient())
+                        if (MessageBox.Show("A new version of the client is avalible. Update now?", "New update available", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.Yes)
                         {
-                            // open the file at the remote URL for reading
-                            using (System.IO.Stream streamRemote = client.OpenRead(_formOptions.KBGClientUpdateUrl))
+
+                            SetDownloadLabelText("Updating client");
+                            SetDownloadProgressbarMarqueueStyle(ProgressBarStyle.Blocks);
+
+                            System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(_formOptions.KBGClientUpdateUrl);
+                            SetAllowUnsafeHeaderParsing20();
+                            System.Net.HttpWebResponse response = (System.Net.HttpWebResponse)request.GetResponse();
+                            response.Close();
+
+                            iSize = response.ContentLength;  // gets the size of the file in bytes                        
+                            iRunningByteTotal = 0; // keeps track of the total bytes downloaded so we can update the progress bar
+
+                            //download the update
+
+                            using (System.Net.WebClient client = new System.Net.WebClient())
                             {
-                                // using the FileStream object, we can write the downloaded bytes to the file system
-                                using (Stream streamLocal = new FileStream(Application.StartupPath + "\\KBG Minecraft Launcher2.exe", FileMode.Create, FileAccess.Write, FileShare.None))
+                                // open the file at the remote URL for reading
+                                using (System.IO.Stream streamRemote = client.OpenRead(_formOptions.KBGClientUpdateUrl))
                                 {
-                                    // loop the stream and get the file into the byte buffer
-                                    int iByteSize = 0;
-                                    byte[] byteBuffer = new byte[iSize];
-                                    while ((iByteSize = streamRemote.Read(byteBuffer, 0, byteBuffer.Length)) > 0)
+                                    // using the FileStream object, we can write the downloaded bytes to the file system
+                                    using (Stream streamLocal = new FileStream(Application.StartupPath + "\\KBG Minecraft Launcher2.exe", FileMode.Create, FileAccess.Write, FileShare.None))
                                     {
-                                        // write the bytes to the file system at the file path specified
-                                        streamLocal.Write(byteBuffer, 0, iByteSize);
-                                        iRunningByteTotal += iByteSize;
+                                        // loop the stream and get the file into the byte buffer
+                                        int iByteSize = 0;
+                                        byte[] byteBuffer = new byte[iSize];
+                                        while ((iByteSize = streamRemote.Read(byteBuffer, 0, byteBuffer.Length)) > 0)
+                                        {
+                                            // write the bytes to the file system at the file path specified
+                                            streamLocal.Write(byteBuffer, 0, iByteSize);
+                                            iRunningByteTotal += iByteSize;
 
-                                        // calculate the progress out of a base "100"
-                                        double dIndex = (double)(iRunningByteTotal);
-                                        double dTotal = (double)byteBuffer.Length;
-                                        double dProgressPercentage = (dIndex / dTotal);
-                                        int iProgressPercentage = (int)(dProgressPercentage * 100);
+                                            // calculate the progress out of a base "100"
+                                            double dIndex = (double)(iRunningByteTotal);
+                                            double dTotal = (double)byteBuffer.Length;
+                                            double dProgressPercentage = (dIndex / dTotal);
+                                            int iProgressPercentage = (int)(dProgressPercentage * 100);
 
-                                        // update the progress bar
-                                        //backgroundWorker1.ReportProgress(iProgressPercentage);
-                                        SetDownloadProgressbarProgress(iProgressPercentage);
-                                        Thread.SpinWait(1);
+                                            // update the progress bar
+                                            //backgroundWorker1.ReportProgress(iProgressPercentage);
+                                            SetDownloadProgressbarProgress(iProgressPercentage);
+                                            Thread.SpinWait(1);
+                                        }
+
+                                        // clean up the file stream
+                                        streamLocal.Close();
                                     }
 
-                                    // clean up the file stream
-                                    streamLocal.Close();
+                                    // close the connection to the remote server
+                                    streamRemote.Close();
                                 }
-
-                                // close the connection to the remote server
-                                streamRemote.Close();
                             }
+                            SetDownloadPanelVisibility(false);
+                            MessageBox.Show("The update was downloaded. The client will now restart!");
+                            Process.Start(Application.StartupPath + "\\KBG Minecraft Launcher2.exe", "/UpdateRestart " + Process.GetCurrentProcess().Id.ToString());
+                            Environment.Exit(0);
+                            Application.Exit();
+                            GC.Collect();
                         }
-                        SetDownloadPanelVisibility(false);
-                        MessageBox.Show("The update was downloaded. The client will now restart!");
-                        Process.Start(Application.StartupPath + "\\KBG Minecraft Launcher2.exe", "/UpdateRestart " + Process.GetCurrentProcess().Id.ToString());
-                        Environment.Exit(0);
-                        Application.Exit();
-                        GC.Collect();
                     }
                 }
-                SetDownloadPanelVisibility(false);
+                SetDownloadPanelVisibility(false);                
             }
             catch (Exception ex)
             {
+                SetDownloadPanelVisibility(false);
                 //List<string> information = new List<string>();
                 //information.Add("iSize = " + iSize.ToString());
                 //information.Add("iRunningByteTotal = " + iRunningByteTotal.ToString());
@@ -840,7 +1033,7 @@ namespace KBG_Minecraft_Launcher
             try
             {
 
-                if (HasConnection())
+                if (HasInternetConnection())
                 {                    
                     if (startGameAfterInstall)
                     {                        
@@ -1263,147 +1456,163 @@ namespace KBG_Minecraft_Launcher
             string DebugMethodProgress = "";
             try
             {
-                DebugMethodProgress = "Line1";
-                SetDownloadLabelText("Logging in");
-                this.Invoke(new Action(delegate() { this.Update(); }));
-                ProcessStartInfo procStartInfo = new ProcessStartInfo();
-                Process proc = new Process();
-                DateTime gameStartTime = new DateTime();
-
-                DebugMethodProgress = "Line2";
-                string session = generateSession(textBoxUsername.Text, textBoxPassword.Text, 5000);
-                string sessionID = "";
-                string username = "";
-
-                DebugMethodProgress = "Line3";
-                if (session.ToLower().Contains("bad login"))
+                if (HasInternetAndLoginConnection())
                 {
-                    MessageBox.Show("Invalid Username and/or Password." + Environment.NewLine + "Please make sure you typed in the right information", "Invalid Username and/or Password",MessageBoxButtons.OK,MessageBoxIcon.Asterisk);
-                }
-                else if (session == "Account migrated, use e-mail as username.")
-                {
-                    MessageBox.Show("Your account has been migrated to a Mojang acocunt. Use your email as a username to log in", "Account migrated");
-                }
-                else
-                {
-                    //assumes that a valid session was retrieved. Might need more work here
-                    DebugMethodProgress = "Line4";
-                    if (session.Contains(":"))
-                        if (session.Split(':').Length < 4)
-                            throw new Exception("Session was not in the expected format. Session was: " + session);
-                        else
-                            sessionID = session.Split(':')[3];
 
-                    DebugMethodProgress = "Line5";
-                    if (textBoxUsername.Text.Contains("@"))                    
-                        if(session.Split(':').Length < 3)
-                            throw new Exception("Session was not in the expected format Session was: " + session);
-                        else
-                            username = session.Split(':')[2];
-                    else
-                        username = textBoxUsername.Text;
+                    DebugMethodProgress = "Line1";
+                    SetDownloadLabelText("Logging in");
+                    this.Invoke(new Action(delegate() { this.Update(); }));
+                    ProcessStartInfo procStartInfo = new ProcessStartInfo();
+                    Process proc = new Process();
+                    DateTime gameStartTime = new DateTime();
 
-                    DebugMethodProgress = "Line6";
-                    if (File.Exists(_packDir + "\\" + selItem + "\\.Minecraft\\bin\\minecraft.jar"))
+                    DebugMethodProgress = "Line2";
+                    string session = generateSession(textBoxUsername.Text, textBoxPassword.Text, 5000);
+                    SaveSessionToFile(session);
+                    File.WriteAllText(_packDir + "\\" + selItem + "\\.Minecraft\\KBGLastLogin.txt", session); //debugging
+
+                    string sessionID = "";
+                    string username = "";
+
+                    DebugMethodProgress = "Line3";
+                    if (session.ToLower().Contains("bad login"))
                     {
-                        //FINALLY i got it to work. Damm it was a pain
-                        SetDownloadLabelText("Starting game");
-                        this.Invoke(new Action(delegate() { this.Update(); }));
-                        DebugMethodProgress = "Line7";
-                        procStartInfo.FileName = _formOptions.GetJavaInstallationPath() + @"\bin\javaw.exe";
-                        DebugMethodProgress = "Line8";
-                        Environment.SetEnvironmentVariable("APPDATA", _packDir + "\\" + selItem);
-                        DebugMethodProgress = "Line9";
-/*no error*/            procStartInfo.Arguments = Environment.ExpandEnvironmentVariables(string.Format(@" -Xms{0}m -Xmx{1}m -cp ""%APPDATA%\.minecraft\bin\*"" -Djava.library.path=""%APPDATA%\.minecraft\bin\natives"" net.minecraft.client.Minecraft {2} {3}", /*0*/ _formOptions.GetMemmoryMin(), /*1*/ _formOptions.GetMemmoryMax(), /*2*/ username, /*3*/ sessionID));
-/*error*/               //procStartInfo.Arguments = Environment.ExpandEnvironmentVariables(string.Format(@" -Xms{0}m -Xmx{1}m -cp %APPDATA%\.minecraft\bin\*"" -Djava.library.path=""%APPDATA%\.minecraft\bin\natives"" net.minecraft.client.Minecraft {2} {3}", /*0*/ _formOptions.GetMemmoryMin(), /*1*/ _formOptions.GetMemmoryMax(), /*2*/ username, /*3*/ sessionID));
-
-                        procStartInfo.RedirectStandardOutput = true;
-                        procStartInfo.RedirectStandardError = true;
-                        procStartInfo.UseShellExecute = false;
-                        
-
-//#if(DEBUG)
-//                    MessageBox.Show("DEBUG - Game startet");
-//#else
-                        gameStartTime = DateTime.Now;
-                        proc.StartInfo = procStartInfo;
-                        DebugMethodProgress = "Line10";
-                        proc.Start();
-
-                        //Process.Start(procStartInfo);
-
-                        this.Invoke(new Action(delegate() { this.Hide(); }));
-
-                        try
-                        {
-                            using (FileStream fstream = new FileStream(Application.StartupPath + "\\GameLog.txt", FileMode.Create, FileAccess.Write, FileShare.Read))
-                            {
-                                using (TextWriter writer = new StreamWriter(fstream))
-                                {
-                                    do
-                                    {
-                                        writer.Write(proc.StandardError.ReadLine() + Environment.NewLine);
-                                    }
-                                    while (!proc.StandardError.EndOfStream);
-                                }
-                            }
-
-
-
-                            //string standardError = proc.StandardError.ReadToEnd();
-                            //if (standardError == "")
-                            //{
-                            //    if (File.Exists(Application.StartupPath + "\\GameLog1.txt"))
-                            //        File.Delete(Application.StartupPath + "\\GameLog1.txt");
-                            //}
-                            //else
-                            //{
-                            //    using (FileStream fstream = new FileStream(Application.StartupPath + "\\GameLog1.txt", FileMode.Create, FileAccess.Write, FileShare.None))
-                            //    {
-                            //        using (TextWriter writer = new StreamWriter(fstream))
-                            //        {
-                            //            writer.Write(standardError);
-                            //        }
-                            //    }
-                            //}
-
-                            //string standardOutput = proc.StandardOutput.ReadToEnd();
-                            //if (standardOutput == "")
-                            //{
-                            //    if (File.Exists(Application.StartupPath + "\\GameLog2.txt"))
-                            //        File.Delete(Application.StartupPath + "\\GameLog2.txt");
-                            //}
-                            //else
-                            //{
-                            //    using (FileStream fstream = new FileStream(Application.StartupPath + "\\GameLog2.txt", FileMode.Create, FileAccess.Write, FileShare.None))
-                            //    {
-                            //        using (TextWriter writer = new StreamWriter(fstream))
-                            //        {
-                            //            writer.Write(standardOutput);
-                            //        }
-                            //    }
-                            //}
-
-                        }
-                        catch (Exception ex)
-                        {
-                            //just absorps the exception
-                        }
-                        DebugMethodProgress = "Line11";
-                        proc.WaitForExit();
-                        //this.Invoke(new Action(delegate() { this.Close(); }));
-                        this.Invoke(new Action(delegate() { this.Show(); }));
-                        TimeSpan timespan =  DateTime.Now - gameStartTime;
-                        if (timespan.TotalSeconds < 1)
-                        {
-                            string message = "It looks like the game failed to start correctly. " + Environment.NewLine + "A GameLog file have been created with more information." + Environment.NewLine + "This file can be found in the same folder as the launcher";
-                            MessageBox.Show(message, "An error occured (possibly and very likely)",MessageBoxButtons.OK,MessageBoxIcon.Information);
-                        }
-//#endif
+                        MessageBox.Show("Invalid Username and/or Password." + Environment.NewLine + "Please make sure you typed in the right information", "Invalid Username and/or Password", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                    }
+                    else if (session == "Account migrated, use e-mail as username.")
+                    {
+                        MessageBox.Show("Your account has been migrated to a Mojang acocunt. Use your email as a username to log in", "Account migrated");
                     }
                     else
                     {
-                        MessageBox.Show("The minecraft.jar file was not found. Make sure you installed the mod pack correctly", "Incorrectly installed minecraft mod pack", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        //assumes that a valid session was retrieved. Might need more work here
+                        DebugMethodProgress = "Line4";
+                        if (session.Contains(":"))
+                            if (session.Split(':').Length < 4)
+                                throw new Exception("Session was not in the expected format. Session was: " + session);
+                            else
+                                sessionID = session.Split(':')[3];
+
+                        DebugMethodProgress = "Line5";
+                        if (textBoxUsername.Text.Contains("@"))
+                            if (session.Split(':').Length < 3)
+                                throw new Exception("Session was not in the expected format Session was: " + session);
+                            else
+                                username = session.Split(':')[2];
+                        else
+                            username = textBoxUsername.Text;
+
+                        DebugMethodProgress = "Line6";
+                        if (File.Exists(_packDir + "\\" + selItem + "\\.Minecraft\\bin\\minecraft.jar"))
+                        {
+                            //FINALLY i got it to work. Damm it was a pain
+                            SetDownloadLabelText("Starting game");
+                            this.Invoke(new Action(delegate() { this.Update(); }));
+                            DebugMethodProgress = "Line7";
+                            procStartInfo.FileName = _formOptions.GetJavaInstallationPath() + @"\bin\javaw.exe";
+                            DebugMethodProgress = "Line8";
+                            Environment.SetEnvironmentVariable("APPDATA", _packDir + "\\" + selItem);
+                            DebugMethodProgress = "Line9";
+                            /*no error*/
+                            procStartInfo.Arguments = Environment.ExpandEnvironmentVariables(string.Format(@" -Xms{0}m -Xmx{1}m -cp ""%APPDATA%\.minecraft\bin\*"" -Djava.library.path=""%APPDATA%\.minecraft\bin\natives"" net.minecraft.client.Minecraft {2} {3}", /*0*/ _formOptions.GetMemmoryMin(), /*1*/ _formOptions.GetMemmoryMax(), /*2*/ username, /*3*/ sessionID));
+                            /*error*/
+                            //procStartInfo.Arguments = Environment.ExpandEnvironmentVariables(string.Format(@" -Xms{0}m -Xmx{1}m -cp %APPDATA%\.minecraft\bin\*"" -Djava.library.path=""%APPDATA%\.minecraft\bin\natives"" net.minecraft.client.Minecraft {2} {3}", /*0*/ _formOptions.GetMemmoryMin(), /*1*/ _formOptions.GetMemmoryMax(), /*2*/ username, /*3*/ sessionID));
+
+                            procStartInfo.RedirectStandardOutput = true;
+                            procStartInfo.RedirectStandardError = true;
+                            procStartInfo.UseShellExecute = false;
+
+
+                            //#if(DEBUG)
+                            //                    MessageBox.Show("DEBUG - Game startet");
+                            //#else
+                            gameStartTime = DateTime.Now;
+                            proc.StartInfo = procStartInfo;
+                            DebugMethodProgress = "Line10";
+                            proc.Start();
+
+                            //Process.Start(procStartInfo);
+
+                            this.Invoke(new Action(delegate() { this.Hide(); }));
+
+                            try
+                            {
+                                using (FileStream fstream = new FileStream(Application.StartupPath + "\\GameLog.txt", FileMode.Create, FileAccess.Write, FileShare.Read))
+                                {
+                                    using (TextWriter writer = new StreamWriter(fstream))
+                                    {
+                                        do
+                                        {
+                                            writer.Write(proc.StandardError.ReadLine() + Environment.NewLine);
+                                        }
+                                        while (!proc.StandardError.EndOfStream);
+                                    }
+                                }
+
+
+
+                                //string standardError = proc.StandardError.ReadToEnd();
+                                //if (standardError == "")
+                                //{
+                                //    if (File.Exists(Application.StartupPath + "\\GameLog1.txt"))
+                                //        File.Delete(Application.StartupPath + "\\GameLog1.txt");
+                                //}
+                                //else
+                                //{
+                                //    using (FileStream fstream = new FileStream(Application.StartupPath + "\\GameLog1.txt", FileMode.Create, FileAccess.Write, FileShare.None))
+                                //    {
+                                //        using (TextWriter writer = new StreamWriter(fstream))
+                                //        {
+                                //            writer.Write(standardError);
+                                //        }
+                                //    }
+                                //}
+
+                                //string standardOutput = proc.StandardOutput.ReadToEnd();
+                                //if (standardOutput == "")
+                                //{
+                                //    if (File.Exists(Application.StartupPath + "\\GameLog2.txt"))
+                                //        File.Delete(Application.StartupPath + "\\GameLog2.txt");
+                                //}
+                                //else
+                                //{
+                                //    using (FileStream fstream = new FileStream(Application.StartupPath + "\\GameLog2.txt", FileMode.Create, FileAccess.Write, FileShare.None))
+                                //    {
+                                //        using (TextWriter writer = new StreamWriter(fstream))
+                                //        {
+                                //            writer.Write(standardOutput);
+                                //        }
+                                //    }
+                                //}
+
+                            }
+                            catch (Exception ex)
+                            {
+                                //just absorps the exception
+                            }
+                            DebugMethodProgress = "Line11";
+                            proc.WaitForExit();
+                            //this.Invoke(new Action(delegate() { this.Close(); }));
+                            this.Invoke(new Action(delegate() { this.Show(); }));
+                            TimeSpan timespan = DateTime.Now - gameStartTime;
+                            if (timespan.TotalSeconds < 1)
+                            {
+                                string message = "It looks like the game failed to start correctly. " + Environment.NewLine + "A GameLog file have been created with more information." + Environment.NewLine + "This file can be found in the same folder as the launcher";
+                                MessageBox.Show(message, "An error occured (possibly and very likely)", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                            //#endif
+                        }
+                        else
+                        {
+                            MessageBox.Show("The minecraft.jar file was not found. Make sure you installed the mod pack correctly", "Incorrectly installed minecraft mod pack", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                    }
+                }
+                else
+                {
+                    if (MessageBox.Show("Could not connect to Mojangs Login server." + Environment.NewLine + "Do you want to start the game in offline mode?", "Connection problems. Play Offline?", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes)
+                    {
+                        StartGameOffline(selItem);
                     }
                 }
             }
@@ -1499,6 +1708,105 @@ namespace KBG_Minecraft_Launcher
             //Starts the game
         }
 
+        private void StartGameOffline(string selItem)
+        {
+            //byte[] LastLoginSalt = new byte[] { 0x0c, 0x9d, 0x4a, 0xe4, 0x1e, 0x83, 0x15, 0xfc };
+            //const string LastLoginPassword = "passwordfile";
+            string Username = "";            
+            string DebugMethodProgress = "";
+            
+            try
+            {
+                DebugMethodProgress = "Line1";
+                Username = LoadUsernamefromSessionFile();
+
+                if (Username == "Bad/Invalid Session")
+                {
+                    MessageBox.Show("Could not find a valid session from your last login." + Environment.NewLine + "You need to have logged in with valid credentials atleast once to play offline", "Invalid Lastlogin");
+                }
+                else
+                {                    
+                    SetDownloadLabelText("Starting Game");
+                    this.Invoke(new Action(delegate() { this.Update(); }));
+                    ProcessStartInfo procStartInfo = new ProcessStartInfo();
+                    Process proc = new Process();
+                    DateTime gameStartTime = new DateTime();
+                                        
+                    {                        
+                        DebugMethodProgress = "Line2";
+                        if (File.Exists(_packDir + "\\" + selItem + "\\.Minecraft\\bin\\minecraft.jar"))
+                        {
+                            //FINALLY i got it to work. Damm it was a pain
+                            //SetDownloadLabelText("Starting game");
+                            this.Invoke(new Action(delegate() { this.Update(); }));
+                            DebugMethodProgress = "Line3";
+                            procStartInfo.FileName = _formOptions.GetJavaInstallationPath() + @"\bin\javaw.exe";
+                            DebugMethodProgress = "Line4";
+                            Environment.SetEnvironmentVariable("APPDATA", _packDir + "\\" + selItem);
+                            DebugMethodProgress = "Line5";
+                            /*no error*/
+                            procStartInfo.Arguments = Environment.ExpandEnvironmentVariables(string.Format(@" -Xms{0}m -Xmx{1}m -cp ""%APPDATA%\.minecraft\bin\*"" -Djava.library.path=""%APPDATA%\.minecraft\bin\natives"" net.minecraft.client.Minecraft {2}", /*0*/ _formOptions.GetMemmoryMin(), /*1*/ _formOptions.GetMemmoryMax(), /*2*/ Username));
+                            /*error*/
+                            //procStartInfo.Arguments = Environment.ExpandEnvironmentVariables(string.Format(@" -Xms{0}m -Xmx{1}m -cp %APPDATA%\.minecraft\bin\*"" -Djava.library.path=""%APPDATA%\.minecraft\bin\natives"" net.minecraft.client.Minecraft {2} {3}", /*0*/ _formOptions.GetMemmoryMin(), /*1*/ _formOptions.GetMemmoryMax(), /*2*/ username, /*3*/ sessionID));
+
+                            procStartInfo.RedirectStandardOutput = true;
+                            procStartInfo.RedirectStandardError = true;
+                            procStartInfo.UseShellExecute = false;
+
+
+                            gameStartTime = DateTime.Now;
+                            proc.StartInfo = procStartInfo;
+                            DebugMethodProgress = "Line6";
+                            proc.Start();
+
+                            //Process.Start(procStartInfo);
+
+                            this.Invoke(new Action(delegate() { this.Hide(); }));
+
+                            try
+                            {
+                                using (FileStream fstream = new FileStream(Application.StartupPath + "\\GameLog.txt", FileMode.Create, FileAccess.Write, FileShare.Read))
+                                {
+                                    using (TextWriter writer = new StreamWriter(fstream))
+                                    {
+                                        do
+                                        {
+                                            writer.Write(proc.StandardError.ReadLine() + Environment.NewLine);
+                                        }
+                                        while (!proc.StandardError.EndOfStream);
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                //just absorps the exception
+                            }
+                            DebugMethodProgress = "Line7";
+                            proc.WaitForExit();
+                            //this.Invoke(new Action(delegate() { this.Close(); }));
+                            this.Invoke(new Action(delegate() { this.Show(); }));
+                            TimeSpan timespan = DateTime.Now - gameStartTime;
+                            if (timespan.TotalSeconds < 1)
+                            {
+                                string message = "It looks like the game failed to start correctly. " + Environment.NewLine + "A GameLog file have been created with more information." + Environment.NewLine + "This file can be found in the same folder as the launcher";
+                                MessageBox.Show(message, "An error occured (possibly and very likely)", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                            //#endif
+                        }
+                        else
+                        {
+                            MessageBox.Show("The minecraft.jar file was not found. Make sure you installed the mod pack correctly", "Incorrectly installed minecraft mod pack", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.Data.Add("StartGameOffline() - DebugMethodProgress", DebugMethodProgress);
+                throw ex;
+            }
+        }
+
         public void ShowErrorWindow(bool criticalError)
         {
             try
@@ -1514,6 +1822,68 @@ namespace KBG_Minecraft_Launcher
             }
         }
 
+        private void SaveSessionToFile(string session)
+        {
+            try
+            {
+                using (FileStream fstream = new FileStream(Application.StartupPath + "\\KBGLastLogin", FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    using (TextWriter writer = new StreamWriter(fstream))
+                    {
+                        writer.Write(_formOptions.Settings.Encrypt(session, "SuperHaxMaxSecurePassword"));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        private string LoadUsernamefromSessionFile()
+        {
+            string session = "";
+            try
+            {
+                //if (File.Exists(_packDir + "\\" + selItem + "\\.Minecraft\\KBGLastLogin"))
+                if (File.Exists(Application.StartupPath + "\\KBGLastlogin"))
+                {
+                    using (FileStream fstream = new FileStream(Application.StartupPath + "\\KBGLastlogin", FileMode.Open, FileAccess.Read, FileShare.None))
+                    {
+                        using (TextReader  reader = new StreamReader(fstream))
+                        {
+                            session = _formOptions.Settings.Decrypt(reader.ReadToEnd(), "SuperHaxMaxSecurePassword");
+                        }
+                    }
+                    //validate session info
+                    if (session.Contains(":"))
+                    {
+                        string[] tmpStrArr = session.Split(':');
+                        if (tmpStrArr.Length == 5)
+                        {
+                            if (tmpStrArr[2] != "" && tmpStrArr[3] != "")
+                                return tmpStrArr[2];
+                            else
+                                return "Bad/Invalid Session";
+                        }
+                        else
+                            return "Bad/Invalid Session"; 
+                    }
+                    else
+                        return "Bad/Invalid Session";
+                }
+                else
+                {
+                    return "Bad/Invalid Session";
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            
+        }
+        
         /// <summary>
         /// Gathers error information and shows the error window
         /// </summary>
@@ -1541,6 +1911,10 @@ namespace KBG_Minecraft_Launcher
 
                 //basic information
                 _formError.AddInfoLine(Environment.NewLine + "FormMain information");
+                if(_formOptions != null)
+                    _formError.AddInfoLine("Client Version: " + _formOptions.GetClientVersion());
+                else
+                    _formError.AddInfoLine("Client Version: _formOptions is null");
                 _formError.AddInfoLine("_TweetList null?: " + (_TweetList == null).ToString());
                 _formError.AddInfoLine("_formOptions null? " + (_formOptions == null).ToString());
                 _formError.AddInfoLine("_formNews null? " + (_formNews == null).ToString());
@@ -1549,6 +1923,29 @@ namespace KBG_Minecraft_Launcher
                 _formError.AddInfoLine("_packDir = " + _packDir);
                 _formError.AddInfoLine("_abortDownload = " + _abortDownload.ToString());
                 _formError.AddInfoLine("_loadingSettings = " + _loadingSettings.ToString());
+                _formError.AddInfoLine("_offlineMode = " + _offlineMode.ToString());
+
+
+                bool hasInternetConnection = true;
+                try
+                {
+                    hasInternetConnection = HasInternetConnection();
+                }
+                catch(Exception)
+                {
+                    hasInternetConnection = false;
+                }  
+
+                if (hasInternetConnection)
+                {
+                    _formError.AddInfoLine(Environment.NewLine + "Network Inferfaces" + Environment.NewLine + "{");
+                    NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
+                    foreach (NetworkInterface adapter in interfaces)
+                    {
+                        _formError.AddInfoLine(string.Format("Name: {0}, Description: {1}, Type: {2}, State: {3}", adapter.Name, adapter.Description, adapter.NetworkInterfaceType.ToString(), adapter.OperationalStatus.ToString()));
+                    }
+                    _formError.AddInfoLine("}");
+                }
 
 
                 if (_formOptions != null)
@@ -1561,6 +1958,8 @@ namespace KBG_Minecraft_Launcher
                         _formError.AddInfoLine(info);
                     }
                 }
+
+
 
 
                 
@@ -1586,8 +1985,8 @@ namespace KBG_Minecraft_Launcher
 #endif
 
                 _packDir = Application.StartupPath + "\\Minecraft Packs";
-
-                GenerateTweetList();
+                
+                GenerateTweetList();                
                 StartCheckingServers();
 
                 _formOptions = new FormOptions(this);
@@ -1625,7 +2024,7 @@ namespace KBG_Minecraft_Launcher
                 if (_updateFinished)
                 {
                     //_formOptions.GetClientUpdateInfo().UpdateNews                    
-                    if (HasConnection())
+                    if (IsNetworkAvailable())
                     {
                         if (_formNews == null || _formNews.IsDisposed)
                             _formNews = new FormNews(_formOptions.GetClientUpdateInfo().UpdateNews);
@@ -1639,7 +2038,7 @@ namespace KBG_Minecraft_Launcher
                 }
                 else
                 {
-                    if (HasConnection())
+                    if (IsNetworkAvailable())
                     {
                         updateThread = new Thread(new ThreadStart(CheckForClientUpdate));
                         updateThread.Start();
@@ -1901,6 +2300,8 @@ namespace KBG_Minecraft_Launcher
                 
                 #region OldTestCode
 
+
+
                 //string asdf = _formOptions.Settings.Username;
                 //TimeSpan span = DateTime.Now - old;
                 //_formOptions.Settings.SavePackInfo(new PackClass("navn3", 0.3333, "packurl3333", "www.something.com/versionurl3333.rar"));
@@ -2116,6 +2517,8 @@ namespace KBG_Minecraft_Launcher
                 System.Resources.ResourceManager rm = new System.Resources.ResourceManager("KBG_Minecraft_Launcher.Properties.Secrets", System.Reflection.Assembly.GetExecutingAssembly());
                 rm.GetString("consumerSecret");
                 #endregion
+
+                #region oAuthTestCode
                 /*
                 string consumerKey = "ABCD7EM9qNGwQmRBxCcX";
                 string consumerSecret = rm.GetString("consumerSecret");
@@ -2152,7 +2555,25 @@ namespace KBG_Minecraft_Launcher
                 var url = SERVICE_SPECIFIC_AUTHORIZE_URL_STUB + oauth["token"];
                 webBrowser1.Url = new Uri(url);
                 */
+#endregion
 
+
+
+                /*
+                1. normal backup proceadure (old code)
+                2. delete .minecraft folder (old code)
+                3. download needed minecraft jar files from Mojang (by selected version)
+                4. Remove META-INF from Minecraft.jar
+                5. Download jar-modifier zip.
+                6. add jar-modifier zip to minecraft.jar
+                7. download Mod-pack zip (same as old pack, just without the Bin folder)
+                8. copy backup files back to pack folder.
+                
+                 
+                 
+                 
+                 */
+                StartGameOffline(comboBoxPackSelect.SelectedItem.ToString());
 
             }
             catch (Exception ex)
@@ -2217,65 +2638,75 @@ namespace KBG_Minecraft_Launcher
 
                 if (_formOptions.CheckNameForAutoUpdateSupport(selItem))
                 {
-                    if (minecraftJarFound)
+                    if (HasInternetConnection())
                     {
-                        //check for update
-                        labelDownload.Text = "Checking for updates";
-                        progressBarDownload.Style = ProgressBarStyle.Marquee;
-                        panelDownload.Visible = true;
+                        if (minecraftJarFound)
+                        {
+                            //check for update
+                            labelDownload.Text = "Checking for updates";
+                            progressBarDownload.Style = ProgressBarStyle.Marquee;
+                            panelDownload.Visible = true;
 
-                        this.Update();
-                        //check update
-                        xmlVersionInfo OnlineInfo = _formOptions.GetVersionInfo(selItem, true);
-                        bool UpdateFound = VersionInfo1LargerThenInfo2(OnlineInfo , _formOptions.GetVersionInfo(selItem, false));
-                        
-                        //check for PreventPackDownload
-                        if (OnlineInfo.PreventPackDownload)
-                        {
-                            MessageBox.Show(string.Format("Downloading and updating of this pack have been disabled remotely. {0}This is most likely because xKillerBees is updating the pack.{0}Please try again later, or look for more information on his twitter", Environment.NewLine), "Download disabled remotely", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        }
-                        else
-                        {
-                            if (UpdateFound)
+                            this.Update();
+                            //check update
+                            xmlVersionInfo OnlineInfo = _formOptions.GetVersionInfo(selItem, true);
+                            bool UpdateFound = VersionInfo1LargerThenInfo2(OnlineInfo, _formOptions.GetVersionInfo(selItem, false));
+
+                            //check for PreventPackDownload
+                            if (OnlineInfo.PreventPackDownload)
                             {
-                                if (MessageBox.Show("A new version of the " + selItem + " pack was found. Do you want to update now?", "New update found", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.Yes)
-                                {
-                                    progressBarDownload.Style = ProgressBarStyle.Blocks;
-                                    InstallPack(selItem, true);
-                                }
-                                else
-                                {
-                                    if (MessageBox.Show("You did not update your game pack. Do you want to launch the game anyway?", "Launch game anyway?", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
-                                    {
-                                        progressBarDownload.Style = ProgressBarStyle.Blocks;
-                                        StartGame(selItem);
-                                    }
-                                }
+                                MessageBox.Show(string.Format("Downloading and updating of this pack have been disabled remotely. {0}This is most likely because xKillerBees is updating the pack.{0}Please try again later, or look for more information on his twitter", Environment.NewLine), "Download disabled remotely", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             }
                             else
                             {
-                                progressBarDownload.Style = ProgressBarStyle.Blocks;
-                                StartGame(selItem);
+                                if (UpdateFound)
+                                {
+                                    if (MessageBox.Show("A new version of the " + selItem + " pack was found. Do you want to update now?", "New update found", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.Yes)
+                                    {
+                                        progressBarDownload.Style = ProgressBarStyle.Blocks;
+                                        InstallPack(selItem, true);
+                                    }
+                                    else
+                                    {
+                                        if (MessageBox.Show("You did not update your game pack. Do you want to launch the game anyway?", "Launch game anyway?", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
+                                        {
+                                            progressBarDownload.Style = ProgressBarStyle.Blocks;
+                                            StartGame(selItem);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    progressBarDownload.Style = ProgressBarStyle.Blocks;
+                                    StartGame(selItem);
+                                }
                             }
-                        }
 
-                        progressBarDownload.Style = ProgressBarStyle.Blocks;
-                        panelDownload.Visible = false;
+                            progressBarDownload.Style = ProgressBarStyle.Blocks;
+                            panelDownload.Visible = false;
 
-                    }
-                    else
-                    {
-                        //download and install update  
-                        if (_formOptions.GetVersionInfo(selItem, true).PreventPackDownload)
-                        {
-                            MessageBox.Show(string.Format("Downloading and updating of this pack have been disabled remotely. {0}This is most likely because xKillerBees is updating the pack.{0}Please try again later, or look for more information on his twitter", Environment.NewLine), "Download disabled remotely", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
                         }
                         else
                         {
-                            InstallPack(selItem, true);
+                            //download and install update  
+                            if (_formOptions.GetVersionInfo(selItem, true).PreventPackDownload)
+                            {
+                                MessageBox.Show(string.Format("Downloading and updating of this pack have been disabled remotely. {0}This is most likely because xKillerBees is updating the pack.{0}Please try again later, or look for more information on his twitter", Environment.NewLine), "Download disabled remotely", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                            else
+                            {
+                                InstallPack(selItem, true);
+                            }
                         }
                     }
-
+                    else
+                    {
+                        if (MessageBox.Show("No Internet connection could be found." + Environment.NewLine + "Do you want to start the game in offline mode?", "Connection problems. Play Offline?", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes)
+                        {
+                            StartGameOffline(selItem);
+                        }
+                    }
                     //eigher incorrectly installed pack (manually) or not installed automatic update pack
 
                     //check name for SupportetAutoUpdatePack
@@ -2285,7 +2716,17 @@ namespace KBG_Minecraft_Launcher
                 {
                     if (minecraftJarFound)
                     {
-                        StartGame(selItem);
+                        if (HasInternetConnection())
+                        {
+                            StartGame(selItem);
+                        }
+                        else
+                        {
+                            if (MessageBox.Show("No Internet connection could be found." + Environment.NewLine + "Do you want to start the game in offline mode?", "Connection problems. Play Offline?", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == System.Windows.Forms.DialogResult.Yes)
+                            {
+                                StartGameOffline(selItem);
+                            }
+                        }
                     }
                     else
                         MessageBox.Show("Incorrectly installed Minecraft pack. Use the format: " + Environment.NewLine + _packDir + "\\<PackName>\\.Minecraft\\bin\\minefraft.jar", "Incorrect minecraft installation detected", MessageBoxButtons.OK, MessageBoxIcon.Hand);
@@ -2329,7 +2770,62 @@ namespace KBG_Minecraft_Launcher
                 ErrorReporting(ex, false);
             }
         }
+        
+        private void buttonRefreshTwitterFeeds_Click(object sender, EventArgs e)
+        {
+            _TweetList.Clear();
+            richTextBox1.Text = "";
+            GenerateTweetList();
+        }
 
+        private void linkLabelKB_Gaming_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start("https://twitter.com/intent/user?screen_name=KB_Gaming");
+            }
+            catch (Exception ex)
+            {
+                ErrorReporting(ex, false);
+            }
+        }
+
+        private void linkLabelCredits_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            try
+            {
+                if (_formCredits == null || _formCredits.IsDisposed)
+                    _formCredits = new FormCredits();
+
+                //string selitem = comboBoxPackSelect.SelectedItem.ToString();
+                //_formOptions.GetVersionInfo(selitem, false);
+                //xmlVersionInfo versionInfo = _formOptions.GetVersionInfo(comboBoxPackSelect.SelectedItem.ToString(), true);
+
+                //if (versionInfo.Credits != "")
+                //    _formCredits.SetCredits(versionInfo.Credits);
+                //else
+                //    _formCredits.SetCredits(@"{\rtf1\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fnil\fcharset0 Microsoft Sans Serif;}}\viewkind4\uc1\pard\f0\fs17 Credits Missing\par}");
+                _formCredits.GetAndShowCredits(comboBoxPackSelect.SelectedItem.ToString(), _formOptions);
+                _formCredits.Show();
+            }
+            catch (Exception ex)
+            {
+                ErrorReporting(ex, false);
+            }
+        }
+
+
+        private void buttonPlayOffline_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                StartGameOffline(comboBoxPackSelect.SelectedItem.ToString());
+            }
+            catch (Exception ex)
+            {
+                ErrorReporting(ex, false);
+            }
+        }
 
         
 
@@ -2371,8 +2867,8 @@ namespace KBG_Minecraft_Launcher
                         {
                             this.panelDownload.Visible = value;
                             this.groupBoxLogin.Enabled = !value;
-                            this.groupBoxServerStatus.Enabled = !value;
-                            this.groupBoxTwitter.Enabled = !value;
+                            //this.groupBoxServerStatus.Enabled = !value;
+                            //this.groupBoxTwitter.Enabled = !value;
                         }));
             }
             catch (Exception ex)
@@ -2486,48 +2982,22 @@ namespace KBG_Minecraft_Launcher
             }
         }
 
-        private void buttonRefreshTwitterFeeds_Click(object sender, EventArgs e)
-        {
-            _TweetList.Clear();
-            richTextBox1.Text = "";
-            GenerateTweetList();
-        }
-
-        private void linkLabelKB_Gaming_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            try
-            {
-                System.Diagnostics.Process.Start("https://twitter.com/intent/user?screen_name=KB_Gaming");
-            }
-            catch (Exception ex)
-            {
-                ErrorReporting(ex, false);
-            }
-        }
-
-        private void linkLabelCredits_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            try
-            {
-                if (_formCredits == null || _formCredits.IsDisposed)
-                    _formCredits = new FormCredits();
-
-                //string selitem = comboBoxPackSelect.SelectedItem.ToString();
-                //_formOptions.GetVersionInfo(selitem, false);
-                //xmlVersionInfo versionInfo = _formOptions.GetVersionInfo(comboBoxPackSelect.SelectedItem.ToString(), true);
-
-                //if (versionInfo.Credits != "")
-                //    _formCredits.SetCredits(versionInfo.Credits);
-                //else
-                //    _formCredits.SetCredits(@"{\rtf1\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fnil\fcharset0 Microsoft Sans Serif;}}\viewkind4\uc1\pard\f0\fs17 Credits Missing\par}");
-                _formCredits.GetAndShowCredits(comboBoxPackSelect.SelectedItem.ToString(), _formOptions);
-                _formCredits.Show();
-            }
-            catch (Exception ex)
-            {
-                ErrorReporting(ex, false);
-            }
-        }
+        //private void SetOfflineTwitterStatus(bool value)
+        //{
+        //    try
+        //    {
+        //        if (!CloseAllThreads)
+        //            this.Invoke(new Action(delegate()
+        //            {
+        //                this.labelNoTwitterConnection.Visible = value;
+        //                this.progressBarTwitter.Visible = !value;
+        //            }));
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
+        //}
 
 
 
@@ -2798,6 +3268,160 @@ namespace KBG_Minecraft_Launcher
         //    return "";
         //}
 
+    }
+
+
+    public class PKCSKeyGenerator
+    {
+        /// <summary>
+        /// Key used in the encryption algorythm.
+        /// </summary>
+        private byte[] key = new byte[8];
+
+        /// <summary>
+        /// IV used in the encryption algorythm.
+        /// </summary>
+        private byte[] iv = new byte[8];
+
+        /// <summary>
+        /// DES Provider used in the encryption algorythm.
+        /// </summary>
+        private DESCryptoServiceProvider des = new DESCryptoServiceProvider();
+
+        /// <summary>
+        /// Initializes a new instance of the PKCSKeyGenerator class.
+        /// </summary>
+        public PKCSKeyGenerator()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the PKCSKeyGenerator class.
+        /// </summary>
+        /// <param name="keystring">This is the same as the "password" of the PBEWithMD5AndDES method.</param>
+        /// <param name="salt">This is the salt used to provide extra security to the algorythim.</param>
+        /// <param name="iterationsMd5">Fill out iterationsMd5 later.</param>
+        /// <param name="segments">Fill out segments later.</param>
+        public PKCSKeyGenerator(string keystring, byte[] salt, int iterationsMd5, int segments)
+        {
+            this.Generate(keystring, salt, iterationsMd5, segments);
+        }
+
+        /// <summary>
+        /// Gets the asymetric Key used in the encryption algorythm.  Note that this is read only and is an empty byte array.
+        /// </summary>
+        public byte[] Key
+        {
+            get
+            {
+                return this.key;
+            }
+        }
+
+        /// <summary>
+        /// Gets the initialization vector used in in the encryption algorythm.  Note that this is read only and is an empty byte array.
+        /// </summary>
+        public byte[] IV
+        {
+            get
+            {
+                return this.iv;
+            }
+        }
+
+        /// <summary>
+        /// Gets an ICryptoTransform interface for encryption
+        /// </summary>
+        public ICryptoTransform Encryptor
+        {
+            get
+            {
+                return this.des.CreateEncryptor(this.key, this.iv);
+            }
+        }
+
+        /// <summary>
+        /// Gets an ICryptoTransform interface for decryption
+        /// </summary>
+        public ICryptoTransform Decryptor
+        {
+            get
+            {
+                return des.CreateDecryptor(key, iv);
+            }
+        }
+
+        /// <summary>
+        /// Returns the ICryptoTransform interface used to perform the encryption.
+        /// </summary>
+        /// <param name="keystring">This is the same as the "password" of the PBEWithMD5AndDES method.</param>
+        /// <param name="salt">This is the salt used to provide extra security to the algorythim.</param>
+        /// <param name="iterationsMd5">Fill out iterationsMd5 later.</param>
+        /// <param name="segments">Fill out segments later.</param>
+        /// <returns>ICryptoTransform interface used to perform the encryption.</returns>
+        public ICryptoTransform Generate(string keystring, byte[] salt, int iterationsMd5, int segments)
+        {
+            // MD5 bytes
+            int hashLength = 16;
+
+            // to store contatenated Mi hashed results
+            byte[] keyMaterial = new byte[hashLength * segments];
+
+            // --- get secret password bytes ----
+            byte[] passwordBytes;
+            passwordBytes = Encoding.UTF8.GetBytes(keystring);
+
+            // --- contatenate salt and pswd bytes into fixed data array ---
+            byte[] data00 = new byte[passwordBytes.Length + salt.Length];
+
+            // copy the pswd bytes
+            Array.Copy(passwordBytes, data00, passwordBytes.Length);
+
+            // concatenate the salt bytes
+            Array.Copy(salt, 0, data00, passwordBytes.Length, salt.Length);
+
+            // ---- do multi-hashing and contatenate results  D1, D2 ...  into keymaterial bytes ----
+            MD5 md5 = new MD5CryptoServiceProvider();
+            byte[] result = null;
+
+            // fixed length initial hashtarget
+            byte[] hashtarget = new byte[hashLength + data00.Length];
+
+            for (int j = 0; j < segments; j++)
+            {
+                // ----  Now hash consecutively for iterationsMd5 times ------
+                if (j == 0)
+                {
+                    // initialize
+                    result = data00;
+                }
+                else
+                {
+                    Array.Copy(result, hashtarget, result.Length);
+                    Array.Copy(data00, 0, hashtarget, result.Length, data00.Length);
+                    result = hashtarget;
+                }
+
+                for (int i = 0; i < iterationsMd5; i++)
+                {
+                    result = md5.ComputeHash(result);
+                }
+
+                // contatenate to keymaterial
+                Array.Copy(result, 0, keyMaterial, j * hashLength, result.Length);
+            }
+
+            Array.Copy(keyMaterial, 0, this.key, 0, 8);
+            Array.Copy(keyMaterial, 8, this.iv, 0, 8);
+
+            return this.Encryptor;
+        }
+    }
+
+    public class LastLogin
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
     }
 }
 
