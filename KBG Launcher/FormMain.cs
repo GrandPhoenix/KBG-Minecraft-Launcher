@@ -948,6 +948,9 @@ namespace KBG_Launcher
                     return false;
                 else
                 {
+                    //bool returnValue = IsNetworkAvailable();
+                    //_offlineMode = !returnValue;
+                    //return returnValue;
                     return IsNetworkAvailable();
                 }
             }
@@ -964,7 +967,7 @@ namespace KBG_Launcher
 
             try
             {
-                SetDownloadLabelText("Checking for client updates");
+                SetDownloadLabelTextMain("Checking for client updates");
                 SetDownloadProgressbarMarqueueStyle(ProgressBarStyle.Marquee);
                 //buttonDownloadCancel.Visible = true;
                 SetDownloadPanelVisibility(true);
@@ -981,7 +984,7 @@ namespace KBG_Launcher
                         if (MessageBox.Show("A new version of the client is avalible. Update now?", "New update available", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.Yes)
                         {
 
-                            SetDownloadLabelText("Updating client");
+                            SetDownloadLabelTextMain("Updating client");
                             SetDownloadProgressbarMarqueueStyle(ProgressBarStyle.Blocks);
 
                             System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(_formOptions.KBGClientUpdateUrl);
@@ -1058,25 +1061,29 @@ namespace KBG_Launcher
             }
         }
 
-        private void InstallPack(string packName, bool startGameAfterInstall)
+        private void InstallPackStarter(string packName, bool startGameAfterInstall)
         {
             try
             {
 
                 if (HasInternetConnection())
-                {                    
-                    if (startGameAfterInstall)
-                    {                        
-                        packThread = new Thread(new ParameterizedThreadStart(DownloadInstallPackAndStartGame));
-                    }
-                    else
-                    {
-                        packThread = new Thread(new ParameterizedThreadStart(DownloadAndInstallPack));
-                    }
+                {
+                    ThreadParameterPack TPP = new ThreadParameterPack(packName, startGameAfterInstall);
+                    //TPP.SelectedItem = packName;
+                    //TPP.StartGameAfterInstall = startGameAfterInstall;
 
+                    //if (startGameAfterInstall)
+                    //{
+                    //    packThread = new Thread(new ParameterizedThreadStart(DownloadInstallPackAndStartGame));
+                    //}
+                    //else
+                    //{
+                    //    packThread = new Thread(new ParameterizedThreadStart(DownloadAndInstallPack));
+                    //}
+                    packThread = new Thread(new ParameterizedThreadStart(InstallPack));
                     packThread.IsBackground = true;
 
-                    packThread.Start(packName);
+                    packThread.Start(TPP);
                     while (!packThread.IsAlive) ;
                 }
                 else
@@ -1087,185 +1094,414 @@ namespace KBG_Launcher
             }
             catch (Exception ex)
             {
-                ex.Data.Add("InstallPack() - packName", packName);
-                ex.Data.Add("InstallPack() - startGameAfterInstall", startGameAfterInstall.ToString());
+                ex.Data.Add("InstallPackStarter() - packName", packName);
+                ex.Data.Add("InstallPackStarter() - startGameAfterInstall", startGameAfterInstall.ToString());
                 throw ex;
             }
+
         }
 
-        public void DownloadInstallPackAndStartGame(object oPackName)
-        {
-            try
-            {                        
-                if (!CloseAllThreads)
-                    if(DownloadAndInstallPackWorker((string)oPackName))
-                        StartGame((string)oPackName);
-            }
-            catch (Exception ex)
-            {                
-                ex.Data.Add("DownloadInstallPackAndStartGame() - oPackName", oPackName.ToString());
-                ErrorReporting(ex, false);
-            }
-        }
 
-        public void DownloadAndInstallPack(object oPackName)
+        private void InstallPack(object tpp)
         {
-            try
-            {
-                if (!CloseAllThreads)
-                    DownloadAndInstallPackWorker((string)oPackName);
-            }
-            catch (Exception ex)
-            {                
-                ex.Data.Add("DownloadAndInstallPack() - oPackName", oPackName.ToString());
-                ErrorReporting(ex, false);
-            }
-        }
-
-        /// <summary>
-        /// This method should NEVER be called by anything other then DownloadAndInstallPack() and DownloadInstallPackAndStartGame()
-        /// Code help thanks to http://www.devtoolshed.com/content/c-download-file-progress-bar
-        /// </summary>
-        /// <param name="pack"></param>
-        private bool DownloadAndInstallPackWorker(string packName)
-        {
-            //string packName = "";
+            ThreadParameterPack TPP = (ThreadParameterPack)tpp;
             Uri url = null;
+            Uri urlInject = null;
             string filename = "";
-            bool returnValue = false;
+            string filenameInject = "";
+            string packDir = "";
+            //bool returnValue = false;
             string MethodProgress = "";
+            xmlVersionInfo versionInfo;
+            bool processSucceeded = true;
 
             try
             {
+                SetDownloadLabelTextMain("Preparing Install");
+                SetDownloadProgressbarProgress(0);
+                SetDownloadPanelVisibility(true);
+
+                packDir = _packDir + "\\" + TPP.SelectedItem;
+
+                //DownloadAndInstallPackWorker(TPP.SelectedItem);
+                versionInfo = _formOptions.GetVersionInfo(TPP.SelectedItem, true);
+
                 //packName = (string)oPackName;
                 //FormOptions.SupportetAutoUpdatePack pack = (FormOptions.SupportetAutoUpdatePack)oPack;     
                 MethodProgress = "creating URI";
-                url = new Uri(_formOptions.PackUpdateUrl(packName));
+                url = new Uri(_formOptions.PackUpdateUrl(TPP.SelectedItem));
+                //url = new Uri("https://dl.dropbox.com/s/t6t1cjqq5isfzxh/IR.zip?token_hash=AAHWyaGx7Ql4t756Fmi1V8iKjF6imGlwr85DIE2aAKZ1Zw&dl=1"); //for debugging
+                
+
                 filename = url.OriginalString.Substring(url.OriginalString.LastIndexOf("/") + 1, url.OriginalString.Length - url.OriginalString.LastIndexOf("/") - 1);
+                
 
                 //_formNews = new FormNews(_formOptions.GetVersionInfo(packName, true).UpdateNews);
                 //_formNews.Show();
                 //_formNews.Focus();
-                MethodProgress = "SetAndShowNews";
-                SetAndShowNews(_formOptions.GetVersionInfo(packName, true).UpdateNews);
+                MethodProgress = "SetAndShowNews";                
+                SetAndShowNews(versionInfo.UpdateNews);
 
-                //Download file
-                MethodProgress = "Downloading file";
-                returnValue = DownloadFile(url, filename);
 
-                //extract file
-                MethodProgress = "Extracting File";
-                ExtractFile(packName, filename);
 
-                //this.Invoke(new Action(delegate() { this.UpdatePackSelect(); }));
-                //StartGame(packName);
-                //MessageBox.Show("DEBUG - Game startet " + packName);
+                //-------------- Process Main pack file --------------
+                if (TPP.SelectedItem != "Vanilla")
+                {
+                    urlInject = new Uri(_formOptions.PackUpdateInjectUrl(TPP.SelectedItem));
+                    //urlInject = new Uri("https://dl.dropbox.com/s/nx9bd3e9w03wyao/IRInject.zip?token_hash=AAF3bb0ajM7VFidjh6rY66X_cHuF9313Cy7whKSJIJNRQQ&dl=1");
+                    filenameInject = urlInject.OriginalString.Substring(url.OriginalString.LastIndexOf("/") + 1, url.OriginalString.Length - url.OriginalString.LastIndexOf("/") - 1);
 
-                //test if extract successful? (if minecraft.jar exists)
+                    //Download file
+                    MethodProgress = "Downloading file - Main pack";
+                    processSucceeded = DownloadFile(url, _packDir + "\\" + FileNameFromUri(url));
+
+                    //backup files
+                    if (processSucceeded)
+                    {
+                        MethodProgress = "Backing up Files";
+                        processSucceeded = DoBackup(packDir + "\\.minecraft", packDir + "\\UpdateBackup", versionInfo);
+                    }
+
+                    //extract file
+                    if (processSucceeded)
+                    {
+                        MethodProgress = "Extracting File";
+                        processSucceeded = ExtractFile(_packDir + "\\" + FileNameFromUri(url), packDir);
+                    }
+
+                    //restore backup files
+                    if (processSucceeded)
+                    {
+                        MethodProgress = "Restoring backuped Files";
+                        processSucceeded = DoRestoreBackup(packDir + "\\.minecraft", packDir + "\\UpdateBackup");
+                    }
+                }
+                //-------------- Process Minecraft download/install --------------
+
+                if (processSucceeded)
+                {
+                    Directory.CreateDirectory(packDir + "\\.Minecraft\\bin\\natives");
+                    //download - https://s3.amazonaws.com/assets.minecraft.net/ + versionInstall from versionInfo (1_4_7/minecraft.jar)
+
+                    DownloadFile(new Uri("https://s3.amazonaws.com/assets.minecraft.net/" + versionInfo.InstallVersion), packDir + "\\.Minecraft\\bin\\minecraft.jar"); //for release
+                    //processSucceeded = DownloadFile(new Uri("https://s3.amazonaws.com/assets.minecraft.net/1_4_7/minecraft.jar"), packDir + "\\.Minecraft\\bin\\minecraft.jar"); //for debug
+                }
+
+                //download     lwjgl.jar +     jinput.jar +     lwjgl_util.jar 
+                if (processSucceeded)
+                    processSucceeded = DownloadFile(new Uri("http://s3.amazonaws.com/MinecraftDownload/lwjgl.jar"), packDir + "\\.Minecraft\\bin\\lwjgl.jar");
+                
+                if (processSucceeded)
+                    processSucceeded = DownloadFile(new Uri("http://s3.amazonaws.com/MinecraftDownload/jinput.jar"), packDir + "\\.Minecraft\\bin\\jinput.jar");
+
+                if (processSucceeded)
+                    processSucceeded = DownloadFile(new Uri("http://s3.amazonaws.com/MinecraftDownload/lwjgl_util.jar"), packDir + "\\.Minecraft\\bin\\lwjgl_util.jar");
+
+                //download - s3.amazonaws.com/MinecraftDownload/windows_natives.jar and extract
+                if (processSucceeded)
+                    processSucceeded = DownloadFile(new Uri("http://s3.amazonaws.com/MinecraftDownload/windows_natives.jar"), _packDir + "\\windows_natives.jar");
+
+                if (processSucceeded)
+                    processSucceeded = ExtractFile(_packDir + "\\windows_natives.jar", packDir + "\\.Minecraft\\bin\\natives");
+
+
+                //-------------- Process .jar Injection --------------
+                if (TPP.SelectedItem != "Vanilla")
+                {
+                    //Download file
+                    if (processSucceeded)
+                    {
+                        MethodProgress = "Downloading file - Inject pack";
+                        processSucceeded = DownloadFile(urlInject, _packDir + "\\" + FileNameFromUri(urlInject));
+                    }
+
+                    //Inject files
+                    if (processSucceeded)
+                    {
+                        MethodProgress = "Extracting File";
+                        //ExtractFile(TPP.SelectedItem, filename);
+                        processSucceeded = InjectZipToJar(_packDir + "\\" + FileNameFromUri(urlInject), packDir + "\\.Minecraft\\bin\\minecraft.jar");
+                    }
+                }
+
+
+
+
+                //--------
+                if (processSucceeded)
+                {
+                    if (TPP.StartGameAfterInstall)
+                        StartGame(TPP.SelectedItem);
+                }
+                else
+                {
+                    RemoveMinecraftFolderFromPack(TPP.SelectedItem);
+                }
+
+
             }
             catch (Exception ex)
             {
                 SetDownloadPanelVisibility(false);
-                
-                ex.Data.Add("DownloadAndInstallPack() - packName", packName);                  
-                ex.Data.Add("DownloadAndInstallPack() - filename", filename);
-                ex.Data.Add("DownloadAndInstallPack() - MethodProgress", MethodProgress);
+
+                ex.Data.Add("InstallPack() - packName", TPP.SelectedItem);
+                ex.Data.Add("InstallPack() - filename", filename);
+                ex.Data.Add("InstallPack() - MethodProgress", MethodProgress);
                 ErrorReporting(ex, false);
+                //ex.Data.Add("InstallPack() - oPackName", TPP);
+                //ErrorReporting(ex, false);
             }
-                        
             SetDownloadPanelVisibility(false);
-            return returnValue;
         }
 
-        private void ExtractFile(string packName, string filename)
+        private void RemoveMinecraftFolderFromPack(string selItem)
         {
-            string MethodProgress = "";
             try
             {
+                SetDownloadLabelTextMain("Cleaning up");
+                if(Directory.Exists(_packDir + "\\" + selItem + "\\.Minecraft\\bin"))
+                    DeleteDirectory(_packDir + "\\" + selItem + "\\.Minecraft\\bin");
+                SetDownloadPanelVisibility(false);
+            }
+            catch (Exception ex)
+            {
+                SetDownloadPanelVisibility(false);
 
-                if (File.Exists(_packDir + "\\" + filename))
+                ex.Data.Add("RemoveMinecraftFolderFromPack() - selItem", selItem);
+                ErrorReporting(ex, false);
+            }
+        }
+
+        public static void DeleteDirectory(string target_dir)
+        {
+            string[] files = new string[1];
+            string[] dirs = new string[1];
+            try
+            {
+                files = Directory.GetFiles(target_dir);
+                dirs = Directory.GetDirectories(target_dir);
+
+                foreach (string file in files)
                 {
-                    //Clean out in the pack before extraction, to prevent new versions of mods to screw up.
-                    //Use a file named something like UpdateExcludeList.xml to find out what to delete and what not
+                    File.SetAttributes(file, FileAttributes.Normal);
+                    File.Delete(file);
+                }
+
+                foreach (string dir in dirs)
+                {                    
+                    DeleteDirectory(dir);
+                }
+
+                files = Directory.GetFiles(target_dir);
+                dirs = Directory.GetDirectories(target_dir);
+
+                Directory.Delete(target_dir, false);
+                //GC.Collect();
+                //GC.WaitForPendingFinalizers();
+                //GC.WaitForPendingFinalizer(); 
+            }
+            catch (Exception ex)
+            {
+                ex.Data.Add("DeleteDirectory() - files count", files.Length.ToString());
+                ex.Data.Add("DeleteDirectory() - dirs count", dirs.Length.ToString());
+                ex.Data.Add("DeleteDirectory() - target_dir", target_dir);
+                throw ex;
+            }
+        }
 
 
-                    SetDownloadLabelText("Preparing Update");
-                    SetDownloadProgressbarProgress(0);
-                    SetDownloadPanelVisibility(true);
-                    xmlVersionInfo versionInfo;
+        //public void DownloadInstallPackAndStartGame(object oPackName)
+        //{
+        //    try
+        //    {                        
+        //        if (!CloseAllThreads)
+        //            if(DownloadAndInstallPackWorker((string)oPackName))
+        //                StartGame((string)oPackName);
+        //    }
+        //    catch (Exception ex)
+        //    {                
+        //        ex.Data.Add("DownloadInstallPackAndStartGame() - oPackName", oPackName.ToString());
+        //        ErrorReporting(ex, false);
+        //    }
+        //}
 
+        //public void DownloadAndInstallPack(object oPackName)
+        //{
+        //    try
+        //    {
+        //        if (!CloseAllThreads)
+        //            DownloadAndInstallPackWorker((string)oPackName);
+        //    }
+        //    catch (Exception ex)
+        //    {                
+        //        ex.Data.Add("DownloadAndInstallPack() - oPackName", oPackName.ToString());
+        //        ErrorReporting(ex, false);
+        //    }
+        //}
 
-                    if (Directory.Exists(_packDir + "\\" + packName + "\\.minecraft"))
+        ///// <summary>
+        ///// This method should NEVER be called by anything other then DownloadAndInstallPack() and DownloadInstallPackAndStartGame()
+        ///// Code help thanks to http://www.devtoolshed.com/content/c-download-file-progress-bar
+        ///// </summary>
+        ///// <param name="pack"></param>
+        //private bool DownloadAndInstallPackWorker(string packName)
+        //{
+        //    //string packName = "";
+        //    Uri url = null;
+        //    string filename = "";
+        //    bool returnValue = false;
+        //    string MethodProgress = "";
+
+        //    try
+        //    {
+        //        //packName = (string)oPackName;
+        //        //FormOptions.SupportetAutoUpdatePack pack = (FormOptions.SupportetAutoUpdatePack)oPack;     
+        //        MethodProgress = "creating URI";
+        //        url = new Uri(_formOptions.PackUpdateUrl(packName));
+        //        filename = url.OriginalString.Substring(url.OriginalString.LastIndexOf("/") + 1, url.OriginalString.Length - url.OriginalString.LastIndexOf("/") - 1);
+
+        //        //_formNews = new FormNews(_formOptions.GetVersionInfo(packName, true).UpdateNews);
+        //        //_formNews.Show();
+        //        //_formNews.Focus();
+        //        MethodProgress = "SetAndShowNews";
+        //        SetAndShowNews(_formOptions.GetVersionInfo(packName, true).UpdateNews);
+
+        //        //Download file
+        //        MethodProgress = "Downloading file";
+        //        returnValue = DownloadFile(url, filename);
+
+        //        //extract file
+        //        MethodProgress = "Extracting File";
+        //        ExtractFile(packName, filename);
+
+        //        //this.Invoke(new Action(delegate() { this.UpdatePackSelect(); }));
+        //        //StartGame(packName);
+        //        //MessageBox.Show("DEBUG - Game startet " + packName);
+
+        //        //test if extract successful? (if minecraft.jar exists)
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        SetDownloadPanelVisibility(false);
+                
+        //        ex.Data.Add("DownloadAndInstallPack() - packName", packName);                  
+        //        ex.Data.Add("DownloadAndInstallPack() - filename", filename);
+        //        ex.Data.Add("DownloadAndInstallPack() - MethodProgress", MethodProgress);
+        //        ErrorReporting(ex, false);
+        //    }
+                        
+        //    SetDownloadPanelVisibility(false);
+        //    return returnValue;
+        //}
+
+        private bool DoBackup(string targetFolder, string backupFolder, xmlVersionInfo versionInfo)
+        {
+            string MethodProgress = "";            
+            try
+            {                
+                if (Directory.Exists(targetFolder)) //skipping backup if theres nothing to backup
+                {                    
+                    string fullPath = "";                    
+                    FileAttributes attr;
+
+                    SetDownloadLabelTextMain("Creating backup");
+                    SetDownloadProgressbarMarqueueStyle(ProgressBarStyle.Marquee);
+                    MethodProgress = "starting Backup";
+                                        
+                    foreach (string excludeInfo in versionInfo.ExcludeFromUpdate)
                     {
-                        versionInfo = _formOptions.GetVersionInfo(packName, true);
-                        string fullPath = "";
-                        string backupTmpPath = _packDir + "\\" + packName + "\\UpdateBackup";
-                        FileAttributes attr;
+                        if (CloseAllThreads)
+                            break;
 
+                        fullPath = targetFolder + "\\" + excludeInfo;
 
-
-                        MethodProgress = "Backup - starting";
-                        //backup files before deleting everything in the pack folder
-                        foreach (string excludeInfo in versionInfo.ExcludeFromUpdate)
+                        if (Directory.Exists(fullPath) || File.Exists(fullPath))
                         {
-                            if (CloseAllThreads)
-                                break;
 
-                            fullPath = _packDir + "\\" + packName + "\\.minecraft\\" + excludeInfo;
-
-                            if (Directory.Exists(fullPath) || File.Exists(fullPath))
+                            attr = File.GetAttributes(fullPath);
+                            if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
                             {
-
-                                attr = File.GetAttributes(fullPath);
-                                if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+                                //directory
+                                string tmpStr = backupFolder + "\\" + excludeInfo;
+                                if (excludeInfo.Contains("\\"))
                                 {
-                                    //directory
-                                    string tmpStr = backupTmpPath + "\\" + excludeInfo;
-                                    if (excludeInfo.Contains("\\"))
-                                    {
-                                        string tmpStr2 = tmpStr.Substring(0, tmpStr.LastIndexOf("\\"));
-                                        if (!Directory.Exists(tmpStr2))
-                                            Directory.CreateDirectory(tmpStr2);
-                                        //tmpStr2 = tmpStr2;
-                                    }
-                                    MethodProgress = "Backup - moving - Directory";
-                                    if (Directory.Exists(tmpStr))
-                                    {
-                                        CopyAll(new DirectoryInfo(fullPath), new DirectoryInfo(tmpStr));
-                                        Directory.Delete(fullPath, true);
-                                    }
-                                    else
-                                        Directory.Move(fullPath, tmpStr);
+                                    string tmpStr2 = tmpStr.Substring(0, tmpStr.LastIndexOf("\\"));
+                                    if (!Directory.Exists(tmpStr2))
+                                        Directory.CreateDirectory(tmpStr2);
+                                    //tmpStr2 = tmpStr2;
+                                }
+                                MethodProgress = "moving - Directory";
+                                if (Directory.Exists(tmpStr))
+                                {
+                                    CopyAll(new DirectoryInfo(fullPath), new DirectoryInfo(tmpStr));
+                                    DeleteDirectory(fullPath);
                                 }
                                 else
-                                {
-                                    FileInfo fInfo = new FileInfo(backupTmpPath + "\\" + excludeInfo);
-                                    if (!Directory.Exists(fInfo.DirectoryName))
-                                        Directory.CreateDirectory(fInfo.DirectoryName);
+                                    Directory.Move(fullPath, tmpStr);
+                            }
+                            else
+                            {
+                                FileInfo fInfo = new FileInfo(backupFolder + "\\" + excludeInfo);
+                                if (!Directory.Exists(fInfo.DirectoryName))
+                                    Directory.CreateDirectory(fInfo.DirectoryName);
 
-                                    //file                
-                                    MethodProgress = "Backup - moving - File";
-                                    File.Move(fullPath, backupTmpPath + "\\" + excludeInfo);
-                                }
+                                //file                
+                                MethodProgress = "moving - File";
+                                File.Move(fullPath, backupFolder + "\\" + excludeInfo);
                             }
                         }
-
-                        //cleaning out
-                        MethodProgress = "Backup - Deleting";
-                        if (!CloseAllThreads)
-                        {
-                            Directory.Delete(_packDir + "\\" + packName + "\\.minecraft", true);                            
-                        }
                     }
+
+                    //cleaning out
+                    MethodProgress = "Cleanup";
+                    if (!CloseAllThreads)
+                    {
+                        DeleteDirectory(targetFolder);
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ex.Data.Add("DoBackup() - targetFolder", targetFolder);
+                ex.Data.Add("DoBackup() - backupFolder", backupFolder);
+                ex.Data.Add("DoBackup() - MethodProgress", MethodProgress);
+                throw ex;
+            }
+        }
+        
+        //private void ExtractFile(string packName, string filename)
+        /// <summary>
+        /// Extracts a specified file to the spedified destination
+        /// </summary>
+        /// <param name="fileName">The file to extract</param>
+        /// <param name="destination">The destination to extract</param>
+        private bool ExtractFile(string fileName, string destination)
+        {
+            string MethodProgress = "";
+            bool returnValue = false;
+            try
+            {
+                if (File.Exists(fileName))
+                {
+                    FileInfo fInfo = new FileInfo(fileName);
+
+                    SetDownloadLabelTextMain("Extracting " + fInfo.Name);
+                    SetDownloadProgressbarMarqueueStyle(ProgressBarStyle.Continuous);
+                    
+                    //SetDownloadProgressbarProgress(0);
+                    //SetDownloadPanelVisibility(true);
 
                     //extract the pack
                     if (!CloseAllThreads)
                     {
-                        if (new FileInfo(filename).Extension.ToLower() == ".zip")
+                        
+                        //if (fInfo.Extension.ToLower() == ".zip")
+                        if(ZipFile.IsZipFile(fileName))
                         {
-                            SetDownloadLabelText("Extracting " + filename);
+                            //SetDownloadLabelTextSub("Extracting " + fInfo.Name);
                             SetDownloadProgressbarProgress(0);
-                            SetDownloadPanelVisibility(true);
+                            
 
                             MethodProgress = "Extract - start";
 
@@ -1273,13 +1509,37 @@ namespace KBG_Launcher
                             double dProgressPercentage;// = (dIndex / dTotal);
                             //int iProgressPercentage = (int)(dProgressPercentage * 100);
 
-                            using (ZipFile zip1 = ZipFile.Read(_packDir + "\\" + filename))
+                            //using (ZipFile zip = ZipFile.Read(_packDir + "\\" + filename))
+                            using (ZipFile zip1 = ZipFile.Read(fileName))
                             {
                                 int previousPercentage = 0;
-                                //foreach (ZipEntry e in zip1)
+                                //foreach (ZipEntry e in zip)
+
+                                //removing META-INF just to avoid potential problems, and make it look nicer
+                                MethodProgress = "Extract - removing META-INF";
+                                List<ZipEntry> selection = new List<ZipEntry>(zip1.SelectEntries("*", "META-INF"));
+                                for (int x = selection.Count - 1; x >= 0; x--)
+                                {
+                                    ZipEntry entry = selection[x];
+                                    zip1.RemoveEntry(entry.FileName);
+                                }
+
+                                //also. removing the bin folder to ensure backwords compatiblity
+                                MethodProgress = "Extract - removing bin";
+                                selection = new List<ZipEntry>();
+                                selection.AddRange(zip1.SelectEntries("*", ".minecraft\\bin"));
+                                selection.AddRange(zip1.SelectEntries("*", ".minecraft\\bin\\natives"));
+                                for (int x = selection.Count - 1; x >= 0; x--)
+                                {
+                                    ZipEntry entry = selection[x];
+                                    zip1.RemoveEntry(entry.FileName);
+                                }
+
+
                                 MethodProgress = "Extract - extracting";
                                 for (int i = 0; i < zip1.Count; i++)
                                 {
+                                    SetDownloadLabelTextSub(zip1[i].FileName);
                                     if (CloseAllThreads)
                                         break;
                                     dProgressPercentage = (i / (double)zip1.Count);
@@ -1290,62 +1550,247 @@ namespace KBG_Launcher
                                         previousPercentage = (int)(dProgressPercentage * 100);
                                     }
                                     //progressBarDownload.Value = (int)(dProgressPercentage * 100);
-                                    zip1[i].Extract(_packDir + "\\" + packName, ExtractExistingFileAction.OverwriteSilently);
+                                    //zip[i].Extract(_packDir + "\\" + packName, ExtractExistingFileAction.OverwriteSilently);
+                                    
+                                    //zip1[i].Extract(destination, ExtractExistingFileAction.OverwriteSilently);
+                                    try
+                                    {
+                                        zip1[i].Extract(destination, ExtractExistingFileAction.OverwriteSilently);
+                                    }
+                                    catch (IOException ex)
+                                    {
+                                        bool b = false;
+                                        foreach (var postFix in new[] { ".tmp", ".PendingOverwrite" })
+                                        {
+                                            var errorPath = Path.Combine(destination, zip1[i].FileName) + postFix;
+                                            if (File.Exists(errorPath))
+                                            {
+                                                File.Delete(errorPath);
+                                                b = true;
+                                            }
+                                        }
+                                        if (!b)
+                                        {
+                                            throw ex;
+                                        }
+                                        zip1[i].Extract(destination, ExtractExistingFileAction.OverwriteSilently);
+                                    } 
                                 }
                             }
                             //deletes the downloaded zip after extraction
 #if(!DEBUG)
-                            if (File.Exists(_packDir + "\\" + filename))
-                                File.Delete(_packDir + "\\" + filename);
+                            if (File.Exists(fileName))
+                                File.Delete(fileName);
 #endif
+                            returnValue = true;
                         }
                         else
                         {
-                            MessageBox.Show("The downloaded file is not a zip file. This program will now proceed to panic and abort the extraction", "File not a zip file");
+                            MessageBox.Show("The downloaded file is not a valid zip/jar file. This program will now proceed to panic and abort the extraction", "File not a zip file");                            
                         }
                     }
-
-                    //restores excluded files
-                    if (!CloseAllThreads)
-                    {
-                        if (Directory.Exists(_packDir + "\\" + packName + "\\UpdateBackup"))
-                        {
-                            MethodProgress = "Restoring backup - Copying";
-                            CopyAll(new DirectoryInfo(_packDir + "\\" + packName + "\\UpdateBackup"), new DirectoryInfo(_packDir + "\\" + packName + "\\.minecraft"));
-                            MethodProgress = "Restoring backup - Deleting";
-                            Directory.Delete(_packDir + "\\" + packName + "\\UpdateBackup", true);
-                            //Directory.Move(_packDir + "\\" + packName + "\\UpdateBackup", _packDir + "\\" + packName + "\\.minecraft"); 
-                        }
-                    }
-
-
                 }
+                else
+                    throw new Exception("Could not find the file to extract");
+                return returnValue;
             }
             catch (Exception ex)
             {
-                ex.Data.Add("ExtractFile() - packName", packName);
-                ex.Data.Add("ExtractFile() - filename", filename);
+                ex.Data.Add("ExtractFile() - fileName", fileName);
+                ex.Data.Add("ExtractFile() - destination", destination);
                 ex.Data.Add("ExtractFile() - MethodProgress", MethodProgress);
                 throw ex;
             }
 
         }
 
-        private void DownloadFile(Uri Url)
+        private bool InjectZipToJar(string zipFile, string jarFile)
+        {
+            string MethodProgress = "";
+            bool returnValue = false;
+            try
+            {
+                if (File.Exists(zipFile) && File.Exists(jarFile))
+                {
+                    FileInfo fInfoZip = new FileInfo(zipFile);
+                    FileInfo fInfoJar = new FileInfo(jarFile);
+
+                    SetDownloadLabelTextMain("Injecting Files");
+                    SetDownloadProgressbarMarqueueStyle(ProgressBarStyle.Marquee);
+
+                    //SetDownloadProgressbarProgress(0);
+                    //SetDownloadPanelVisibility(true);
+
+                    //extract the pack
+                    if (!CloseAllThreads)
+                    {
+
+                        if(ZipFile.IsZipFile(zipFile) && ZipFile.IsZipFile(jarFile))
+                        {
+                            //SetDownloadLabelTextSub("Extracting " + fInfo.Name);
+                            //SetDownloadProgressbarProgress(0);
+
+
+                            MethodProgress = "Injecting - start";
+
+                            //ExtractZip(_packDir + "\\" + filename, _packDir + "\\" + pack.ToString());
+                            //double dProgressPercentage;// = (dIndex / dTotal);
+                            //int iProgressPercentage = (int)(dProgressPercentage * 100);
+
+                            //using (ZipFile zip = ZipFile.Read(_packDir + "\\" + filename))
+                            //using (ZipFile jarFile = ZipFile.Read(
+                            using (ZipFile zip = ZipFile.Read(zipFile))
+                            {
+                                //int previousPercentage = 0;
+
+
+                                using (ZipFile jar = ZipFile.Read(jarFile))
+                                {
+                                    //first. remove META-INF
+                                    //byte[] fileBytes = new byte[]();
+                                    MethodProgress = "Injecting - removing META-INF";
+                                    List<ZipEntry> selection = new List<ZipEntry>(jar.SelectEntries("*", "META-INF"));
+                                    for (int x = selection.Count - 1; x >= 0; x--)
+                                    {
+                                        ZipEntry entry = selection[x];
+                                        jar.RemoveEntry(entry.FileName);
+                                    }
+
+
+                                    //then. add files from zip
+                                    foreach (ZipEntry file in zip)
+                                    {
+                                        //using (var stream = file.OpenReader())
+                                        //{
+                                        //    var buffer = new byte[2048];
+                                        //    int n;
+                                        //    while ((n = stream.Read(buffer, 0, buffer.Length)) > 0)
+                                        //    {
+                                        //        // do something with the buffer here.
+                                        //        fileBytes = buffer;
+                                        //    }
+                                        //    jar.AddEntry(file.FileName, fileBytes);
+                                        //}
+                                        //using (var ms = new MemoryStream())
+                                        //{
+                                        //    file.Extract(ms);
+
+                                        //    //jar.AddEntry(file.FileName, ms.GetBuffer());
+                                        //    ZipEntry entry = jar.UpdateEntry(file.FileName, ms.GetBuffer()); //this works, but cant CRC validate
+                                        //    if (entry.Crc != file.Crc)
+                                        //    {
+                                        //        throw new Exception("sdfgsdfg");
+                                        //    }                                            
+                                        //}
+                                        using (Ionic.Crc.CrcCalculatorStream s = file.OpenReader())
+                                        {
+                                            MethodProgress = "Injecting - starting injection";
+                                            byte[] buffer = new byte[file.UncompressedSize];
+                                            int n, totalBytesRead = 0;
+                                            do
+                                            {
+                                                n = s.Read(buffer, 0, buffer.Length);
+                                                totalBytesRead += n;
+                                            } while (n > 0);
+                                            if (s.Crc != file.Crc)
+                                                throw new Exception(string.Format("The Zip Entry failed the CRC Check. (0x{0:X8}!=0x{1:X8})", s.Crc, file.Crc));
+                                            if (totalBytesRead != file.UncompressedSize)
+                                                throw new Exception(string.Format("We read an unexpected number of bytes. ({0}!={1})", totalBytesRead, file.UncompressedSize));
+
+                                            MethodProgress = "Injecting - updating entry";
+                                            jar.UpdateEntry(file.FileName, buffer);
+                                        }                                        
+                                    }
+                                    jar.Save();
+                                    returnValue = true;
+                                }
+                            }
+                            //deletes the downloaded zip after extraction
+#if(!DEBUG)
+                            if (File.Exists(zipFile))
+                                File.Delete(zipFile);
+#endif
+                        }
+                        else
+                        {
+                            MessageBox.Show("The downloaded file is not a valid zip/jar file. This program will now proceed to panic and abort the extraction", "File not a zip file");                            
+                        }
+                    }
+                    return returnValue;
+                }
+                else
+                    return returnValue;
+            }
+            catch (Exception ex)
+            {
+                //ex.Data.Add("ExtractFile() - fileName", fileName);
+                //ex.Data.Add("ExtractFile() - destination", destination);
+                ex.Data.Add("ExtractFile() - MethodProgress", MethodProgress);
+                throw ex;
+            }
+
+        }
+
+        private string FileNameFromUri(Uri uri)
         {
             try
             {
-                string filename = Url.OriginalString.Substring(Url.OriginalString.LastIndexOf("/") + 1, Url.OriginalString.Length - Url.OriginalString.LastIndexOf("/") - 1);
-                DownloadFile(Url, filename);
+                //return uri.OriginalString.Substring(uri.OriginalString.LastIndexOf("/") + 1, uri.OriginalString.Length - uri.OriginalString.LastIndexOf("/") - 1);
+                return uri.Segments[uri.Segments.Length - 1];
             }
             catch (Exception ex)
-            {                
-                ex.Data.Add("DownloadFile() - Url", Url.OriginalString);
+            {
                 throw ex;
             }
         }
 
-        private bool DownloadFile(Uri url, string filename)
+        private bool DoRestoreBackup(string targetFolder, string backupFolder)
+        {
+            string MethodProgress = "";
+            try
+            {
+                if (Directory.Exists(backupFolder))
+                {
+                    SetDownloadLabelTextMain("Restoring backup");
+                    SetDownloadProgressbarMarqueueStyle(ProgressBarStyle.Marquee);
+                    MethodProgress = "Copying";
+                    CopyAll(new DirectoryInfo(backupFolder), new DirectoryInfo(targetFolder));
+                    MethodProgress = "Deleting";
+                    DeleteDirectory(backupFolder);
+                    //Directory.Move(_packDir + "\\" + packName + "\\UpdateBackup", _packDir + "\\" + packName + "\\.minecraft"); 
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ex.Data.Add("DoRestoreBackup() - targetFolder", targetFolder);
+                ex.Data.Add("DoRestoreBackup() - backupFolder", backupFolder);
+                ex.Data.Add("DoRestoreBackup() - MethodProgress", MethodProgress);
+                throw ex;
+            }
+        }
+
+        private void DownloadFile(Uri Url)
+        {
+            try
+            {
+                string destination = _packDir + "\\" + FileNameFromUri(Url);
+                DownloadFile(Url, destination);
+            }
+            catch (Exception ex)
+            {                
+                //ex.Data.Add("DownloadFile() - Url", Url.OriginalString);
+                throw ex;
+            }
+        }
+
+        /// <summary>
+        /// Downloads a file from the specified Uri to a specified destination
+        /// </summary>
+        /// <param name="url">The Uri containing the web addres of the file to be downloaded.</param>
+        /// <param name="destination">The destination of the file to be downloaded. Includes the filename.</param>
+        /// <returns></returns>
+        private bool DownloadFile(Uri url, string destination)
         {
             bool SkipDownload = false;
             Int64 iSize = 0;
@@ -1358,8 +1803,10 @@ namespace KBG_Launcher
 
             try
             {
-                SetDownloadLabelText("Preparing download");
+                SetDownloadLabelTextMain("Downloading");
+                SetDownloadLabelTextSub("Preparing download");
                 SetDownloadProgressbarProgress(0);
+                SetDownloadProgressbarMarqueueStyle(ProgressBarStyle.Continuous);
                 SetDownloadPanelVisibility(true);
 
                 System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(url);
@@ -1369,26 +1816,21 @@ namespace KBG_Launcher
 
                 iSize = response.ContentLength;  // gets the size of the file in bytes                        
                 iRunningByteTotal = 0; // keeps track of the total bytes downloaded so we can update the progress bar
-
-
-
+                                
                 //check if pack has already been downloaded
-
-
-                if (File.Exists(_packDir + "\\" + filename))
-                    if (new FileInfo(_packDir + "\\" + filename).Length == iSize) //file exists, but what about the size ? (to filter out incomplete downloads)
-                        if (MessageBox.Show("A file with matching name and size was found on the disk." + Environment.NewLine + "Do you want to use that file instead of downloading it again?", "Existing file found", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
+                if (File.Exists(destination))
+                    if (new FileInfo(destination).Length == iSize) //file exists, but what about the size ? (to filter out incomplete downloads)
+                        if (MessageBox.Show("The file " + new FileInfo(destination).Name + " with matching size was found on the disk." + Environment.NewLine + "Do you want to use that file instead of downloading it again?", "Existing file found", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
                             SkipDownload = true;
 
 
-                #region File Download
                 if (!SkipDownload)
                 {
                     //download the pack
                     SetDownloadPanelVisibility(true);
-                    SetDownloadLabelText("Downloading " + filename);
-                    SetDownloadProgressbarProgress(0);
-                    SetDownloadCancelButtonVisibility(true);
+                    //SetDownloadLabelTextMain("Downloading");
+                    //SetDownloadProgressbarProgress(0);
+                    
 
                     using (System.Net.WebClient client = new System.Net.WebClient())
                     {
@@ -1396,12 +1838,15 @@ namespace KBG_Launcher
                         using (System.IO.Stream streamRemote = client.OpenRead(url))
                         {
                             // using the FileStream object, we can write the downloaded bytes to the file system
-                            using (Stream streamLocal = new FileStream(_packDir + "\\" + filename, FileMode.Create, FileAccess.Write, FileShare.None))
+                            using (Stream streamLocal = new FileStream(destination, FileMode.Create, FileAccess.Write, FileShare.None))
                             {
                                 // loop the stream and get the file into the byte buffer
                                 int iByteSize = 0;
                                 byte[] byteBuffer = new byte[iSize];
                                 previousTickTime = DateTime.Now;
+
+                                SetDownloadLabelTextSub(new FileInfo(destination).Name);
+                                SetDownloadCancelButtonVisibility(true);
 
                                 while ((iByteSize = streamRemote.Read(byteBuffer, 0, byteBuffer.Length)) > 0)
                                 {
@@ -1454,24 +1899,22 @@ namespace KBG_Launcher
                     if (!_abortDownload)
                     {
                         SetDownloadProgressbarProgress(100);
-                        SetDownloadLabelText("Download Complete");
+                        SetDownloadLabelTextMain("Download Complete");
                     }
                 }
                 if (_abortDownload && !CloseAllThreads)
                 {
-                    File.Delete(_packDir + "\\" + filename);
+                    File.Delete(destination);
                     _abortDownload = false;
                     SetDownloadPanelVisibility(false);
                 }
 
                 SetDownloadCancelButtonVisibility(false);
-                #endregion File Download
-
             }
             catch (Exception ex)
             {
-                ex.Data.Add("DownloadFile() - Url", url.OriginalString);
-                ex.Data.Add("DownloadFile() - filename", filename);
+                //ex.Data.Add("DownloadFile() - Url", url.OriginalString);
+                ex.Data.Add("DownloadFile() - destination", destination);
                 ex.Data.Add("DownloadFile() - SkipDownload", SkipDownload.ToString());
                 ex.Data.Add("DownloadFile() - iSize", iSize.ToString());
                 ex.Data.Add("DownloadFile() - iRunningByteTotal", iRunningByteTotal.ToString());
@@ -1490,7 +1933,7 @@ namespace KBG_Launcher
                 {
 
                     DebugMethodProgress = "Line1";
-                    SetDownloadLabelText("Logging in");
+                    SetDownloadLabelTextMain("Logging in");
                     this.Invoke(new Action(delegate() { this.Update(); }));
                     ProcessStartInfo procStartInfo = new ProcessStartInfo();
                     Process proc = new Process();
@@ -1498,8 +1941,7 @@ namespace KBG_Launcher
 
                     DebugMethodProgress = "Line2";
                     string session = generateSession(textBoxUsername.Text, textBoxPassword.Text, 5000);
-                    SaveSessionToFile(session);
-                    File.WriteAllText(_packDir + "\\" + selItem + "\\.Minecraft\\KBGLastLogin.txt", session); //debugging
+                    SaveSessionToFile(session);                    
 
                     string sessionID = "";
                     string username = "";
@@ -1536,7 +1978,7 @@ namespace KBG_Launcher
                         if (File.Exists(_packDir + "\\" + selItem + "\\.Minecraft\\bin\\minecraft.jar"))
                         {
                             //FINALLY i got it to work. Damm it was a pain
-                            SetDownloadLabelText("Starting game");
+                            SetDownloadLabelTextMain("Starting game");
                             this.Invoke(new Action(delegate() { this.Update(); }));
                             DebugMethodProgress = "Line7";
                             procStartInfo.FileName = _formOptions.GetJavaInstallationPath() + @"\bin\javaw.exe";
@@ -1756,7 +2198,7 @@ namespace KBG_Launcher
                 }
                 else
                 {                    
-                    SetDownloadLabelText("Starting Game");
+                    SetDownloadLabelTextMain("Starting Game");
                     this.Invoke(new Action(delegate() { this.Update(); }));
                     ProcessStartInfo procStartInfo = new ProcessStartInfo();
                     Process proc = new Process();
@@ -1767,7 +2209,7 @@ namespace KBG_Launcher
                         if (File.Exists(_packDir + "\\" + selItem + "\\.Minecraft\\bin\\minecraft.jar"))
                         {
                             //FINALLY i got it to work. Damm it was a pain
-                            //SetDownloadLabelText("Starting game");
+                            //SetDownloadLabelTextMain("Starting game");
                             this.Invoke(new Action(delegate() { this.Update(); }));
                             DebugMethodProgress = "Line3";
                             procStartInfo.FileName = _formOptions.GetJavaInstallationPath() + @"\bin\javaw.exe";
@@ -1966,7 +2408,7 @@ namespace KBG_Launcher
                     hasInternetConnection = false;
                 }  
 
-                if (hasInternetConnection)
+                if (!hasInternetConnection)
                 {
                     _formError.AddInfoLine(Environment.NewLine + "Network Inferfaces" + Environment.NewLine + "{");
                     NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
@@ -2603,8 +3045,28 @@ namespace KBG_Launcher
                  
                  
                  */
-                StartGameOffline(comboBoxPackSelect.SelectedItem.ToString());
+                //StartGameOffline(comboBoxPackSelect.SelectedItem.ToString());
 
+
+
+                //using (ZipFile zip1 = ZipFile.Read(@"C:\Users\Phoenix\Desktop\Programering\VS 2010\KBG Minecraft Launcher\KBG Launcher\bin\Debug\minecraft2.jar"))
+                //{
+                //    //zip["META-INF"] = null;
+                //    //zip.RemoveEntry(zip.UpdateDirectory("META-INF"));
+                //    List<ZipEntry> selection = new List<ZipEntry>(zip1.SelectEntries("*.*", "META-INF"));
+                //    for (int x = selection.Count - 1; x >= 0; x--)
+                //    {
+                //        ZipEntry entry = selection[x];
+                //        zip1.RemoveEntry(entry.FileName);
+                //    }
+                //    zip1.Save();
+                //}
+                DateTime start = DateTime.Now;
+                //InjectZipToJar(@"C:\Users\Phoenix\Desktop\Programering\VS 2010\KBG Minecraft Launcher\KBG Launcher\bin\Debug\minecraft2.jar", @"C:\Users\Phoenix\Desktop\Programering\VS 2010\KBG Minecraft Launcher\KBG Launcher\bin\Debug\testTo.zip");
+                //MessageBox.Show(InjectZipToJar(@"C:\Users\Phoenix\Desktop\Programering\VS 2010\KBG Minecraft Launcher\KBG Launcher\bin\Debug\minecraft2.jar", @"C:\Users\Phoenix\Desktop\Programering\VS 2010\KBG Minecraft Launcher\KBG Launcher\bin\Debug\testTo.zip").ToString());
+                ExtractFile(_packDir + "\\windows_natives.jar", _packDir + "\\test\\natives");
+                TimeSpan span = DateTime.Now - start;
+                MessageBox.Show(span.TotalMilliseconds.ToString());
             }
             catch (Exception ex)
             {
@@ -2694,7 +3156,7 @@ namespace KBG_Launcher
                                     if (MessageBox.Show("A new version of the " + selItem + " pack was found. Do you want to update now?", "New update found", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.Yes)
                                     {
                                         progressBarDownload.Style = ProgressBarStyle.Blocks;
-                                        InstallPack(selItem, true);
+                                        InstallPackStarter(selItem, true);
                                     }
                                     else
                                     {
@@ -2726,7 +3188,7 @@ namespace KBG_Launcher
                             }
                             else
                             {
-                                InstallPack(selItem, true);
+                                InstallPackStarter(selItem, true);
                             }
                         }
                     }
@@ -2930,12 +3392,34 @@ namespace KBG_Launcher
         /// </summary>
         /// <param name="value"></param>
         /// 
-        private void SetDownloadLabelText(string text)
+        private void SetDownloadLabelTextMain(string text)
         {
-            SetDownloadLabelText(text, "", "");
+            SetDownloadLabelText(text, "", "", "");
         }
-        
-        private void SetDownloadLabelText(string text, string speed, string progress)
+
+        /// <summary>
+        /// Designed to be called from a seperate thread from the main thread (multi threading)
+        /// </summary>
+        /// <param name="value"></param>
+        /// 
+        private void SetDownloadLabelTextSub(string text)
+        {
+            try
+            {
+                if (!CloseAllThreads)
+                    this.Invoke(new Action(delegate()
+                    {                        
+                        this.labelDownloadSub.Text = text;
+                    }));
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+
+        private void SetDownloadLabelText(string text, string textSub, string speed, string progress)
         {
             try
             {
@@ -2943,6 +3427,7 @@ namespace KBG_Launcher
                     this.Invoke(new Action(delegate()
                                                 {
                                                     this.labelDownload.Text = text;
+                                                    this.labelDownloadSub.Text = textSub;
                                                     this.labelDownloadProgress.Text = progress;
                                                     this.labelDownloadSpeed.Text = speed;
                                                 }));
@@ -3147,15 +3632,15 @@ namespace KBG_Launcher
         //    double dProgressPercentage;// = (dIndex / dTotal);
         //    //int iProgressPercentage = (int)(dProgressPercentage * 100);
             
-        //    using (ZipFile zip1 = ZipFile.Read(source))
+        //    using (ZipFile zip = ZipFile.Read(source))
         //    {
-        //        //foreach (ZipEntry e in zip1)
-        //        for(int i=0;i < zip1.Count;i++)
+        //        //foreach (ZipEntry e in zip)
+        //        for(int i=0;i < zip.Count;i++)
         //        {
-        //            dProgressPercentage = (i / zip1.Count);
+        //            dProgressPercentage = (i / zip.Count);
         //            this.Invoke(new Action(delegate() { progressBarDownload.Value = (int)(dProgressPercentage * 100); }));
         //            //progressBarDownload.Value = (int)(dProgressPercentage * 100);
-        //            zip1[i].Extract(destination, ExtractExistingFileAction.OverwriteSilently);                    
+        //            zip[i].Extract(destination, ExtractExistingFileAction.OverwriteSilently);                    
         //        }
         //    }
         //}
@@ -3452,6 +3937,18 @@ namespace KBG_Launcher
     {
         public string Username { get; set; }
         public string Password { get; set; }
+    }
+
+    public class ThreadParameterPack
+    {
+        public string SelectedItem { get; set; }
+        public bool StartGameAfterInstall { get; set; }
+        public ThreadParameterPack() { }
+        public ThreadParameterPack( string selectedItem, bool startGameAfterInstall) 
+        {
+            SelectedItem = selectedItem;
+            StartGameAfterInstall = startGameAfterInstall;
+        }
     }
 }
 

@@ -49,6 +49,7 @@
             this.tabControl1 = new KBG_Minecraft_Launcher_NewsWriter.MyTabControl();
             this.tabPageNews = new System.Windows.Forms.TabPage();
             this.groupBoxNews = new System.Windows.Forms.GroupBox();
+            this.phoenixRichTextBoxNews = new PhoenixRTB.PhoenixRichTextBox();
             this.tabPageExcludes = new System.Windows.Forms.TabPage();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.textBoxExclude = new System.Windows.Forms.TextBox();
@@ -58,8 +59,17 @@
             this.listBoxExcludes = new System.Windows.Forms.ListBox();
             this.tabPageCredits = new System.Windows.Forms.TabPage();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.phoenixRichTextBoxNews = new PhoenixRTB.PhoenixRichTextBox();
             this.phoenixRichTextBoxCredits = new PhoenixRTB.PhoenixRichTextBox();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.labelOldPathToJar = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.labelNewPathToJar = new System.Windows.Forms.Label();
+            this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.comboBoxAvalibleMinecraftVersions = new System.Windows.Forms.ComboBox();
+            this.button1 = new System.Windows.Forms.Button();
+            this.labelPopulatingList = new System.Windows.Forms.Label();
             this.groupBox3.SuspendLayout();
             this.groupBoxVersion.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPack)).BeginInit();
@@ -74,6 +84,9 @@
             this.groupBox2.SuspendLayout();
             this.tabPageCredits.SuspendLayout();
             this.groupBox4.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            this.groupBox7.SuspendLayout();
+            this.groupBox6.SuspendLayout();
             this.SuspendLayout();
             // 
             // buttonSaveAs
@@ -272,6 +285,7 @@
             this.tabControl1.Controls.Add(this.tabPageNews);
             this.tabControl1.Controls.Add(this.tabPageExcludes);
             this.tabControl1.Controls.Add(this.tabPageCredits);
+            this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Location = new System.Drawing.Point(12, 134);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
@@ -299,6 +313,21 @@
             this.groupBoxNews.TabIndex = 0;
             this.groupBoxNews.TabStop = false;
             this.groupBoxNews.Text = "News";
+            // 
+            // phoenixRichTextBoxNews
+            // 
+            this.phoenixRichTextBoxNews.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.phoenixRichTextBoxNews.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.phoenixRichTextBoxNews.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.phoenixRichTextBoxNews.Location = new System.Drawing.Point(3, 16);
+            this.phoenixRichTextBoxNews.MinimumSize = new System.Drawing.Size(342, 50);
+            this.phoenixRichTextBoxNews.Name = "phoenixRichTextBoxNews";
+            this.phoenixRichTextBoxNews.Rtf = "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fnil\\fcharset0 Microsoft S" +
+                "ans Serif;}}\r\n\\viewkind4\\uc1\\pard\\f0\\fs17\\par\r\n}\r\n";
+            this.phoenixRichTextBoxNews.Size = new System.Drawing.Size(801, 303);
+            this.phoenixRichTextBoxNews.TabIndex = 0;
+            this.phoenixRichTextBoxNews.ToolStripRenderMode = System.Windows.Forms.ToolStripRenderMode.System;
+            this.phoenixRichTextBoxNews.RichTextChanged += new PhoenixRTB.PhoenixRichTextBox.EventHandler(this.control_SomethingChanged);
             // 
             // tabPageExcludes
             // 
@@ -400,21 +429,6 @@
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Credits";
             // 
-            // phoenixRichTextBoxNews
-            // 
-            this.phoenixRichTextBoxNews.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.phoenixRichTextBoxNews.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.phoenixRichTextBoxNews.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.phoenixRichTextBoxNews.Location = new System.Drawing.Point(3, 16);
-            this.phoenixRichTextBoxNews.MinimumSize = new System.Drawing.Size(342, 50);
-            this.phoenixRichTextBoxNews.Name = "phoenixRichTextBoxNews";
-            this.phoenixRichTextBoxNews.Rtf = "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang1033{\\fonttbl{\\f0\\fnil\\fcharset0 Microsoft S" +
-                "ans Serif;}}\r\n\\viewkind4\\uc1\\pard\\f0\\fs17\\par\r\n}\r\n";
-            this.phoenixRichTextBoxNews.Size = new System.Drawing.Size(801, 303);
-            this.phoenixRichTextBoxNews.TabIndex = 0;
-            this.phoenixRichTextBoxNews.ToolStripRenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.phoenixRichTextBoxNews.RichTextChanged += new PhoenixRTB.PhoenixRichTextBox.EventHandler(this.control_SomethingChanged);
-            // 
             // phoenixRichTextBoxCredits
             // 
             this.phoenixRichTextBoxCredits.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
@@ -430,6 +444,105 @@
             this.phoenixRichTextBoxCredits.ToolStripRenderMode = System.Windows.Forms.ToolStripRenderMode.System;
             this.phoenixRichTextBoxCredits.RichTextChanged += new PhoenixRTB.PhoenixRichTextBox.EventHandler(this.control_SomethingChanged);
             // 
+            // tabPage1
+            // 
+            this.tabPage1.BackColor = System.Drawing.SystemColors.Control;
+            this.tabPage1.Controls.Add(this.groupBox7);
+            this.tabPage1.Controls.Add(this.groupBox6);
+            this.tabPage1.Location = new System.Drawing.Point(2, 21);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(813, 328);
+            this.tabPage1.TabIndex = 3;
+            this.tabPage1.Text = "Install version";
+            // 
+            // groupBox7
+            // 
+            this.groupBox7.Controls.Add(this.labelOldPathToJar);
+            this.groupBox7.Controls.Add(this.label7);
+            this.groupBox7.Controls.Add(this.label6);
+            this.groupBox7.Controls.Add(this.labelNewPathToJar);
+            this.groupBox7.Location = new System.Drawing.Point(284, 160);
+            this.groupBox7.Name = "groupBox7";
+            this.groupBox7.Size = new System.Drawing.Size(266, 61);
+            this.groupBox7.TabIndex = 7;
+            this.groupBox7.TabStop = false;
+            this.groupBox7.Text = "Path to/version of minecraft.jar";
+            // 
+            // labelOldPathToJar
+            // 
+            this.labelOldPathToJar.Location = new System.Drawing.Point(112, 16);
+            this.labelOldPathToJar.Name = "labelOldPathToJar";
+            this.labelOldPathToJar.Size = new System.Drawing.Size(147, 20);
+            this.labelOldPathToJar.TabIndex = 3;
+            this.labelOldPathToJar.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label7
+            // 
+            this.label7.Location = new System.Drawing.Point(6, 36);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(100, 20);
+            this.label7.TabIndex = 2;
+            this.label7.Text = "New value:";
+            this.label7.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // label6
+            // 
+            this.label6.Location = new System.Drawing.Point(6, 16);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(100, 20);
+            this.label6.TabIndex = 1;
+            this.label6.Text = "Old/current value:";
+            this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // labelNewPathToJar
+            // 
+            this.labelNewPathToJar.Location = new System.Drawing.Point(112, 36);
+            this.labelNewPathToJar.Name = "labelNewPathToJar";
+            this.labelNewPathToJar.Size = new System.Drawing.Size(147, 20);
+            this.labelNewPathToJar.TabIndex = 0;
+            this.labelNewPathToJar.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // groupBox6
+            // 
+            this.groupBox6.Controls.Add(this.comboBoxAvalibleMinecraftVersions);
+            this.groupBox6.Controls.Add(this.button1);
+            this.groupBox6.Controls.Add(this.labelPopulatingList);
+            this.groupBox6.Location = new System.Drawing.Point(284, 92);
+            this.groupBox6.Name = "groupBox6";
+            this.groupBox6.Size = new System.Drawing.Size(266, 62);
+            this.groupBox6.TabIndex = 6;
+            this.groupBox6.TabStop = false;
+            this.groupBox6.Text = "Specify the version of minecraft to install";
+            // 
+            // comboBoxAvalibleMinecraftVersions
+            // 
+            this.comboBoxAvalibleMinecraftVersions.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxAvalibleMinecraftVersions.Enabled = false;
+            this.comboBoxAvalibleMinecraftVersions.FormattingEnabled = true;
+            this.comboBoxAvalibleMinecraftVersions.Location = new System.Drawing.Point(6, 19);
+            this.comboBoxAvalibleMinecraftVersions.Name = "comboBoxAvalibleMinecraftVersions";
+            this.comboBoxAvalibleMinecraftVersions.Size = new System.Drawing.Size(172, 21);
+            this.comboBoxAvalibleMinecraftVersions.TabIndex = 0;
+            this.comboBoxAvalibleMinecraftVersions.SelectedIndexChanged += new System.EventHandler(this.comboBoxAvalibleMinecraftVersions_SelectedIndexChanged);
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(184, 18);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 2;
+            this.button1.Text = "Refresh List";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // labelPopulatingList
+            // 
+            this.labelPopulatingList.Location = new System.Drawing.Point(6, 43);
+            this.labelPopulatingList.Name = "labelPopulatingList";
+            this.labelPopulatingList.Size = new System.Drawing.Size(253, 13);
+            this.labelPopulatingList.TabIndex = 3;
+            // 
             // FormPackInfoWriter
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -441,6 +554,7 @@
             this.Controls.Add(this.groupBox3);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
             this.Name = "FormPackInfoWriter";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "KBG PackInfo Writer";
@@ -461,6 +575,9 @@
             this.groupBox2.PerformLayout();
             this.tabPageCredits.ResumeLayout(false);
             this.groupBox4.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.groupBox7.ResumeLayout(false);
+            this.groupBox6.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -498,6 +615,16 @@
         private System.Windows.Forms.TabPage tabPageCredits;
         private System.Windows.Forms.GroupBox groupBox4;
         private PhoenixRTB.PhoenixRichTextBox phoenixRichTextBoxCredits;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.ComboBox comboBoxAvalibleMinecraftVersions;
+        private System.Windows.Forms.Label labelPopulatingList;
+        private System.Windows.Forms.GroupBox groupBox7;
+        private System.Windows.Forms.Label labelNewPathToJar;
+        private System.Windows.Forms.GroupBox groupBox6;
+        private System.Windows.Forms.Label labelOldPathToJar;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label6;
     }
 }
 

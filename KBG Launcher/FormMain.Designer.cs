@@ -76,6 +76,7 @@
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.textBoxDebug = new System.Windows.Forms.TextBox();
+            this.labelDownloadSub = new System.Windows.Forms.Label();
             this.groupBoxLogin.SuspendLayout();
             this.panelDownload.SuspendLayout();
             this.groupBoxTwitter.SuspendLayout();
@@ -135,6 +136,7 @@
             // 
             // comboBoxPackSelect
             // 
+            this.comboBoxPackSelect.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxPackSelect.FormattingEnabled = true;
             this.comboBoxPackSelect.Location = new System.Drawing.Point(9, 19);
             this.comboBoxPackSelect.Name = "comboBoxPackSelect";
@@ -186,6 +188,7 @@
             // panelDownload
             // 
             this.panelDownload.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelDownload.Controls.Add(this.labelDownloadSub);
             this.panelDownload.Controls.Add(this.labelDownloadProgress);
             this.panelDownload.Controls.Add(this.labelDownloadSpeed);
             this.panelDownload.Controls.Add(this.buttonDownloadCancel);
@@ -230,7 +233,7 @@
             // 
             this.labelDownload.Location = new System.Drawing.Point(5, 8);
             this.labelDownload.Name = "labelDownload";
-            this.labelDownload.Size = new System.Drawing.Size(276, 61);
+            this.labelDownload.Size = new System.Drawing.Size(276, 34);
             this.labelDownload.TabIndex = 1;
             this.labelDownload.Text = "label1";
             this.labelDownload.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -544,6 +547,15 @@
             this.textBoxDebug.TabIndex = 27;
             this.textBoxDebug.Visible = false;
             // 
+            // labelDownloadSub
+            // 
+            this.labelDownloadSub.Location = new System.Drawing.Point(5, 42);
+            this.labelDownloadSub.Name = "labelDownloadSub";
+            this.labelDownloadSub.Size = new System.Drawing.Size(276, 27);
+            this.labelDownloadSub.TabIndex = 5;
+            this.labelDownloadSub.Text = "label1";
+            this.labelDownloadSub.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -624,6 +636,7 @@
         private System.Windows.Forms.LinkLabel linkLabelKB_Gaming;
         private System.Windows.Forms.LinkLabel linkLabelCredits;
         private System.Windows.Forms.Label labelNoTwitterConnection;
+        private System.Windows.Forms.Label labelDownloadSub;
     }
 }
 

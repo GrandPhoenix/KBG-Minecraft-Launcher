@@ -17,6 +17,7 @@ namespace KBG_Launcher
         private bool _preventPackDownload = false;
         private string _updateNews = "";
         private string _credits = "";
+        private string _installVersion = "";
 
         public List<string> ExcludeFromUpdate
         {
@@ -58,6 +59,11 @@ namespace KBG_Launcher
             get { return _credits; }
             set { _credits = value; }
         }
+        public string InstallVersion
+        {
+            get { return _installVersion; }
+            set { _installVersion = value; }
+        }
         
         public xmlVersionInfo() { }
 
@@ -72,6 +78,7 @@ namespace KBG_Launcher
                 XmlNode updateNews;
                 XmlNode preventPackDownload;
                 XmlNode credits;
+                XmlNode installVersion;
                 XmlNodeList Excludes;
                 XmlDocument xmlDoc = new XmlDocument();
                                 
@@ -103,6 +110,7 @@ namespace KBG_Launcher
                 credits = xmlDoc.SelectSingleNode("KBGVersionInfo/Credits");
                 preventPackDownload = xmlDoc.SelectSingleNode("KBGVersionInfo/PreventPackDownload");
                 Excludes = xmlDoc.SelectNodes("KBGVersionInfo/ExcludeFromUpdate");
+                installVersion = xmlDoc.SelectSingleNode("KBGVersionInfo/InstallVersion");
 
                 //if(version == null)
                 //    throw new Exception("KBGVersionInfo/Version was not found in the update xml.");
@@ -134,6 +142,14 @@ namespace KBG_Launcher
 
                 if (credits != null)
                     _credits = credits.InnerText;
+
+                if (installVersion != null)
+                {
+                    if (installVersion.InnerText != "")
+                        _installVersion = installVersion.InnerText;
+                    else
+                        _installVersion = "1_4_7/minecraft.jar"; //defaulting to version 1.4.7
+                }
 
                 if (Excludes != null)
                 {

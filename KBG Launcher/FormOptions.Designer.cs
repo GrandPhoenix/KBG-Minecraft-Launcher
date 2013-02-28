@@ -47,14 +47,15 @@
             this.checkBoxAutoLogin = new System.Windows.Forms.CheckBox();
             this.comboBoxAutoLoginPack = new System.Windows.Forms.ComboBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.radioButtonRatioDefault = new System.Windows.Forms.RadioButton();
+            this.radioButtonRatioLinked = new System.Windows.Forms.RadioButton();
+            this.labelMemmoryMin = new System.Windows.Forms.Label();
+            this.labelMemmoryMax = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.numericUpDownRamMax = new System.Windows.Forms.NumericUpDown();
+            this.labelMemmoryText = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.numericUpDownRamMin = new System.Windows.Forms.NumericUpDown();
-            this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.buttonSetRam = new System.Windows.Forms.Button();
-            this.label3 = new System.Windows.Forms.Label();
+            this.trackBarMemmory = new System.Windows.Forms.TrackBar();
             this.tabPageAbout = new System.Windows.Forms.TabPage();
             this.labelAbout = new System.Windows.Forms.Label();
             this.groupBoxLinks = new System.Windows.Forms.GroupBox();
@@ -64,10 +65,8 @@
             this.groupBox3.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
-            this.groupBox5.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRamMax)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRamMin)).BeginInit();
-            this.groupBox4.SuspendLayout();
+            this.groupBox6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarMemmory)).BeginInit();
             this.tabPageAbout.SuspendLayout();
             this.groupBoxLinks.SuspendLayout();
             this.SuspendLayout();
@@ -246,8 +245,13 @@
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.groupBox5);
-            this.groupBox2.Controls.Add(this.groupBox4);
+            this.groupBox2.Controls.Add(this.groupBox6);
+            this.groupBox2.Controls.Add(this.labelMemmoryMin);
+            this.groupBox2.Controls.Add(this.labelMemmoryMax);
+            this.groupBox2.Controls.Add(this.label1);
+            this.groupBox2.Controls.Add(this.labelMemmoryText);
+            this.groupBox2.Controls.Add(this.label2);
+            this.groupBox2.Controls.Add(this.trackBarMemmory);
             this.groupBox2.Location = new System.Drawing.Point(3, 77);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(550, 105);
@@ -255,110 +259,100 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Memmory allocation";
             // 
-            // groupBox5
+            // groupBox6
             // 
-            this.groupBox5.Controls.Add(this.label1);
-            this.groupBox5.Controls.Add(this.numericUpDownRamMax);
-            this.groupBox5.Controls.Add(this.label2);
-            this.groupBox5.Controls.Add(this.numericUpDownRamMin);
-            this.groupBox5.Location = new System.Drawing.Point(6, 19);
-            this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(237, 80);
-            this.groupBox5.TabIndex = 16;
-            this.groupBox5.TabStop = false;
-            this.groupBox5.Text = "Values";
+            this.groupBox6.Controls.Add(this.radioButtonRatioDefault);
+            this.groupBox6.Controls.Add(this.radioButtonRatioLinked);
+            this.groupBox6.Location = new System.Drawing.Point(438, 19);
+            this.groupBox6.Name = "groupBox6";
+            this.groupBox6.Size = new System.Drawing.Size(106, 80);
+            this.groupBox6.TabIndex = 24;
+            this.groupBox6.TabStop = false;
+            this.groupBox6.Text = "Min : Max ratio";
+            // 
+            // radioButtonRatioDefault
+            // 
+            this.radioButtonRatioDefault.AutoSize = true;
+            this.radioButtonRatioDefault.Checked = true;
+            this.radioButtonRatioDefault.Location = new System.Drawing.Point(13, 27);
+            this.radioButtonRatioDefault.Name = "radioButtonRatioDefault";
+            this.radioButtonRatioDefault.Size = new System.Drawing.Size(81, 17);
+            this.radioButtonRatioDefault.TabIndex = 22;
+            this.radioButtonRatioDefault.TabStop = true;
+            this.radioButtonRatioDefault.Text = "1:2 (default)";
+            this.radioButtonRatioDefault.UseVisualStyleBackColor = true;
+            this.radioButtonRatioDefault.CheckedChanged += new System.EventHandler(this.radioButtonRatioDefault_CheckedChanged);
+            // 
+            // radioButtonRatioLinked
+            // 
+            this.radioButtonRatioLinked.AutoSize = true;
+            this.radioButtonRatioLinked.Location = new System.Drawing.Point(13, 50);
+            this.radioButtonRatioLinked.Name = "radioButtonRatioLinked";
+            this.radioButtonRatioLinked.Size = new System.Drawing.Size(71, 17);
+            this.radioButtonRatioLinked.TabIndex = 23;
+            this.radioButtonRatioLinked.Text = "1:1 linked";
+            this.radioButtonRatioLinked.UseVisualStyleBackColor = true;
+            this.radioButtonRatioLinked.CheckedChanged += new System.EventHandler(this.radioButtonRatioLinked_CheckedChanged);
+            // 
+            // labelMemmoryMin
+            // 
+            this.labelMemmoryMin.Location = new System.Drawing.Point(352, 16);
+            this.labelMemmoryMin.Name = "labelMemmoryMin";
+            this.labelMemmoryMin.Size = new System.Drawing.Size(80, 20);
+            this.labelMemmoryMin.TabIndex = 20;
+            this.labelMemmoryMin.Text = "Min. (Xms)";
+            this.labelMemmoryMin.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // labelMemmoryMax
+            // 
+            this.labelMemmoryMax.Location = new System.Drawing.Point(352, 36);
+            this.labelMemmoryMax.Name = "labelMemmoryMax";
+            this.labelMemmoryMax.Size = new System.Drawing.Size(80, 20);
+            this.labelMemmoryMax.TabIndex = 21;
+            this.labelMemmoryMax.Text = "Max (Xmx)";
+            this.labelMemmoryMax.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 26);
+            this.label1.Location = new System.Drawing.Point(286, 16);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(56, 13);
+            this.label1.Size = new System.Drawing.Size(60, 20);
             this.label1.TabIndex = 0;
-            this.label1.Text = "Min. (Xms)";
+            this.label1.Text = "Min. (Xms):";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // numericUpDownRamMax
+            // labelMemmoryText
             // 
-            this.numericUpDownRamMax.Location = new System.Drawing.Point(111, 45);
-            this.numericUpDownRamMax.Maximum = new decimal(new int[] {
-            100000,
-            0,
-            0,
-            0});
-            this.numericUpDownRamMax.Minimum = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
-            this.numericUpDownRamMax.Name = "numericUpDownRamMax";
-            this.numericUpDownRamMax.Size = new System.Drawing.Size(120, 20);
-            this.numericUpDownRamMax.TabIndex = 4;
-            this.numericUpDownRamMax.Value = new decimal(new int[] {
-            511,
-            0,
-            0,
-            0});
+            this.labelMemmoryText.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.labelMemmoryText.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.labelMemmoryText.Location = new System.Drawing.Point(8, 65);
+            this.labelMemmoryText.Name = "labelMemmoryText";
+            this.labelMemmoryText.Size = new System.Drawing.Size(424, 32);
+            this.labelMemmoryText.TabIndex = 19;
+            this.labelMemmoryText.Text = "label5 long label text";
+            this.labelMemmoryText.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 47);
+            this.label2.Location = new System.Drawing.Point(286, 36);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(56, 13);
+            this.label2.Size = new System.Drawing.Size(60, 20);
             this.label2.TabIndex = 1;
-            this.label2.Text = "Max (Xmx)";
+            this.label2.Text = "Max (Xmx):";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // numericUpDownRamMin
+            // trackBarMemmory
             // 
-            this.numericUpDownRamMin.Location = new System.Drawing.Point(111, 19);
-            this.numericUpDownRamMin.Maximum = new decimal(new int[] {
-            100000,
-            0,
-            0,
-            0});
-            this.numericUpDownRamMin.Minimum = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
-            this.numericUpDownRamMin.Name = "numericUpDownRamMin";
-            this.numericUpDownRamMin.Size = new System.Drawing.Size(120, 20);
-            this.numericUpDownRamMin.TabIndex = 3;
-            this.numericUpDownRamMin.Value = new decimal(new int[] {
-            511,
-            0,
-            0,
-            0});
-            // 
-            // groupBox4
-            // 
-            this.groupBox4.Controls.Add(this.buttonSetRam);
-            this.groupBox4.Controls.Add(this.label3);
-            this.groupBox4.Location = new System.Drawing.Point(249, 19);
-            this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(295, 80);
-            this.groupBox4.TabIndex = 6;
-            this.groupBox4.TabStop = false;
-            this.groupBox4.Text = "Recommended";
-            // 
-            // buttonSetRam
-            // 
-            this.buttonSetRam.Location = new System.Drawing.Point(6, 51);
-            this.buttonSetRam.Name = "buttonSetRam";
-            this.buttonSetRam.Size = new System.Drawing.Size(79, 23);
-            this.buttonSetRam.TabIndex = 2;
-            this.buttonSetRam.Text = "Set";
-            this.buttonSetRam.UseVisualStyleBackColor = true;
-            this.buttonSetRam.Click += new System.EventHandler(this.buttonSetRam_Click);
-            // 
-            // label3
-            // 
-            this.label3.Location = new System.Drawing.Point(6, 16);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(274, 34);
-            this.label3.TabIndex = 5;
-            this.label3.Text = "It is recommended that you set the values to about 33%\r\nof your total memory. Pre" +
-                "ss \'Set\' to set this automaticly\r\n";
+            this.trackBarMemmory.LargeChange = 100;
+            this.trackBarMemmory.Location = new System.Drawing.Point(12, 19);
+            this.trackBarMemmory.Maximum = 512;
+            this.trackBarMemmory.Minimum = 512;
+            this.trackBarMemmory.Name = "trackBarMemmory";
+            this.trackBarMemmory.Size = new System.Drawing.Size(268, 45);
+            this.trackBarMemmory.TabIndex = 17;
+            this.trackBarMemmory.TickStyle = System.Windows.Forms.TickStyle.TopLeft;
+            this.trackBarMemmory.Value = 512;
+            this.trackBarMemmory.Scroll += new System.EventHandler(this.trackBarMemmory_Scroll);
             // 
             // tabPageAbout
             // 
@@ -430,11 +424,10 @@
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
-            this.groupBox5.ResumeLayout(false);
-            this.groupBox5.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRamMax)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRamMin)).EndInit();
-            this.groupBox4.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
+            this.groupBox6.ResumeLayout(false);
+            this.groupBox6.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBarMemmory)).EndInit();
             this.tabPageAbout.ResumeLayout(false);
             this.groupBoxLinks.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -446,10 +439,6 @@
 
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Button buttonSetRam;
-        private System.Windows.Forms.NumericUpDown numericUpDownRamMax;
-        private System.Windows.Forms.NumericUpDown numericUpDownRamMin;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button buttonOk;
@@ -466,13 +455,18 @@
         private System.Windows.Forms.Label labelAbout;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label labelVersion;
-        private System.Windows.Forms.GroupBox groupBox5;
-        private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.TextBox textBoxAutoLoginAddress;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.CheckBox checkBoxAutoLogin;
         private System.Windows.Forms.ComboBox comboBoxAutoLoginPack;
+        private System.Windows.Forms.TrackBar trackBarMemmory;
+        private System.Windows.Forms.Label labelMemmoryText;
+        private System.Windows.Forms.GroupBox groupBox6;
+        private System.Windows.Forms.RadioButton radioButtonRatioDefault;
+        private System.Windows.Forms.RadioButton radioButtonRatioLinked;
+        private System.Windows.Forms.Label labelMemmoryMin;
+        private System.Windows.Forms.Label labelMemmoryMax;
     }
 }

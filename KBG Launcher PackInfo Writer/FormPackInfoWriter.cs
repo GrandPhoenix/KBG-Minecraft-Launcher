@@ -18,6 +18,7 @@ namespace KBG_Minecraft_Launcher_NewsWriter
     {
         string _openFile = "";
         bool _loadingStuff = false;
+        XmlDocument xmlDocAvailableFiles = null;
 
         public FormPackInfoWriter()
         {
@@ -163,6 +164,14 @@ namespace KBG_Minecraft_Launcher_NewsWriter
                         foreach (XmlNode exclude in Excludes)
                             listBoxExcludes.Items.Add(exclude.InnerText);
                     }
+
+                    //Install version
+                    tmpNode = xDoc.SelectSingleNode("KBGVersionInfo/InstallVersion");
+
+                    if (tmpNode != null)
+                        labelOldPathToJar.Text = tmpNode.InnerText;
+
+
                     _loadingStuff = false;
                 }
                 catch (XmlException ex)
@@ -220,7 +229,9 @@ namespace KBG_Minecraft_Launcher_NewsWriter
                 textContent += string.Format("<{0}>{1}</{0}>{2}", "Credits", System.Security.SecurityElement.Escape(phoenixRichTextBoxCredits.Rtf), Environment.NewLine);
                 foreach(string item in listBoxExcludes.Items)
                     textContent += string.Format("<{0}>{1}</{0}>{2}", "ExcludeFromUpdate", item, Environment.NewLine);
-                
+                if(!labelNewPathToJar.Text.Contains("KEY") && labelNewPathToJar.Text != "")
+                    textContent += string.Format("<{0}>{1}</{0}>{2}", "InstallVersion", labelNewPathToJar.Text, Environment.NewLine);
+
                 textContent += @"</KBGVersionInfo>" + Environment.NewLine;
 
                 xmlDoc.LoadXml(textContent);
@@ -326,6 +337,135 @@ namespace KBG_Minecraft_Launcher_NewsWriter
             }
         }
 
+        private void button1_Click(object sender, EventArgs e)
+        {
+            labelPopulatingList.Text = "Generating List...";
+            this.Refresh();
+            PopulateMinecraftVersionList();
+            labelPopulatingList.Text = "Done.";
+            comboBoxAvalibleMinecraftVersions.Enabled = true;
+        }
+
+        private void PopulateMinecraftVersionList()
+        {
+            //XmlDocument xmlDoc = new XmlDocument();
+            try
+            {
+                List<string> list = new List<string>();
+                List<string> listFinal = new List<string>();
+
+                xmlDocAvailableFiles = new XmlDocument();
+                using (System.Net.WebClient client = new System.Net.WebClient())
+                {
+                    xmlDocAvailableFiles.LoadXml(client.DownloadString(@"https://s3.amazonaws.com/assets.minecraft.net/"));
+                }
+
+                foreach (XmlElement element in xmlDocAvailableFiles.LastChild.ChildNodes)
+                {
+                    if (element.Name == "Contents")
+                    {
+                        bool above2012 = int.Parse(element["LastModified"].InnerXml.Substring(0, 4)) >= 2012;
+                        if (above2012)
+                            list.Add(element["Key"].InnerXml);
+                    }
+                }
+                list.RemoveAll(ContainsW);
+                list.RemoveAll(IsNotVersionNumber);
+
+                foreach (string str in list)
+                {
+                    string[] split = str.Split('/');
+                    if (!listFinal.Contains(split[0]))
+                        listFinal.Add(split[0]);
+                }
+
+                comboBoxAvalibleMinecraftVersions.Items.Clear();
+                foreach (string str in listFinal)
+                {
+                    comboBoxAvalibleMinecraftVersions.Items.Add(str);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("An error occured while getting Resource list: " + Environment.NewLine + ex.Message, "Error.", MessageBoxButtons.OK, MessageBoxIcon.Error);                
+            }
+
+            //getting other file names
+            //list = new List<string>();
+            //foreach (XmlElement element in xmlDocAvailableFiles.LastChild.ChildNodes)
+            //    if (element.Name == "Contents")
+            //            list.Add(element["Key"].InnerXml);
+
+            ////list.RemoveAll(IsVersionNumber);
+            
+            //foreach (string str in list)
+            //{
+            //    listBoxAvailableFiles.Items.Add(str);
+            //}
+        }
+
+        private bool ContainsW(string s)
+        {
+            return s.ToLower().Contains("w");
+        }
+
+        private bool IsNotVersionNumber(string s)
+        {
+            int nothing = 0;
+            return !int.TryParse(s.Substring(0, 1), out nothing);
+        }
+
+        private bool IsVersionNumber(string s)
+        {
+            int nothing = 0;
+            return int.TryParse(s.Substring(0, 1), out nothing);
+        }
+
+        private void comboBoxAvalibleMinecraftVersions_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //List<string> list = new List<string>();
+            //List<string> listFinal = new List<string>();
+            bool FoundKey = false;
+            foreach (XmlElement element in xmlDocAvailableFiles.LastChild.ChildNodes)
+            {
+                if (element.Name == "Contents")
+                {
+                    //string[] split = element["Key"].InnerXml.Split('/');
+                    //string AddString = "";
+                    //if (split[0] == comboBoxAvalibleMinecraftVersions.SelectedItem.ToString())
+                    //{
+                    //    //AddString = "";
+                    //    //for (int i = 1; i < split.Length; i++)
+                    //    //{
+                    //    //    AddString += split[i] + '/';
+                    //    //}
+                    //    //AddString = AddString.TrimEnd('/');
+
+
+
+                    //    listBoxAvailableFiles.Items.Add(AddString);
+                    //}
+                    if (element["Key"].InnerXml == comboBoxAvalibleMinecraftVersions.SelectedItem.ToString() + "/minecraft.jar")
+                    {
+                        FoundKey = true;
+                        break;
+                    }
+                }
+            }
+            if (FoundKey)
+            {
+                labelNewPathToJar.Text = comboBoxAvalibleMinecraftVersions.SelectedItem.ToString() + "/minecraft.jar";
+                if (!_loadingStuff && _openFile != "")
+                    buttonSave.Enabled = true;
+            }
+            else
+            {
+                MessageBox.Show("The minecraft.jar for the selected version could not be found in the Resource list." + Environment.NewLine + "Please inform me (GrandPhoenix82) so i can try to fix it", "Resource list is missing information", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                labelNewPathToJar.Text = "KEY NOT FOUND!";
+            }
+            
+        }
           
     }
 

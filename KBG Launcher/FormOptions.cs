@@ -22,6 +22,7 @@ namespace KBG_Launcher
         private xmlSettings _settings;
         //private List<PackClass> _packsInfo = new List<PackClass>();
         private bool _LoadingSettings = false;
+        String _javaBaseKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
 
 #if (DEBUG) //debug
         private string _KBGClientVersionUrl = "https://dl.dropbox.com/s/iu0qn58zdqxlqty/KBGClientVersion.xml";
@@ -54,14 +55,17 @@ namespace KBG_Launcher
        
         private const string _packIRName = "Industrial Rage";
         private const string _packIRUpdateUrl = "http://www.killerbeesgaming.com/IR.zip";
+        private const string _packIRUpdateInjectUrl = "http://www.killerbeesgaming.com/IRInject.zip";
         private const string _packIRUpdateVersionUrl = "http://www.killerbeesgaming.com/IR.xml";
 
         private const string _packERName = "Endless Rage";
         private const string _packERUpdateUrl = "http://www.killerbeesgaming.com/ER.zip";
+        private const string _packERUpdateInjectUrl = "http://www.killerbeesgaming.com/ERInject.zip";
         private const string _packERUpdateVersionUrl = "http://www.killerbeesgaming.com/ER.xml";
 
         private const string _packTFCRName = "Terrafirma Rage";
         private const string _packTFCRUpdateUrl = "http://www.killerbeesgaming.com/TFR.zip";
+        private const string _packTFCRUpdateInjectUrl = "http://www.killerbeesgaming.com/TFRInject.zip";
         private const string _packTFCRUpdateVersionUrl = "http://www.killerbeesgaming.com/TFR.xml"; 
 
         private const string _packVanillaName = "Vanilla";
@@ -270,8 +274,17 @@ namespace KBG_Launcher
 
                 _LoadingSettings = true;
 
-                numericUpDownRamMin.Value = _settings.MemmoryMin;
-                numericUpDownRamMax.Value = _settings.MemmoryMax;
+                //get system memmory
+
+
+                trackBarMemmory.Maximum = (int)Math.Floor(decimal.Round(GetTotalMemoryInBytes() / 1048576));
+                trackBarMemmory.Value = _settings.MemmoryMax;
+                AdjustMemmoryValues();
+                //decimal.Round(GetTotalMemoryInBytes() / 3000000)
+                //numericUpDownRamMin.Value = _settings.MemmoryMin;
+                //numericUpDownRamMax.Value = _settings.MemmoryMax;
+
+
 
                 _LoadingSettings = false;
             }
@@ -336,39 +349,19 @@ namespace KBG_Launcher
         {
             RegistryKey regkey = null;
             String currentVersion = "";
+            //bool somethingWasNull = false;
             try
             {
-                //String javaKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
-                //regkey = Registry.LocalMachine.OpenSubKey(javaKey);
-
-                ////using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(javaKey))
-                ////using (var baseKey = Registry.LocalMachine.OpenSubKey(javaKey))
-
-                ////using(var baseKey = regkey)
-                ////{
-                //currentVersion = regkey.GetValue("CurrentVersion").ToString();
-                //using (var homeKey = regkey.OpenSubKey(currentVersion))
-                //    return homeKey.GetValue("JavaHome").ToString();
-                //}
+                ValidateJavaRegistryValues();
                 String javaKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
-
                 RegistryKey localMachineRegistry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32);
-
-                //MessageBox.Show(string.IsNullOrEmpty(javaKey) ? localMachineRegistry : localMachineRegistry.OpenSubKey(javaKey));
-
-
-
                 regkey = localMachineRegistry.OpenSubKey(javaKey);
 
-                //using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(javaKey))
-                //using (var baseKey = Registry.LocalMachine.OpenSubKey(javaKey))
-
-                //using(var baseKey = regkey)
-                //{
                 currentVersion = regkey.GetValue("CurrentVersion").ToString();
                 using (var homeKey = regkey.OpenSubKey(currentVersion))
+                {
                     return homeKey.GetValue("JavaHome").ToString();
-
+                }
             }
             catch (Exception ex)
             {
@@ -382,49 +375,321 @@ namespace KBG_Launcher
         private string GetJavaVersion()
         {
             RegistryKey regkey = null;
-            string currentVersion = "";
+            //string currentVersion = "";
             try
             {
-                //String javaKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
-                ////using (var baseKey = Registry.LocalMachine.OpenSubKey(javaKey))
-                //regkey = Registry.LocalMachine.OpenSubKey(javaKey);
-                ////RegistryKey regKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
-                //if (regkey == null)
-                //    return "unknown, wotking on a fix";
-                //else
-                //    //using (var baseKey = regkey.OpenSubKey(javaKey))
-                //    //{
-                //        //if(baseKey == null)
-                //        //    return "unknown, wotking on a fix";
-                //        //else
-                //            return regkey.GetValue("CurrentVersion").ToString();
-                //        //using (var homeKey = baseKey.OpenSubKey(currentVersion))
-                //        //    return homeKey.GetValue("JavaHome").ToString();
-                //    //}
+                ValidateJavaRegistryValues();
                 String javaKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
-
                 RegistryKey localMachineRegistry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32);
-
-                //MessageBox.Show(string.IsNullOrEmpty(javaKey) ? localMachineRegistry : localMachineRegistry.OpenSubKey(javaKey));
-
-
-
                 regkey = localMachineRegistry.OpenSubKey(javaKey);
+                return (string)regkey.GetValue("CurrentVersion");
 
-                //using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(javaKey))
-                //using (var baseKey = Registry.LocalMachine.OpenSubKey(javaKey))
-
-                //using(var baseKey = regkey)
-                //{
-                return regkey.GetValue("CurrentVersion").ToString();
-                //using (var homeKey = regkey.OpenSubKey(currentVersion))
-                //    MessageBox.Show(homeKey.GetValue("JavaHome").ToString());
             }
             catch (Exception ex)
             {
-                ex.Data.Add("GetJavaInstallationPath() - regkey null?", regkey == null);
+                //ex.Data.Add("GetJavaVersion() - regkey null?", regkey == null);
                 throw ex;
             }
+        }
+
+        //private RegistryKey GetJavaKey()
+        //{
+        //    RegistryKey regkey = null;
+        //    //String currentVersion = "";
+        //    //bool somethingWasNull = false;
+        //    try
+        //    {
+        //        //String javaKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
+        //        //regkey = Registry.LocalMachine.OpenSubKey(javaKey);
+
+        //        ////using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(javaKey))
+        //        ////using (var baseKey = Registry.LocalMachine.OpenSubKey(javaKey))
+
+        //        ////using(var baseKey = regkey)
+        //        ////{
+        //        //currentVersion = regkey.GetValue("CurrentVersion").ToString();
+        //        //using (var homeKey = regkey.OpenSubKey(currentVersion))
+        //        //    return homeKey.GetValue("JavaHome").ToString();
+        //        //}
+
+        //        String javaKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
+        //        RegistryKey localMachineRegistry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32);
+        //        regkey = localMachineRegistry.OpenSubKey(javaKey);
+
+        //        //using (var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(javaKey))
+        //        //using (var baseKey = Registry.LocalMachine.OpenSubKey(javaKey))
+
+        //        //using(var baseKey = regkey)
+        //        //{
+                
+        //        //else
+        //        //{
+        //        //    return regkey;
+        //        //}
+
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        //ex.Data.Add("GetJavaKey() - currentVersion", currentVersion);
+        //        //ex.Data.Add("GetJavaKey() - regkey null?", regkey == null);
+        //        throw ex;
+        //    }
+
+        //}
+
+        private void ValidateJavaRegistryValues()
+        {
+            RegistryKey regkey = null;
+            bool SomethingWasNull = false;
+            try
+            {              
+                RegistryKey localMachineRegistry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32);
+                Exception ex = new Exception("Failed to read the Registry. Please make sure you have Java installed, and that the installation has not been corrupted. One way to do this is to reinstall java");
+
+
+                if (localMachineRegistry.OpenSubKey("SOFTWARE") != null)
+                {
+                    ex.Data.Add("'SOFTWARE' key found?", true);
+
+                    //Testing if SOFTWARE\\JavaSoft exists
+                    if (localMachineRegistry.OpenSubKey("SOFTWARE\\JavaSoft") != null)
+                    {
+                        ex.Data.Add("'SOFTWARE\\JavaSoft' key found?", true);
+
+                        //Testing if SOFTWARE\\JavaSoft\Java Runtime Environment exists                        
+                        if (localMachineRegistry.OpenSubKey("SOFTWARE\\JavaSoft\\Java Runtime Environment") != null)
+                        {
+                            ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment' key found?", true);
+
+                            //Testing if 'SOFTWARE\\JavaSoft\\Java Runtime Environment' contains 'CurrentVersion'                                
+                            //regkeyTest = localMachineRegistry.OpenSubKey("SOFTWARE\\JavaSoft\\Java Runtime Environment");
+                            regkey = localMachineRegistry.OpenSubKey("SOFTWARE\\JavaSoft\\Java Runtime Environment");
+                            string CurrentVersion = null;
+                            string[] list1 = regkey.GetValueNames();
+                            foreach (string valueName in list1)
+                            {
+                                if (valueName == "CurrentVersion")
+                                {
+                                    CurrentVersion = (string)regkey.GetValue(valueName);
+                                    break;
+                                }
+                            }
+                            if (CurrentVersion != null)
+                            {
+                                ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment' - 'CurrentVersion' value found?", true);
+                                ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment' - 'CurrentVersion' value Is:", CurrentVersion);
+                                if (localMachineRegistry.OpenSubKey("SOFTWARE\\JavaSoft\\Java Runtime Environment\\" + CurrentVersion) != null)
+                                {
+                                    ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment\\" + CurrentVersion + "' subKey found?", true);
+                                    //regkeyTest = localMachineRegistry.OpenSubKey("SOFTWARE\\JavaSoft\\Java Runtime Environment\\" + );
+                                    regkey = localMachineRegistry.OpenSubKey("SOFTWARE\\JavaSoft\\Java Runtime Environment\\" + CurrentVersion);
+                                    List<string> list = new List<string>(regkey.GetValueNames());
+                                    //string javaHome = null;
+                                    //foreach (string valueName in list)
+                                    //{
+                                    //    ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment\\" + CurrentVersion + "' contains value (" + valueName + "): ", regkey.GetValue(valueName));
+                                    //    if (valueName == "JavaHome")
+                                    //        javaHome = (string)regkey.GetValue("JavaHome");
+                                    //}
+                                    
+                                    if (list.Contains("JavaHome"))
+                                    {
+                                        //Everything validated. Do something with the result?
+                                    }
+                                    else
+                                    {
+                                        ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment\\" + CurrentVersion + "' contains 'JavaHome' value?", false);
+                                        foreach (string valueName in list)                                        
+                                            ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment\\" + CurrentVersion + "' contains value (" + valueName + "): ", regkey.GetValue(valueName));
+                                        
+                                        throw ex;
+                                    }
+                                }
+                                else
+                                {
+                                    ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment\\" + CurrentVersion + "' subKey found?", false);
+                                    //Currentversion folder not found. listing subkeys
+                                    regkey = localMachineRegistry.OpenSubKey("SOFTWARE\\JavaSoft\\Java Runtime Environment");
+                                    string[] list = regkey.GetSubKeyNames();
+                                    int tmpCounter = 0;
+                                    foreach (string subkey in list)
+                                    {
+                                        ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment' contains key (" + tmpCounter++ + "):", subkey);
+                                    }
+                                    throw ex;
+                                }
+                            }
+                            else
+                            {
+                                ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment' - 'CurrentVersion' Value found?", false);
+                                string[] list2 = regkey.GetValueNames();
+                                foreach (string valueName in list2)
+                                {
+                                    ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment' contains value (" + valueName + ") ", regkey.GetValue(valueName));
+                                }
+                                throw ex;
+                            }
+                        }
+                        else
+                        {
+                            //searching SOFTWARE\\JavaSoft for anything Java
+                            regkey = localMachineRegistry.OpenSubKey("SOFTWARE\\JavaSoft");
+                            string[] list = regkey.GetSubKeyNames();
+                            int tmpCounter = 0;
+                            foreach (string subkey in list)
+                            {
+                                if (subkey.ToLower().Contains("java"))
+                                    ex.Data.Add("'SOFTWARE\\JavaSoft' contains key (" + tmpCounter++ + "):", subkey);
+                            }
+                            throw ex;
+                        }
+                    }
+                    else
+                    {
+                        ex.Data.Add("'SOFTWARE\\JavaSoft' key found?", false);
+                        regkey = localMachineRegistry.OpenSubKey("SOFTWARE");
+                        string[] list = regkey.GetSubKeyNames();
+                        int tmpCounter = 0;
+                        foreach (string subkey in list)
+                        {
+                            if (subkey.ToLower().Contains("java"))
+                                ex.Data.Add("'SOFTWARE' contains key (" + tmpCounter++ + "):", subkey);
+                        }
+                        throw ex;
+                    }
+                    
+                }
+                else
+                {
+                    ex.Data.Add("'SOFTWARE' key found?", false); //SOFTWARE should always exists, and therefore should never get here, unless theres problems getting the localMachineRegistry
+                    throw ex;
+                }
+
+
+
+                
+
+                //if (SomethingWasNull)
+                //{
+                    
+                //    RegistryKey regkeyTest = null;
+
+                //    regkeyTest = localMachineRegistry.OpenSubKey("SOFTWARE");
+                //    if (regkeyTest == null)
+                //    {
+                //        ex.Data.Add("'SOFTWARE' key found?", false); //SOFTWARE should always exists, and therefore should never get here, unless theres problems getting the localMachineRegistry
+                //        throw ex;
+                //    }
+                //    else
+                //    {
+                //        ex.Data.Add("'SOFTWARE' key found?", true);
+
+                //        //Testing if SOFTWARE\\JavaSoft exists
+                //        regkeyTest = localMachineRegistry.OpenSubKey("SOFTWARE\\JavaSoft");
+                //        if (regkeyTest == null)
+                //        {
+                //            //searching SOFTWARE for anything Java
+                //            ex.Data.Add("SOFTWARE\\JavaSoft key found?", false);
+                //            regkeyTest = localMachineRegistry.OpenSubKey("SOFTWARE");
+                //            string[] list = regkeyTest.GetSubKeyNames();
+                //            int tmpCounter = 0;
+                //            foreach (string subkey in list)
+                //            {
+                //                if (subkey.ToLower().Contains("java"))
+                //                    ex.Data.Add("'SOFTWARE' contains subkey (" + tmpCounter++ + "):", subkey);
+                //            }
+                //            throw ex;
+                //        }
+                //        else
+                //        {
+                //            ex.Data.Add("'SOFTWARE\\JavaSoft' key found?", true);
+
+                //            //Testing if SOFTWARE\\JavaSoft\Java Runtime Environment exists
+                //            regkeyTest = localMachineRegistry.OpenSubKey("SOFTWARE\\JavaSoft\\Java Runtime Environment");
+                //            if (regkeyTest == null)
+                //            {
+                //                //searching SOFTWARE\\JavaSoft for anything Java
+                //                regkeyTest = localMachineRegistry.OpenSubKey("SOFTWARE\\JavaSoft");
+                //                string[] list = regkeyTest.GetSubKeyNames();
+                //                int tmpCounter = 0;
+                //                foreach (string subkey in list)
+                //                {
+                //                    if (subkey.ToLower().Contains("java"))
+                //                        ex.Data.Add("'SOFTWARE\\JavaSoft' contains subkey (" + tmpCounter++ + "):", subkey);
+                //                }
+                //                throw ex;
+                //            }
+                //            else
+                //            {
+                //                ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment' key found?", true);
+
+                //                //Testing if 'SOFTWARE\\JavaSoft\\Java Runtime Environment' contains 'CurrentVersion'                                
+                //                //regkeyTest = localMachineRegistry.OpenSubKey("SOFTWARE\\JavaSoft\\Java Runtime Environment");
+                //                string CurrentVersion = null;
+                //                string[] list1 = regkeyTest.GetValueNames();
+                //                foreach (string valueName in list1)
+                //                {
+                //                    if (valueName == "CurrentVersion")
+                //                    {
+                //                        CurrentVersion = (string)regkeyTest.GetValue(valueName);
+                //                        break;
+                //                    }
+                //                }
+                //                if (CurrentVersion == null)
+                //                {
+                //                    //CurrentVersion not found. listing contents of folder
+                //                    ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment' - 'CurrentVersion' Value found?", false);
+                //                    string[] list2 = regkeyTest.GetValueNames();
+                //                    foreach (string valueName in list2)
+                //                    {
+                //                        ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment' contains value (" + valueName + ") ", regkeyTest.GetValue(valueName));
+                //                    }
+                //                    throw ex;
+                //                }
+                //                else
+                //                {
+                //                    ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment' - 'CurrentVersion' value found?", true);
+                //                    ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment' - 'CurrentVersion' value Is:", CurrentVersion);
+                //                    regkeyTest = localMachineRegistry.OpenSubKey("SOFTWARE\\JavaSoft\\Java Runtime Environment\\" + CurrentVersion);
+                //                    if (regkeyTest == null)
+                //                    {
+                //                        ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment\\" + CurrentVersion + "' subKey found?", false);
+                //                        //Currentversion folder not found. listing subkeys
+                //                        regkeyTest = localMachineRegistry.OpenSubKey("SOFTWARE\\JavaSoft\\Java Runtime Environment");
+                //                        string[] list = regkeyTest.GetSubKeyNames();
+                //                        foreach (string subkey in list)
+                //                        {
+                //                            ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment' contains subkey: " + subkey, "");
+                //                        }
+                //                        throw ex;
+                //                    }
+                //                    else
+                //                    {
+                //                        ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment\\" + CurrentVersion + "' subKey found?", true);
+                //                        //regkeyTest = localMachineRegistry.OpenSubKey("SOFTWARE\\JavaSoft\\Java Runtime Environment\\" + );
+                //                        string[] list = regkeyTest.GetValueNames();
+                //                        foreach (string valueName in list)
+                //                        {
+                //                            ex.Data.Add("'SOFTWARE\\JavaSoft\\Java Runtime Environment\\" + CurrentVersion + "' contains value (" + valueName + "): ", regkeyTest.GetValue(valueName));
+                //                        }
+                //                        throw ex;
+                //                    }
+                //                }
+                //            }
+                //        }
+                //    }
+
+
+                    //throw ex;
+                //}
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
         }
 
 
@@ -444,6 +709,27 @@ namespace KBG_Launcher
                     break;
                 case _packVanillaName:
                     returnString = _packVanillaUpdateUrl;
+                    break;
+            }
+            return returnString;
+        }
+
+        public string PackUpdateInjectUrl(string packName)
+        {
+            string returnString = "";
+            switch (packName)
+            {
+                case _packIRName:
+                    returnString = _packIRUpdateInjectUrl;
+                    break;
+                case _packERName:
+                    returnString = _packERUpdateInjectUrl;
+                    break;
+                case _packTFCRName:
+                    returnString = _packTFCRUpdateInjectUrl;
+                    break;
+                case _packVanillaName:
+                    returnString = "Vanilla";
                     break;
             }
             return returnString;
@@ -584,38 +870,40 @@ namespace KBG_Launcher
 
         private void buttonSetRam_Click(object sender, EventArgs e)
         {
-            try
-            {
-                numericUpDownRamMin.Value = decimal.Round(GetTotalMemoryInBytes() / 3000000);
-                numericUpDownRamMax.Value = decimal.Round(GetTotalMemoryInBytes() / 3000000);
-            }
-            catch (Exception ex)
-            {
-                _formMain.ErrorReporting(ex, false);
-            }
+            //try
+            //{
+            //    numericUpDownRamMin.Value = decimal.Round(GetTotalMemoryInBytes() / 3000000);
+            //    numericUpDownRamMax.Value = decimal.Round(GetTotalMemoryInBytes() / 3000000);
+            //}
+            //catch (Exception ex)
+            //{
+            //    _formMain.ErrorReporting(ex, false);
+            //}
         }
 
         private void FormOptions_Load(object sender, EventArgs e)
         {
-            try
-            {
-                numericUpDownRamMax.Maximum = decimal.Round(GetTotalMemoryInBytes() / 1048576);
-                numericUpDownRamMin.Maximum = decimal.Round(GetTotalMemoryInBytes() / 1048576);
-            }
-            catch (Exception ex)
-            {
-                _formMain.ErrorReporting(ex, false);
-            }
+            //try
+            //{
+            //    numericUpDownRamMax.Maximum = decimal.Round(GetTotalMemoryInBytes() / 1048576);
+            //    numericUpDownRamMin.Maximum = decimal.Round(GetTotalMemoryInBytes() / 1048576);
+            //}
+            //catch (Exception ex)
+            //{
+            //    _formMain.ErrorReporting(ex, false);
+            //}
         }
 
         public int GetMemmoryMin()
         {
-            return (int)numericUpDownRamMin.Value;
+            //return (int)numericUpDownRamMin.Value;
+            return int.Parse(labelMemmoryMin.Text);
         }
 
         public int GetMemmoryMax()
         {
-            return (int)numericUpDownRamMax.Value;
+            //return (int)numericUpDownRamMax.Value;
+            return int.Parse(labelMemmoryMax.Text);
         }
 
         private void buttonOk_Click(object sender, EventArgs e)
@@ -633,8 +921,10 @@ namespace KBG_Launcher
         {
             try
             {
-                _settings.MemmoryMin = (int)numericUpDownRamMin.Value;
-                _settings.MemmoryMax = (int)numericUpDownRamMax.Value;
+                //_settings.MemmoryMin = (int)numericUpDownRamMin.Value;
+                //_settings.MemmoryMax = (int)numericUpDownRamMax.Value;
+                _settings.MemmoryMin = int.Parse(labelMemmoryMin.Text);
+                _settings.MemmoryMax = int.Parse(labelMemmoryMax.Text);
             }
             catch (Exception ex)
             {
@@ -695,6 +985,131 @@ namespace KBG_Launcher
             try
             {
                 System.Diagnostics.Process.Start(e.LinkText);
+            }
+            catch (Exception ex)
+            {
+                _formMain.ErrorReporting(ex, false);
+            }
+        }
+
+        private void trackBarMemmory_Scroll(object sender, EventArgs e)
+        {
+            try
+            {
+                //int value = trackBarMemmory.Value * 100;
+                //labelMemmoryValue.Text = trackBarMemmory.Value.ToString() + "MB";
+                AdjustMemmoryValues();
+            }
+            catch (Exception ex)
+            {
+                _formMain.ErrorReporting(ex, false);
+            }
+        }
+
+        private void AdjustMemmoryValues()
+        {
+            try
+            {
+                if (radioButtonRatioDefault.Checked)
+                {
+                    int tmpValue = trackBarMemmory.Value / 2;
+                    if (tmpValue < 512)
+                        tmpValue = 512;
+                    labelMemmoryMin.Text = tmpValue.ToString();
+                    labelMemmoryMax.Text = trackBarMemmory.Value.ToString();                    
+                }
+                else if (radioButtonRatioLinked.Checked)
+                {                    
+                    labelMemmoryMin.Text = trackBarMemmory.Value.ToString();
+                    labelMemmoryMax.Text = trackBarMemmory.Value.ToString();
+                }
+
+
+                //low danger zone - below 1Gb
+                //reccomended - 1gb to 2gb and less then 50%
+                //low danger zone - above 2gb to 3gb and above 50%
+                //high danger zone - above 3gb and above 75%
+
+                int allocatedPercentage = (int)(((decimal)trackBarMemmory.Value / (decimal)trackBarMemmory.Maximum) * 100);
+                string MinecraftPerformance = "";
+                string SystemPerformance = "";
+                //Color backgroundColor = Color.Green;
+
+                if (allocatedPercentage <= 50)
+                {
+                    labelMemmoryText.BackColor = Color.Green;
+                    //SystemPerformance = "
+                    //if (trackBarMemmory.Value <= 1000)
+                    //    labelMemmoryText.Text = "Minimum recommended amount.";
+                    //else
+                    //    labelMemmoryText.Text = "Recommended amount.";
+
+                }
+                else if (allocatedPercentage > 50 && allocatedPercentage < 75)
+                {
+                    labelMemmoryText.BackColor = Color.Yellow;
+                    SystemPerformance = "Not alot of memory for system. Disk swapping can occur.";
+                    //if (trackBarMemmory.Value <= 1000)
+                    //    labelMemmoryText.Text = "Minimum recommended amount for your system. " + Environment.NewLine + "Disk swapping can occur due to low system memory.";
+                    //else
+                    //    labelMemmoryText.Text = "Recommended amount for your system. " + Environment.NewLine + "Disk swapping can occur due to low system memory.";
+                }
+                else if (allocatedPercentage >= 75)
+                {
+                    labelMemmoryText.BackColor = Color.Red;
+                    SystemPerformance = "Expect lower performance due to very little memory for system.";
+                    //if (trackBarMemmory.Value <= 1000)
+                    //    labelMemmoryText.Text = "Minimum recommended amount for your system. " + Environment.NewLine + "Expect low performance due to very low system memory!";
+                    //else
+                    //    labelMemmoryText.Text = "Recommended amount for your system. " + Environment.NewLine + "Expect low performance due to very low system memory!";
+
+                }
+
+                if (trackBarMemmory.Value <= 1000)
+                {
+                    MinecraftPerformance = "Minimum recommended amount for Minecraft.";
+                }
+                else if (trackBarMemmory.Value > 1000 && trackBarMemmory.Value <= 2500)
+                {
+                    MinecraftPerformance = "Recommended amount for Minecraft.";
+                }
+                else if (trackBarMemmory.Value > 2500)
+                {
+                    MinecraftPerformance = "Very high amount allocated. Minecraft should not need this much.";
+                }
+
+                //labelMemmoryText.BackColor = backgroundColor;
+                labelMemmoryText.Text = MinecraftPerformance + Environment.NewLine + SystemPerformance;
+
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        
+        private void radioButtonRatioDefault_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                //int value = trackBarMemmory.Value * 100;
+                //labelMemmoryValue.Text = trackBarMemmory.Value.ToString() + "MB";
+                AdjustMemmoryValues();
+            }
+            catch (Exception ex)
+            {
+                _formMain.ErrorReporting(ex, false);
+            }
+        }
+
+        private void radioButtonRatioLinked_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                //int value = trackBarMemmory.Value * 100;
+                //labelMemmoryValue.Text = trackBarMemmory.Value.ToString() + "MB";
+                AdjustMemmoryValues();
             }
             catch (Exception ex)
             {

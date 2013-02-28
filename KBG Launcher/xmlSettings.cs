@@ -107,6 +107,7 @@ namespace KBG_Launcher
         private const string SettingNameRememberLogin = "RememberLogin";
         private const string SettingNameMemmoryMin = "MemmoryMin";
         private const string SettingNameMemmoryMax = "MemmoryMax";
+        //private const string SettingNameMemmoryAllocated = "MemmoryAllocated";
         private const string SettingNameJavaVersion = "JavaVersion";
         private const string SettingNameDoAutoLogin = "DoAutoLogin";
         private const string SettingNameAutoLoginServer = "AutoLoginServer";
@@ -165,7 +166,7 @@ namespace KBG_Launcher
 
         public int MemmoryMin
         {
-            get 
+            get
             {
                 int i = 512;
                 int.TryParse(LoadSettingByName(SettingNameMemmoryMin), out i);
@@ -174,26 +175,42 @@ namespace KBG_Launcher
             set
             {
                 int i = 512;
-                int.TryParse(value.ToString(), out i);                
-                SaveSettingByName(SettingNameMemmoryMin, i.ToString()); 
+                int.TryParse(value.ToString(), out i);
+                SaveSettingByName(SettingNameMemmoryMin, i.ToString());
             }
         }
 
         public int MemmoryMax
         {
-            get 
+            get
             {
                 int i = 512;
                 int.TryParse(LoadSettingByName(SettingNameMemmoryMax), out i);
-                return i; 
+                return i;
             }
-            set 
+            set
             {
                 int i = 512;
                 int.TryParse(value.ToString(), out i);
-                SaveSettingByName(SettingNameMemmoryMax, i.ToString()); 
+                SaveSettingByName(SettingNameMemmoryMax, i.ToString());
             }
         }
+
+        //public int MemmoryAllocated
+        //{
+        //    get
+        //    {
+        //        int i = 512;
+        //        int.TryParse(LoadSettingByName(SettingNameMemmoryAllocated), out i);
+        //        return i;
+        //    }
+        //    set
+        //    {
+        //        int i = 512;
+        //        int.TryParse(value.ToString(), out i);
+        //        SaveSettingByName(SettingNameMemmoryAllocated, i.ToString());
+        //    }
+        //}
 
         public string JavaVersion
         {
