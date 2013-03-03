@@ -740,7 +740,7 @@ namespace KBG_Launcher
                 if (HasInternetConnection())
                 {
                     //209.105.230.50:25568
-                    ServerAccessClass pingIR = new ServerAccessClass("ir.industrial-craft.net", 25565, labelIRResult, progressBarIR, this);
+                    ServerAccessClass pingIR = new ServerAccessClass("ir.industrial-craft.net", 25566, labelIRResult, progressBarIR, this);
                     ServerAccessClass pingER = new ServerAccessClass("209.105.230.53", 25565, labelERResult, progressBarER, this);
                     ServerAccessClass pingKBGEvent = new ServerAccessClass("209.105.230.50", 25568, labelKBGEventResult, progressBarKBGEvent, this);
                     ServerAccessClass pingTFCR = new ServerAccessClass("209.105.230.51", 25565, labelTFCRResult, progressBarTFCR, this);
@@ -2364,6 +2364,7 @@ namespace KBG_Launcher
         /// <param name="criticalError">If set to true, then the program closes after the error hhas been shown</param>        
         public void ErrorReporting(Exception ex, bool criticalError)
         {
+            string clientVersion = null;
             //error information
             try
             {
@@ -2383,10 +2384,33 @@ namespace KBG_Launcher
 
                 //basic information
                 _formError.AddInfoLine(Environment.NewLine + "FormMain information");
-                if(_formOptions != null)
-                    _formError.AddInfoLine("Client Version: " + _formOptions.GetClientVersion());
+                //if(_formOptions != null)
+                //    _formError.AddInfoLine("Client Version: " + _formOptions.GetClientVersion());
+                //else
+                //    _formError.AddInfoLine("Client Version: _formOptions is null");
+
+                try
+                {
+                    Assembly ass = Assembly.GetExecutingAssembly();
+                    if (ass != null)
+                    {
+                        FileVersionInfo FVI = FileVersionInfo.GetVersionInfo(ass.Location);  
+                        clientVersion = string.Format("{0}.{1}.{2}.{3}", FVI.FileMajorPart, FVI.FileMinorPart, FVI.FileBuildPart, FVI.FilePrivatePart);
+                    }
+                }
+                catch (Exception exz){}
+
+                if(clientVersion == null)
+                    _formError.AddInfoLine("Client Version: clientVersion was null");
                 else
-                    _formError.AddInfoLine("Client Version: _formOptions is null");
+                    _formError.AddInfoLine("Client Version: " + clientVersion);
+
+
+                //System.Environment.GetEnvironmentVariable("ProgramFiles");
+                if(System.Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE") != null)
+                    _formError.AddInfoLine("PROCESSOR_ARCHITECTURE = " + System.Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE"));
+                else
+                    _formError.AddInfoLine("PROCESSOR_ARCHITECTURE returned null");
                 _formError.AddInfoLine("_TweetList null?: " + (_TweetList == null).ToString());
                 _formError.AddInfoLine("_formOptions null? " + (_formOptions == null).ToString());
                 _formError.AddInfoLine("_formNews null? " + (_formNews == null).ToString());
