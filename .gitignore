@@ -3,3 +3,5 @@ obj/
 .zip
 Secrets.resx
 Secrets.Designer.cs
+Tester/
+WindowsFormsApplication1/

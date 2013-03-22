@@ -114,11 +114,12 @@ namespace KBG_Launcher
         public FormMain()
         {
             //StreamWriter sw = new StreamWriter(new FileStream("Debug2.txt", FileMode.Create));
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(ResolverDotNetZip);
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(ResolverHammock);  
-
+            
             try
             {
+                AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(ResolverDotNetZip);
+                AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(ResolverHammock);  
+
                 string methodProgress = ""; //this is used to find out where in the method the error occurred
 
                 _useTaskbarProgressBar = Environment.OSVersion.Version.Build >= 6000;
@@ -740,10 +741,10 @@ namespace KBG_Launcher
                 if (HasInternetConnection())
                 {
                     //209.105.230.50:25568
-                    ServerAccessClass pingIR = new ServerAccessClass("ir.industrial-craft.net", 25566, labelIRResult, progressBarIR, this);
-                    ServerAccessClass pingER = new ServerAccessClass("209.105.230.53", 25565, labelERResult, progressBarER, this);
-                    ServerAccessClass pingKBGEvent = new ServerAccessClass("209.105.230.50", 25568, labelKBGEventResult, progressBarKBGEvent, this);
-                    ServerAccessClass pingTFCR = new ServerAccessClass("209.105.230.51", 25565, labelTFCRResult, progressBarTFCR, this);
+                    ServerAccessClass pingIR = new ServerAccessClass("69.195.149.98", 25566, labelIRResult, progressBarIR, this);
+                    ServerAccessClass pingER = new ServerAccessClass("69.195.149.98", 25567, labelERResult, progressBarER, this);
+                    ServerAccessClass pingKBGEvent = new ServerAccessClass("69.195.149.98", 25569, labelKBGEventResult, progressBarKBGEvent, this);
+                    ServerAccessClass pingTFCR = new ServerAccessClass("69.195.149.98", 25568, labelTFCRResult, progressBarTFCR, this);
                     ServerAccessClass pingMinecraftDotNet = new ServerAccessClass("Minecraft.Net", 80, labelMinecraftdotnetResult, progressBarMinecraftdotnet, this);
                     ServerAccessClass pingMinecraftLoginServers = new ServerAccessClass("Login.minecraft.net", 80, labelMinecraftLoginServersResult, progressBarMinecraftLoginServers, this);
 
@@ -848,7 +849,7 @@ namespace KBG_Launcher
 
                             if (TSpan.TotalHours < 1)
                             {
-                                _TweetList.Add(new TweetItem(TweetTextAt, TweetText, Math.Floor(TSpan.TotalMinutes).ToString() + " minuts ago"));
+                                _TweetList.Add(new TweetItem(TweetTextAt, TweetText, Math.Floor(TSpan.TotalMinutes).ToString() + " minutes ago"));
                             }
                             else if (TSpan.TotalHours < 24)
                             {
