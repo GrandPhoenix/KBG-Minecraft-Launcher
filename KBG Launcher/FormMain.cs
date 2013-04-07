@@ -30,6 +30,7 @@ using Hammock;
 using Ionic.Zip;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Globalization;
 
 
 
@@ -1801,6 +1802,7 @@ namespace KBG_Launcher
             int previousPercentage = 0;
             Int64 TickRunningByte = 0;
             bool returnValue = true;
+            string MethodProgress = "";
 
             try
             {
@@ -1836,9 +1838,11 @@ namespace KBG_Launcher
                     using (System.Net.WebClient client = new System.Net.WebClient())
                     {
                         // open the file at the remote URL for reading
+                        MethodProgress = "Using streamRemote";
                         using (System.IO.Stream streamRemote = client.OpenRead(url))
                         {
                             // using the FileStream object, we can write the downloaded bytes to the file system
+                            MethodProgress = "Using streamLocal";
                             using (Stream streamLocal = new FileStream(destination, FileMode.Create, FileAccess.Write, FileShare.None))
                             {
                                 // loop the stream and get the file into the byte buffer
@@ -1849,6 +1853,7 @@ namespace KBG_Launcher
                                 SetDownloadLabelTextSub(new FileInfo(destination).Name);
                                 SetDownloadCancelButtonVisibility(true);
 
+                                MethodProgress = "While... streamRemote.read ";
                                 while ((iByteSize = streamRemote.Read(byteBuffer, 0, byteBuffer.Length)) > 0)
                                 {
                                     //aborts the download if a cancel request have been made
@@ -1862,6 +1867,7 @@ namespace KBG_Launcher
                                     }
 
                                     // write the bytes to the file system at the file path specified
+                                    MethodProgress = "streamLocal.Write";
                                     streamLocal.Write(byteBuffer, 0, iByteSize);
                                     iRunningByteTotal += iByteSize;
 
@@ -1915,6 +1921,7 @@ namespace KBG_Launcher
             catch (Exception ex)
             {
                 //ex.Data.Add("DownloadFile() - Url", url.OriginalString);
+                ex.Data.Add("DownloadFile() - methodProgress", MethodProgress);
                 ex.Data.Add("DownloadFile() - destination", destination);
                 ex.Data.Add("DownloadFile() - SkipDownload", SkipDownload.ToString());
                 ex.Data.Add("DownloadFile() - iSize", iSize.ToString());
@@ -2383,8 +2390,54 @@ namespace KBG_Launcher
                 _formError.AddInfoLine("}");
 
 
+                
+                //system information
+                _formError.AddInfoLine(Environment.NewLine + "System information" + Environment.NewLine + "{");                
+
+                if (System.Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE") != null)
+                    _formError.AddInfoLine("PROCESSOR_ARCHITECTURE = " + System.Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE"));
+                else
+                    _formError.AddInfoLine("PROCESSOR_ARCHITECTURE returned null");
+
+                _formError.AddInfoLine("OS version: " + Environment.OSVersion);
+                _formError.AddInfoLine("Environment version: " + Environment.Version.ToString());
+
+                RegistryKey installed_versions = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\NET Framework Setup\NDP");
+                string[] version_names = installed_versions.GetSubKeyNames();
+                //version names start with 'v', eg, 'v3.5' which needs to be trimmed off before conversion
+                double Framework = Convert.ToDouble(version_names[version_names.Length - 1].Remove(0, 1), CultureInfo.InvariantCulture);
+                RegistryKey newestDotNetKey = installed_versions.OpenSubKey(version_names[version_names.Length - 1]);
+                int SP = Convert.ToInt32(newestDotNetKey.GetValue("SP", 0));
+
+
+                string tmpDotNETversionsString = "";
+                foreach (string version in version_names)
+                {
+                    tmpDotNETversionsString += version + ", ";
+                }
+                tmpDotNETversionsString = tmpDotNETversionsString.Substring(0, tmpDotNETversionsString.Length - 2);
+
+                _formError.AddInfoLine("Installed .NET versions: " + tmpDotNETversionsString);
+                //_formError.AddInfoLine("Newest .NET version:  " + Framework + "  (SP: " + SP.ToString() + ")");
+
+                string DotNetVersionLong = (string)newestDotNetKey.GetValue("Version", "");
+                if (DotNetVersionLong == "")
+                {
+                    //assuming version 4 now
+                    RegistryKey v4subkey = installed_versions.OpenSubKey("v4");
+                    foreach (string subkey in v4subkey.GetSubKeyNames())
+                    {
+                        _formError.AddInfoLine(string.Format("Newest .NET version: {0}  ({1}) (SP: {2}", v4subkey.OpenSubKey(subkey).GetValue("Version", "x"), subkey, SP.ToString()));
+                    }
+                }
+                else
+                    _formError.AddInfoLine("Newest .NET version: " + Framework + "  (SP: " + SP.ToString() + ")");
+
+                _formError.AddInfoLine("}");
+
+
                 //basic information
-                _formError.AddInfoLine(Environment.NewLine + "FormMain information");
+                _formError.AddInfoLine(Environment.NewLine + "FormMain information" + Environment.NewLine + "{");
                 //if(_formOptions != null)
                 //    _formError.AddInfoLine("Client Version: " + _formOptions.GetClientVersion());
                 //else
@@ -2408,10 +2461,8 @@ namespace KBG_Launcher
 
 
                 //System.Environment.GetEnvironmentVariable("ProgramFiles");
-                if(System.Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE") != null)
-                    _formError.AddInfoLine("PROCESSOR_ARCHITECTURE = " + System.Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE"));
-                else
-                    _formError.AddInfoLine("PROCESSOR_ARCHITECTURE returned null");
+                
+
                 _formError.AddInfoLine("_TweetList null?: " + (_TweetList == null).ToString());
                 _formError.AddInfoLine("_formOptions null? " + (_formOptions == null).ToString());
                 _formError.AddInfoLine("_formNews null? " + (_formNews == null).ToString());
@@ -2422,6 +2473,7 @@ namespace KBG_Launcher
                 _formError.AddInfoLine("_loadingSettings = " + _loadingSettings.ToString());
                 _formError.AddInfoLine("_offlineMode = " + _offlineMode.ToString());
 
+                _formError.AddInfoLine("}");
 
                 bool hasInternetConnection = true;
                 try
@@ -2455,6 +2507,7 @@ namespace KBG_Launcher
                         _formError.AddInfoLine(info);
                     }
                 }
+
 
 
 
@@ -3073,7 +3126,7 @@ namespace KBG_Launcher
                 //StartGameOffline(comboBoxPackSelect.SelectedItem.ToString());
 
 
-
+                throw new Exception("TEST");
                 //using (ZipFile zip1 = ZipFile.Read(@"C:\Users\Phoenix\Desktop\Programering\VS 2010\KBG Minecraft Launcher\KBG Launcher\bin\Debug\minecraft2.jar"))
                 //{
                 //    //zip["META-INF"] = null;

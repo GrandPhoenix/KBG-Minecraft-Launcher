@@ -31,14 +31,17 @@ namespace KBG_Launcher
 
         private const string _packIRName = "Industrial Rage";
         private const string _packIRUpdateUrl = "https://dl.dropbox.com/s/bzo0ab0ggpg40t3/IRpack.zip";
+        private const string _packIRUpdateInjectUrl = "http://www.killerbeesgaming.com/IRInject.zip";
         private const string _packIRUpdateVersionUrl = "https://dl.dropbox.com/s/v6vnuqirlveqdd4/IRVersion.xml";
 
         private const string _packERName = "Endless Rage";
         private const string _packERUpdateUrl = "https://dl.dropbox.com/s/m504beqo6h315b6/ERPack.zip";
+        private const string _packERUpdateInjectUrl = "http://www.killerbeesgaming.com/ERInject.zip";
         private const string _packERUpdateVersionUrl = "https://dl.dropbox.com/s/4ztq99vmg16otcb/ERVersion.xml";
 
         private const string _packTFCRName = "Terrafirma Rage";
-        private const string _packTFCRUpdateUrl = "https://dl.dropbox.com/s/cczexatyb64pm4f/TFRpack.zip"; 
+        private const string _packTFCRUpdateUrl = "https://dl.dropbox.com/s/cczexatyb64pm4f/TFRpack.zip";
+        private const string _packTFCRUpdateInjectUrl = "http://www.killerbeesgaming.com/TFRInject.zip";
         private const string _packTFCRUpdateVersionUrl = "https://dl.dropbox.com/s/j7ltqdaycxm0wru/TFRVersion.xml";
 
         private const string _packVanillaName = "Vanilla";
