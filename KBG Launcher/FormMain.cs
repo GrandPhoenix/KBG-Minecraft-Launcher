@@ -57,6 +57,10 @@ namespace KBG_Launcher
         private bool _abortDownload = false;
         private bool _loadingSettings = false;
         public bool CloseAllThreads = false;
+        private DateTime LastDownloadTickTime;
+        private int ByteDownloadedUpToPreviousTick = 0;
+        private double LastDownloadPercentageTick = 0;
+        private bool DownloadingFile = false;
         //public enum SourcePack {IR=0,ER,TFCR,Vanilla};
 
         Thread TweetThread;
@@ -1051,10 +1055,10 @@ namespace KBG_Launcher
             {
                 SetDownloadPanelVisibility(false);
                 //List<string> information = new List<string>();
-                //information.Add("iSize = " + iSize.ToString());
+                //information.Add("RemoteFileSize = " + RemoteFileSize.ToString());
                 //information.Add("iRunningByteTotal = " + iRunningByteTotal.ToString());
                 //information.Add("Error: " + ex.Message);
-                ex.Data.Add("CheckForClientUpdate() - iSize", iSize.ToString());
+                ex.Data.Add("CheckForClientUpdate() - RemoteFileSize", iSize.ToString());
                 ex.Data.Add("CheckForClientUpdate() - iRunningByteTotal", iRunningByteTotal.ToString());
 
                 ErrorReporting(ex, false);
@@ -1795,14 +1799,16 @@ namespace KBG_Launcher
         private bool DownloadFile(Uri url, string destination)
         {
             bool SkipDownload = false;
-            Int64 iSize = 0;
-            Int64 iRunningByteTotal = 0;
+            int RemoteFileSize = 0;
+            int iRunningByteTotal = 0;
             DateTime previousTickTime;
             TimeSpan tickDuration;
             int previousPercentage = 0;
             Int64 TickRunningByte = 0;
             bool returnValue = true;
             string MethodProgress = "";
+            //double dProgressPercentage = 0;
+            int iProgressPercentage = 0;
 
             try
             {
@@ -1817,12 +1823,12 @@ namespace KBG_Launcher
                 System.Net.HttpWebResponse response = (System.Net.HttpWebResponse)request.GetResponse();
                 response.Close();
 
-                iSize = response.ContentLength;  // gets the size of the file in bytes                        
+                RemoteFileSize = (int)response.ContentLength;  // gets the size of the file in bytes                        
                 iRunningByteTotal = 0; // keeps track of the total bytes downloaded so we can update the progress bar
                                 
                 //check if pack has already been downloaded
                 if (File.Exists(destination))
-                    if (new FileInfo(destination).Length == iSize) //file exists, but what about the size ? (to filter out incomplete downloads)
+                    if (new FileInfo(destination).Length == RemoteFileSize) //file exists, but what about the size ? (to filter out incomplete downloads)
                         if (MessageBox.Show("The file " + new FileInfo(destination).Name + " with matching size was found on the disk." + Environment.NewLine + "Do you want to use that file instead of downloading it again?", "Existing file found", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
                             SkipDownload = true;
 
@@ -1839,69 +1845,98 @@ namespace KBG_Launcher
                     {
                         // open the file at the remote URL for reading
                         MethodProgress = "Using streamRemote";
-                        using (System.IO.Stream streamRemote = client.OpenRead(url))
+                        client.DownloadProgressChanged += client_DownloadProgressChanged;
+                        client.DownloadFileCompleted += client_DownloadFileCompleted;
+                        
+                        LastDownloadTickTime = DateTime.Now;
+                        DownloadingFile = true;
+                                                
+                        client.DownloadFileAsync(url, destination);
+
+                        SetDownloadLabelTextSub(new FileInfo(destination).Name);
+                        SetDownloadCancelButtonVisibility(true);
+
+                        while (client.IsBusy)//(DownloadingFile)
                         {
-                            // using the FileStream object, we can write the downloaded bytes to the file system
-                            MethodProgress = "Using streamLocal";
-                            using (Stream streamLocal = new FileStream(destination, FileMode.Create, FileAccess.Write, FileShare.None))
-                            {
-                                // loop the stream and get the file into the byte buffer
-                                int iByteSize = 0;
-                                byte[] byteBuffer = new byte[iSize];
-                                previousTickTime = DateTime.Now;
-
-                                SetDownloadLabelTextSub(new FileInfo(destination).Name);
-                                SetDownloadCancelButtonVisibility(true);
-
-                                MethodProgress = "While... streamRemote.read ";
-                                while ((iByteSize = streamRemote.Read(byteBuffer, 0, byteBuffer.Length)) > 0)
-                                {
-                                    //aborts the download if a cancel request have been made
-                                    if (CloseAllThreads)
-                                        break;
-                                    if (_abortDownload)
-                                    {
-                                        MessageBox.Show("The download has been cancelled by the user.", "Download Cancelled!");
-                                        returnValue = false;
-                                        break;
-                                    }
-
-                                    // write the bytes to the file system at the file path specified
-                                    MethodProgress = "streamLocal.Write";
-                                    streamLocal.Write(byteBuffer, 0, iByteSize);
-                                    iRunningByteTotal += iByteSize;
-
-                                    // calculate the progress out of a base "100"
-                                    double dIndex = (double)(iRunningByteTotal);
-                                    double dTotal = (double)byteBuffer.Length;
-                                    double dProgressPercentage = (dIndex / dTotal);
-                                    int iProgressPercentage = (int)(dProgressPercentage * 100);
-
-                                    // update the progress bar
-                                    //backgroundWorker1.ReportProgress(iProgressPercentage);
-
-                                    if (previousPercentage < iProgressPercentage)
-                                    {
-
-                                        tickDuration = DateTime.Now - previousTickTime;
-                                        double speed = (1 / tickDuration.TotalSeconds) * (iRunningByteTotal - TickRunningByte);
-                                        previousTickTime = DateTime.Now;
-                                        TickRunningByte = iRunningByteTotal;
-
-                                        SetDownloadLabelSpeedAndProgressText(string.Format("{0} KB/s", Math.Floor(speed / 1024)), string.Format("{0} / {1} MB", iRunningByteTotal / 1048576, byteBuffer.LongLength / 1048576));
-                                        SetDownloadProgressbarProgress(iProgressPercentage);
-                                        previousPercentage = iProgressPercentage;
-                                    }
-
-                                }
-
-                                // clean up the file stream
-                                streamLocal.Close();
-                            }
-
-                            // close the connection to the remote server
-                            streamRemote.Close();
+                            Thread.Sleep(100);
+                            if (CloseAllThreads || _abortDownload)
+                                client.CancelAsync();
                         }
+                        //if (CloseAllThreads)
+                        //    break;
+                        if (_abortDownload)
+                        {
+                            MessageBox.Show("The download has been cancelled by the user.", "Download Cancelled!");
+                            returnValue = false;
+                            //client.CancelAsync();
+                            DownloadingFile = false;
+                            //break;
+                        }
+                        //using (System.IO.Stream streamRemote = client.OpenRead(url))
+                        //{
+                        //    // using the FileStream object, we can write the downloaded bytes to the file system
+                        //    MethodProgress = "Using streamLocal";
+                        //    using (Stream streamLocal = new FileStream(destination, FileMode.Create, FileAccess.Write, FileShare.None))
+                        //    {
+                        //        // loop the stream and get the file into the byte buffer
+                        //        int iByteSize = 0;
+                        //        //byte[] byteBuffer = new byte[RemoteFileSize];
+                        //        byte[] byteBuffer = new byte[4096];
+
+                        //        previousTickTime = DateTime.Now;
+
+                        //        SetDownloadLabelTextSub(new FileInfo(destination).Name);
+                        //        SetDownloadCancelButtonVisibility(true);
+
+
+                        //        MethodProgress = "While... streamRemote.read ";
+                        //        while ((iByteSize = streamRemote.Read(byteBuffer, 0, byteBuffer.Length)) > 0) //...ngByteTotal, byteBuffer.Length))
+                        //        {
+                        //            //aborts the download if a cancel request have been made
+                        //            if (CloseAllThreads)
+                        //                break;
+                        //            if (_abortDownload)
+                        //            {
+                        //                MessageBox.Show("The download has been cancelled by the user.", "Download Cancelled!");
+                        //                returnValue = false;
+                        //                break;
+                        //            }
+
+                        //            // write the bytes to the file system at the file path specified
+                        //            MethodProgress = "streamLocal.Write";
+                        //            streamLocal.Write(byteBuffer, 0, iByteSize);
+                        //            iRunningByteTotal += iByteSize;
+
+                        //            // calculate the progress out of a base "100"
+                        //            //double dIndex = (double)(iRunningByteTotal);
+                        //            //double dTotal = RemoteFileSize; //(double)byteBuffer.Length;
+                        //            //dProgressPercentage = ((double)iRunningByteTotal / (double)RemoteFileSize);
+                        //            iProgressPercentage = (int)(((double)iRunningByteTotal / (double)RemoteFileSize) * 100);
+
+                        //            // update the progress bar
+                        //            //backgroundWorker1.ReportProgress(iProgressPercentage);
+
+                        //            if (previousPercentage < iProgressPercentage)
+                        //            {
+
+                        //                tickDuration = DateTime.Now - previousTickTime;
+                        //                double speed = (1 / tickDuration.TotalSeconds) * (iRunningByteTotal - TickRunningByte);
+                        //                previousTickTime = DateTime.Now;
+                        //                TickRunningByte = iRunningByteTotal;
+
+                        //                SetDownloadLabelSpeedAndProgressText(string.Format("{0} KB/s", Math.Floor(speed / 1024)), string.Format("{0} / {1} MB", iRunningByteTotal / 1048576, RemoteFileSize / 1048576));
+                        //                SetDownloadProgressbarProgress(iProgressPercentage);
+                        //                previousPercentage = iProgressPercentage;
+                        //            }                                    
+                        //        }
+
+                        //        // clean up the file stream
+                        //        streamLocal.Close();
+                        //    }
+
+                        //    // close the connection to the remote server
+                        //    streamRemote.Close();
+                        //}
                     }
                     if (!_abortDownload)
                     {
@@ -1924,12 +1959,61 @@ namespace KBG_Launcher
                 ex.Data.Add("DownloadFile() - methodProgress", MethodProgress);
                 ex.Data.Add("DownloadFile() - destination", destination);
                 ex.Data.Add("DownloadFile() - SkipDownload", SkipDownload.ToString());
-                ex.Data.Add("DownloadFile() - iSize", iSize.ToString());
+                ex.Data.Add("DownloadFile() - RemoteFileSize", RemoteFileSize.ToString());
                 ex.Data.Add("DownloadFile() - iRunningByteTotal", iRunningByteTotal.ToString());
 
                 throw ex;
             }
             return returnValue;
+        }
+
+        private void client_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
+        {
+            try
+            {
+                if (e.Error != null)
+                {
+                    // handle error scenario
+                    if(!e.Cancelled)
+                        throw e.Error;
+                }
+                if (e.Cancelled)
+                {
+                    // handle cancelled scenario                    
+                }
+                DownloadingFile = false;
+            }
+            catch (Exception ex)
+            {
+                SetDownloadPanelVisibility(false);                
+                ErrorReporting(ex, false);
+            }          
+        }
+
+        void client_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        {
+            TimeSpan TimeSinceLastDownloadTick;
+            double bytesIn = double.Parse(e.BytesReceived.ToString());
+            double totalBytes = double.Parse(e.TotalBytesToReceive.ToString());
+            double percentage = (int)(bytesIn / totalBytes * 100);
+            double speed =0;
+
+            //if (percentage > LastDownloadPercentageTick)
+            
+            TimeSinceLastDownloadTick = DateTime.Now - LastDownloadTickTime;
+
+            if(TimeSinceLastDownloadTick.TotalSeconds >= 1)
+            {
+                speed = (1 / TimeSinceLastDownloadTick.TotalSeconds) * (bytesIn - ByteDownloadedUpToPreviousTick);
+                SetDownloadLabelSpeedAndProgressText(string.Format("{0} KB/s", ByteDownloadedUpToPreviousTick == 0 ? 0 : Math.Floor(speed / 1024)), string.Format("{0} / {1} MB", Math.Floor(bytesIn / 1048576), Math.Floor(totalBytes / 1048576)));
+                ByteDownloadedUpToPreviousTick = (int)bytesIn;
+
+                LastDownloadPercentageTick = percentage;
+                LastDownloadTickTime = DateTime.Now;
+                SetDownloadProgressbarProgress((int)percentage);
+            }            
+            
+            //progressBar1.Value = int.Parse(Math.Truncate(percentage).ToString());
         }
 
         private void StartGame(string selItem)
@@ -2373,6 +2457,7 @@ namespace KBG_Launcher
         public void ErrorReporting(Exception ex, bool criticalError)
         {
             string clientVersion = null;
+            ulong SystemMemory = 0;
             //error information
             try
             {
@@ -2381,8 +2466,12 @@ namespace KBG_Launcher
 
                 _formError.AddInfoLine("Error: " + ex.Message + Environment.NewLine);
 
+                if(ex.InnerException != null)
+                    _formError.AddInfoLine("InnerException: " + ex.InnerException.Message + Environment.NewLine);
+
                 _formError.AddInfoLine("Error Occured at: " + Environment.NewLine + ex.StackTrace);
-                _formError.AddInfoLine(Environment.NewLine + Environment.NewLine + "Extra error information" + Environment.NewLine + "{");
+
+                _formError.AddInfoLine(Environment.NewLine + Environment.NewLine + "Extra error information.  {");
                 foreach (DictionaryEntry de in ex.Data)
                 {
                     _formError.AddInfoLine(string.Format("      {0} = {1}", de.Key, de.Value));
@@ -2392,12 +2481,21 @@ namespace KBG_Launcher
 
                 
                 //system information
-                _formError.AddInfoLine(Environment.NewLine + "System information" + Environment.NewLine + "{");                
+                _formError.AddInfoLine(Environment.NewLine + "System information.  {");                
 
                 if (System.Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE") != null)
                     _formError.AddInfoLine("PROCESSOR_ARCHITECTURE = " + System.Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE"));
                 else
                     _formError.AddInfoLine("PROCESSOR_ARCHITECTURE returned null");
+
+                try
+                {
+                    //_formError.AddInfoLine("System memory amount deteted = " + Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory
+                    SystemMemory = new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory;
+                }
+                catch(Exception exy){} //not interested in the error, so its just absorbed
+
+                _formError.AddInfoLine("System memory ammount = " + SystemMemory.ToString());
 
                 _formError.AddInfoLine("OS version: " + Environment.OSVersion);
                 _formError.AddInfoLine("Environment version: " + Environment.Version.ToString());
@@ -2437,13 +2535,13 @@ namespace KBG_Launcher
 
 
                 //basic information
-                _formError.AddInfoLine(Environment.NewLine + "FormMain information" + Environment.NewLine + "{");
+                _formError.AddInfoLine(Environment.NewLine + "FormMain information.  {");
                 //if(_formOptions != null)
                 //    _formError.AddInfoLine("Client Version: " + _formOptions.GetClientVersion());
                 //else
                 //    _formError.AddInfoLine("Client Version: _formOptions is null");
 
-                try
+                try 
                 {
                     Assembly ass = Assembly.GetExecutingAssembly();
                     if (ass != null)
@@ -2487,7 +2585,7 @@ namespace KBG_Launcher
 
                 if (!hasInternetConnection)
                 {
-                    _formError.AddInfoLine(Environment.NewLine + "Network Inferfaces" + Environment.NewLine + "{");
+                    _formError.AddInfoLine(Environment.NewLine + "Network Inferfaces" +  "{");
                     NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
                     foreach (NetworkInterface adapter in interfaces)
                     {
@@ -2499,19 +2597,16 @@ namespace KBG_Launcher
 
                 if (_formOptions != null)
                 {
-                    _formError.AddInfoLine(Environment.NewLine + "FormOptions information");
+                    _formError.AddInfoLine(Environment.NewLine + "FormOptions information.  {");
                     List<string> information = _formOptions.formOptionsInformation();
 
                     foreach (string info in information)
                     {
                         _formError.AddInfoLine(info);
                     }
+                    _formError.AddInfoLine("}");
                 }
-
-
-
-
-
+                
                 
                 _formError.CriticalError = criticalError;
                 ShowErrorWindow(criticalError);
@@ -3623,7 +3718,7 @@ namespace KBG_Launcher
         //    response.Close();
 
         //    // gets the size of the file in bytes
-        //    Int64 iSize = response.ContentLength;
+        //    Int64 RemoteFileSize = response.ContentLength;
 
         //    // keeps track of the total bytes downloaded so we can update the progress bar
         //    Int64 iRunningByteTotal = 0;
@@ -3639,7 +3734,7 @@ namespace KBG_Launcher
         //            {
         //                // loop the stream and get the file into the byte buffer
         //                int iByteSize = 0;
-        //                byte[] byteBuffer = new byte[iSize];
+        //                byte[] byteBuffer = new byte[RemoteFileSize];
         //                while ((iByteSize = streamRemote.Read(byteBuffer, 0, byteBuffer.Length)) > 0)
         //                {
         //                    //aborts the download if a cancel request have been made
