@@ -35,10 +35,9 @@
             this.tabControl1 = new KBG_Launcher.MyTabControl();
             this.tabPageMisc = new System.Windows.Forms.TabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.labelJavaVersion = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.comboBox2 = new System.Windows.Forms.ComboBox();
+            this.checkBoxManualJavaPath = new System.Windows.Forms.CheckBox();
+            this.buttonManualJavaPath = new System.Windows.Forms.Button();
+            this.textBoxManualJavaPath = new System.Windows.Forms.TextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label10 = new System.Windows.Forms.Label();
             this.textBoxAutoLoginAddress = new System.Windows.Forms.TextBox();
@@ -73,7 +72,7 @@
             // 
             // buttonOk
             // 
-            this.buttonOk.Location = new System.Drawing.Point(501, 277);
+            this.buttonOk.Location = new System.Drawing.Point(501, 281);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 2;
@@ -83,7 +82,7 @@
             // 
             // label4
             // 
-            this.label4.Location = new System.Drawing.Point(12, 277);
+            this.label4.Location = new System.Drawing.Point(12, 280);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(330, 15);
             this.label4.TabIndex = 14;
@@ -92,7 +91,7 @@
             // labelVersion
             // 
             this.labelVersion.AutoSize = true;
-            this.labelVersion.Location = new System.Drawing.Point(12, 292);
+            this.labelVersion.Location = new System.Drawing.Point(12, 295);
             this.labelVersion.Name = "labelVersion";
             this.labelVersion.Size = new System.Drawing.Size(60, 13);
             this.labelVersion.TabIndex = 15;
@@ -106,7 +105,7 @@
             this.tabControl1.Multiline = true;
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(564, 260);
+            this.tabControl1.Size = new System.Drawing.Size(564, 263);
             this.tabControl1.TabIndex = 3;
             // 
             // tabPageMisc
@@ -119,60 +118,48 @@
             this.tabPageMisc.Location = new System.Drawing.Point(2, 21);
             this.tabPageMisc.Margin = new System.Windows.Forms.Padding(0);
             this.tabPageMisc.Name = "tabPageMisc";
-            this.tabPageMisc.Size = new System.Drawing.Size(558, 236);
+            this.tabPageMisc.Size = new System.Drawing.Size(558, 239);
             this.tabPageMisc.TabIndex = 0;
             this.tabPageMisc.Text = "Misc.";
             // 
             // groupBox3
             // 
-            this.groupBox3.Controls.Add(this.labelJavaVersion);
-            this.groupBox3.Controls.Add(this.label9);
-            this.groupBox3.Controls.Add(this.label8);
-            this.groupBox3.Controls.Add(this.comboBox2);
-            this.groupBox3.Enabled = false;
+            this.groupBox3.Controls.Add(this.checkBoxManualJavaPath);
+            this.groupBox3.Controls.Add(this.buttonManualJavaPath);
+            this.groupBox3.Controls.Add(this.textBoxManualJavaPath);
             this.groupBox3.Location = new System.Drawing.Point(3, 188);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(550, 43);
+            this.groupBox3.Size = new System.Drawing.Size(550, 46);
             this.groupBox3.TabIndex = 2;
             this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Java";
+            this.groupBox3.Text = "Manual Java Path";
             // 
-            // labelJavaVersion
+            // checkBoxManualJavaPath
             // 
-            this.labelJavaVersion.AutoSize = true;
-            this.labelJavaVersion.Location = new System.Drawing.Point(329, 19);
-            this.labelJavaVersion.Name = "labelJavaVersion";
-            this.labelJavaVersion.Size = new System.Drawing.Size(0, 13);
-            this.labelJavaVersion.TabIndex = 3;
+            this.checkBoxManualJavaPath.AutoSize = true;
+            this.checkBoxManualJavaPath.Location = new System.Drawing.Point(6, 18);
+            this.checkBoxManualJavaPath.Name = "checkBoxManualJavaPath";
+            this.checkBoxManualJavaPath.Size = new System.Drawing.Size(51, 17);
+            this.checkBoxManualJavaPath.TabIndex = 5;
+            this.checkBoxManualJavaPath.Text = "Use  ";
+            this.checkBoxManualJavaPath.UseVisualStyleBackColor = true;
             // 
-            // label9
+            // buttonManualJavaPath
             // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(228, 19);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(95, 13);
-            this.label9.TabIndex = 2;
-            this.label9.Text = "Your Java version:";
+            this.buttonManualJavaPath.Location = new System.Drawing.Point(482, 14);
+            this.buttonManualJavaPath.Name = "buttonManualJavaPath";
+            this.buttonManualJavaPath.Size = new System.Drawing.Size(61, 23);
+            this.buttonManualJavaPath.TabIndex = 4;
+            this.buttonManualJavaPath.Text = "Find";
+            this.buttonManualJavaPath.UseVisualStyleBackColor = true;
+            this.buttonManualJavaPath.Click += new System.EventHandler(this.buttonManualJavaPath_Click);
             // 
-            // label8
+            // textBoxManualJavaPath
             // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(9, 19);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(52, 13);
-            this.label8.TabIndex = 1;
-            this.label8.Text = "Use java ";
-            // 
-            // comboBox2
-            // 
-            this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Items.AddRange(new object[] {
-            "Java x32 (32 bit)",
-            "Java x64 (64 bit)"});
-            this.comboBox2.Location = new System.Drawing.Point(83, 16);
-            this.comboBox2.Name = "comboBox2";
-            this.comboBox2.Size = new System.Drawing.Size(121, 21);
-            this.comboBox2.TabIndex = 0;
+            this.textBoxManualJavaPath.Location = new System.Drawing.Point(63, 16);
+            this.textBoxManualJavaPath.Name = "textBoxManualJavaPath";
+            this.textBoxManualJavaPath.Size = new System.Drawing.Size(413, 20);
+            this.textBoxManualJavaPath.TabIndex = 3;
             // 
             // groupBox1
             // 
@@ -363,7 +350,7 @@
             this.tabPageAbout.Location = new System.Drawing.Point(2, 21);
             this.tabPageAbout.Name = "tabPageAbout";
             this.tabPageAbout.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageAbout.Size = new System.Drawing.Size(558, 236);
+            this.tabPageAbout.Size = new System.Drawing.Size(558, 239);
             this.tabPageAbout.TabIndex = 1;
             this.tabPageAbout.Text = "About";
             // 
@@ -446,10 +433,6 @@
         private System.Windows.Forms.TabPage tabPageMisc;
         private System.Windows.Forms.TabPage tabPageAbout;
         private System.Windows.Forms.GroupBox groupBox3;
-        private System.Windows.Forms.Label labelJavaVersion;
-        private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.ComboBox comboBox2;
         private System.Windows.Forms.GroupBox groupBoxLinks;
         private System.Windows.Forms.RichTextBox richTextBoxLinks;
         private System.Windows.Forms.Label labelAbout;
@@ -468,5 +451,8 @@
         private System.Windows.Forms.RadioButton radioButtonRatioLinked;
         private System.Windows.Forms.Label labelMemmoryMin;
         private System.Windows.Forms.Label labelMemmoryMax;
+        private System.Windows.Forms.CheckBox checkBoxManualJavaPath;
+        private System.Windows.Forms.Button buttonManualJavaPath;
+        private System.Windows.Forms.TextBox textBoxManualJavaPath;
     }
 }

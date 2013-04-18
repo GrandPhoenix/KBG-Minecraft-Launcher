@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Diagnostics;
 using System.Xml;
 using Microsoft.Win32;
+using System.Collections;
 
 namespace KBG_Launcher
 {
@@ -274,7 +275,10 @@ namespace KBG_Launcher
                 //}
 
                 labelVersion.Text = string.Format("Version {0}.{1}.{2}.{3}",GetClientVersion().VersionMajor,GetClientVersion().VersionMinor,GetClientVersion().VersionRevision,GetClientVersion().VersionPack); //KBGClientVersion.ToString();
-                labelJavaVersion.Text = GetJavaVersion();
+                //labelManualJavaPath.Text = GetJavaVersion();
+
+                checkBoxManualJavaPath.Checked = _settings.UseManualJavaPath;
+                textBoxManualJavaPath.Text = _settings.ManualJavaPath;
 
                 _LoadingSettings = true;
 
@@ -353,158 +357,288 @@ namespace KBG_Launcher
         {
             RegistryKey regkey = null;
             String currentVersion = "";
+            string JavaInstallationPath = null;
+            Exception RegExceptionData1 = new Exception();
+            Exception RegExceptionData2 = new Exception();
+            Exception DiskExceptionData1 = new Exception();
+            Exception DiskExceptionData2 = new Exception();
             //bool somethingWasNull = false;
             try
             {
-                if (JavaPath == "")
+                if (JavaPath != "")
+                    return JavaPath;
+
+                if (checkBoxManualJavaPath.Checked)
                 {
-                    try
+
+                    if (File.Exists(textBoxManualJavaPath.Text))
                     {
-                        ValidateJavaRegistryValues();
-                    }
-                    catch (Exception ex)
-                    {
-                        if (ex.Message.StartsWith("Failed to read the Registry"))
+                        if (new FileInfo(textBoxManualJavaPath.Text).Name.ToLower() == "javaw.exe")
                         {
-                            //find alternative path to java
-
-                            string tmpJavaPath = System.Environment.GetEnvironmentVariable("ProgramFiles");
-                            string java1 = "Java\\jre7\\bin\\javaw.exe";
-                            string java2 = "Java\\jre6\\bin\\javaw.exe";
-                            if (File.Exists(tmpJavaPath + "\\" + java1))
-                            {
-                                if (MessageBox.Show(String.Format("The java key could not be found in the registry, but java was found on the disk.{0}Path Found: {1}{0}Do you want to use this path?", Environment.NewLine, tmpJavaPath + "\\" + java1), "Alternative path to java found", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.Yes)
-                                {
-                                    JavaPath = tmpJavaPath + "\\Java\\jre7\\";
-                                }
-                                else
-                                {
-                                    ex.Data.Add("GetJavaVersion() - Alternative Paths. Java1 path refused?", true);
-                                    throw ex;
-                                }
-                            }
-                            else
-                            {
-                                ex.Data.Add("GetJavaVersion() - Alternative Paths. Java1 path found?", false);
-                                if (File.Exists(tmpJavaPath + "\\" + java2))
-                                {
-                                    if (MessageBox.Show(String.Format("The java key could not be found in the registry, but java was found on the disk.{0}NOTE: This version of java is very old and you should really install java 7!{0}Path Found: {1}{0}Do you want to use this path?", Environment.NewLine, tmpJavaPath + "\\" + java2), "Alternative path to java found", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.Yes)
-                                    {
-                                        JavaPath = tmpJavaPath + "\\Java\\jre6\\";
-                                    }
-                                    else
-                                    {
-                                        ex.Data.Add("GetJavaVersion() - Alternative Paths. Java2 path refused?", true);
-                                        throw ex;
-                                    }
-                                }
-                                else
-                                {
-                                    ex.Data.Add("GetJavaVersion() - Alternative Paths. Java2 path found?", false);
-                                    throw ex;
-                                }
-                            }
-
-                            return JavaPath;
+                            return textBoxManualJavaPath.Text;
                         }
                         else
-                            throw ex;
+                            MessageBox.Show("The Manual Java Path was not the path to a valid 'Javaw.exe', and will not be used", "Invalid path. Skipping.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
-                    String javaKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
-                    RegistryKey localMachineRegistry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32);
-                    regkey = localMachineRegistry.OpenSubKey(javaKey);
+                    else
+                        MessageBox.Show("The Manual Java Path was not found or was invalid, and will not be used", "Invalid path. Skipping.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    
+                }
 
-                    currentVersion = regkey.GetValue("CurrentVersion").ToString();
-                    using (var homeKey = regkey.OpenSubKey(currentVersion))
+                regkey = FindJavaRegistryKey("SOFTWARE", RegExceptionData1);
+
+                if (regkey == null)
+                    regkey = FindJavaRegistryKey("SOFTWARE\\Wow6432Node", RegExceptionData2); //searching in another area of the registry
+
+
+                //try
+                //{
+                //    ValidateJavaRegistryValues();
+                //}
+                //catch (Exception ex)
+                //{
+                //    if (ex.Message.StartsWith("Failed to read the Registry"))
+                //    {
+                //        //find alternative path to java
+
+                //        string tmpJavaPath = System.Environment.GetEnvironmentVariable("ProgramFiles");
+                //        return SearchDiskForJavaPath(ex, tmpJavaPath);
+                //    }
+                //    else
+                //        throw ex;
+                //}
+                //String javaKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
+                //RegistryKey localMachineRegistry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32);
+                //regkey = localMachineRegistry.OpenSubKey(javaKey);
+
+                if (regkey != null) //'Java Runtime Environment' regkey found. Continue registry search
+                {
+                    if (regkey.GetValue("CurrentVersion") != null)
                     {
-                        return homeKey.GetValue("JavaHome").ToString();
+                        currentVersion = regkey.GetValue("CurrentVersion").ToString();
+                        if (regkey.OpenSubKey(currentVersion) != null)
+                        {
+                            RegistryKey currentVersionKey = regkey.OpenSubKey(currentVersion);
+                            if (currentVersionKey.GetValue("JavaHome") != null)
+                            {
+                                JavaInstallationPath = currentVersionKey.GetValue("JavaHome").ToString();
+                            }
+                        }
                     }
                 }
-                return JavaPath;
+
+                if (JavaInstallationPath == null) //registry search failed. try searching the harddrive
+                {
+
+                    JavaInstallationPath = SearchDiskForJavaPath(System.Environment.GetEnvironmentVariable("ProgramFiles") + "debug", DiskExceptionData1);
+
+                    if (JavaInstallationPath == null) //search location 1 failed. try the second location.
+                        JavaInstallationPath = SearchDiskForJavaPath(System.Environment.GetEnvironmentVariable("ProgramFiles(x86)" + "debug"), DiskExceptionData2);
+                }
+
+                if (JavaInstallationPath != null)
+                {
+                    JavaPath = JavaInstallationPath;
+                    return JavaInstallationPath;
+                }
+                else
+                {
+                    Exception ex = new Exception("All 4 different attempts at finding the Java installation path on the computer failed. Please make sure that Java is installed correctly");
+                    foreach (DictionaryEntry de in RegExceptionData1.Data)
+                    {
+                        ex.Data.Add("(RegExceptionData1) " + de.Key, de.Value);
+                    }
+                    foreach (DictionaryEntry de in RegExceptionData2.Data)
+                    {
+                        ex.Data.Add("(RegExceptionData2) " + de.Key, de.Value);
+                    }
+                    foreach (DictionaryEntry de in DiskExceptionData1.Data)
+                    {
+                        ex.Data.Add("(DiskExceptionData1) " + de.Key, de.Value);
+                    }
+                    foreach (DictionaryEntry de in DiskExceptionData2.Data)
+                    {
+                        ex.Data.Add("(DiskExceptionData2) " + de.Key, de.Value);
+                    }
+                    throw ex;
+                }
+
             }
             catch (Exception ex)
             {
-                ex.Data.Add("GetJavaInstallationPath() - currentVersion", currentVersion);
-                ex.Data.Add("GetJavaInstallationPath() - regkey null?", regkey == null);
+                if (!ex.Message.StartsWith("All 4 different attempts at finding the Java"))
+                {
+                    ex.Data.Add("GetJavaInstallationPath() - currentVersion", currentVersion);
+                    ex.Data.Add("GetJavaInstallationPath() - regkey null?", regkey == null);
+                }
                 throw ex;
             }
         }
 
+        private string SearchDiskForJavaPath(string JavaSearchPath, Exception exceptionData)
+        {
+            try
+            {
+                string Path1 = "Java\\jre7\\bin\\javaw.exe";
+                string Path2 = "Java\\jre6\\bin\\javaw.exe";
+                if (File.Exists(JavaSearchPath + "\\" + Path1))
+                {
+                    if (MessageBox.Show(String.Format("The java path information could not be found in the registry, but java was found on the disk.{0}Path Found: {1}{0}Do you want to use this path?", Environment.NewLine, JavaSearchPath + "\\" + Path1), "Alternative path to java found", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.Yes)
+                    {
+                        return JavaSearchPath + "\\Java\\jre7\\";
+                    }
+                    else
+                    {
+                        exceptionData.Data.Add("SearchDiskForJavaPath() - Alternative Paths. Path1 (jre7) refused?", true);
+                        return null;
+                    }
+                }
+                else
+                {
+                    exceptionData.Data.Add("SearchDiskForJavaPath() - Alternative Paths. Path1 (jre7) found?", false);
+                    if (File.Exists(JavaSearchPath + "\\" + Path2))
+                    {
+                        if (MessageBox.Show(String.Format("The java path information could not be found in the registry, but java was found on the disk.{0}NOTE: This version of java is very old and you should really install java 7!{0}Path Found: {1}{0}Do you want to use this path?", Environment.NewLine, JavaSearchPath + "\\" + Path2), "Alternative path to java found", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.Yes)
+                        {
+                            return JavaSearchPath + "\\Java\\jre6\\";
+                        }
+                        else
+                        {
+                            exceptionData.Data.Add("SearchDiskForJavaPath() - Alternative Paths. Path2 (jre6) refused?", true);
+                            return null;
+                        }
+                    }
+                    else
+                    {
+                        exceptionData.Data.Add("SearchDiskForJavaPath() - Alternative Paths. Path2 (jre6) found?", false);
+                        return null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.Data.Add("SearchDiskForJavaPath() - JavaSearchPath", JavaSearchPath);
+                throw ex;
+            }
+        }
 
         private string GetJavaVersion()
         {
             RegistryKey regkey = null;
-            //string currentVersion = "";
+            String currentVersion = "";
+            Exception RegExceptionData1 = null;
+            Exception RegExceptionData2 = null;
             try
             {
-                if (JavaPath == "")
+                regkey = FindJavaRegistryKey("SOFTWARE", RegExceptionData1);
+
+                if (regkey == null)
+                    regkey = FindJavaRegistryKey("SOFTWARE\\Wow6432Node", RegExceptionData2); //searching in another area of the registry
+
+                if (regkey != null) //'Java Runtime Environment' regkey found. Continue registry search
                 {
-                    try
+                    if (regkey.GetValue("CurrentVersion") != null)
                     {
-                        ValidateJavaRegistryValues();
-                    }
-                    catch (Exception ex)
-                    {
-                        if (ex.Message.StartsWith("Failed to read the Registry"))
+                        currentVersion = regkey.GetValue("CurrentVersion").ToString();
+                        if (regkey.OpenSubKey(currentVersion) != null)
                         {
-                            //find alternative path to java
-
-                            string tmpJavaPath = System.Environment.GetEnvironmentVariable("ProgramFiles");
-                            string java1 = "Java\\jre7\\bin\\javaw.exe";
-                            string java2 = "Java\\jre6\\bin\\javaw.exe";
-                            if (File.Exists(tmpJavaPath + "\\" + java1))
-                            {
-                                if (MessageBox.Show(String.Format("The java key could not be found in the registry, but java was found on the disk.{0}Path Found: {1}{0}Do you want to use this path?", Environment.NewLine, tmpJavaPath + "\\" + java1), "Alternative path to java found", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.Yes)
-                                {
-                                    JavaPath = tmpJavaPath + "\\Java\\jre7";
-                                }
-                                else
-                                {
-                                    ex.Data.Add("GetJavaVersion() - Alternative Paths. Java1 path refused?", true);
-                                    throw ex;
-                                }
-                            }
-                            else
-                            {
-                                ex.Data.Add("GetJavaVersion() - Alternative Paths. Java1 path found?", false);
-                                if (File.Exists(tmpJavaPath + "\\" + java2))
-                                {
-                                    if (MessageBox.Show(String.Format("The java key could not be found in the registry, but java was found on the disk.{0}NOTE: This version of java is very old and you should really install java 7!{0}Path Found: {1}{0}Do you want to use this path?", Environment.NewLine, tmpJavaPath + "\\" + java2), "Alternative path to java found", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.Yes)
-                                    {
-                                        JavaPath = tmpJavaPath + "\\Java\\jre6";
-                                    }
-                                    else
-                                    {
-                                        ex.Data.Add("GetJavaVersion() - Alternative Paths. Java2 path refused?", true);
-                                        throw ex;
-                                    }
-                                }
-                                else
-                                {
-                                    ex.Data.Add("GetJavaVersion() - Alternative Paths. Java2 path found?", false);
-                                    throw ex;
-                                }
-                            }
-
-                            return "Java not found in registry";
+                            return currentVersion;
                         }
-                        else
-                            throw ex;
                     }
-                
-                    String javaKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
-                    RegistryKey localMachineRegistry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32);
-                    regkey = localMachineRegistry.OpenSubKey(javaKey);
-                    return (string)regkey.GetValue("CurrentVersion");
                 }
-                return JavaPath;
+
+
+                return "";
             }
             catch (Exception ex)
             {
-                //ex.Data.Add("GetJavaVersion() - regkey null?", regkey == null);
+                if (!ex.Message.StartsWith("All 4 different attempts at finding the Java"))
+                {
+                    ex.Data.Add("GetJavaInstallationPath() - currentVersion", currentVersion);
+                    ex.Data.Add("GetJavaInstallationPath() - regkey null?", regkey == null);
+                }
                 throw ex;
             }
         }
+
+
+        //private string OldGetJavaVersion()
+        //{
+        //    RegistryKey regkey = null;
+        //    //string currentVersion = "";
+        //    try
+        //    {
+        //        if (JavaPath == "")
+        //        {
+        //            try
+        //            {
+        //                ValidateJavaRegistryValues();
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                if (ex.Message.StartsWith("Failed to read the Registry"))
+        //                {
+        //                    //find alternative path to java
+
+        //                    string tmpJavaPath = System.Environment.GetEnvironmentVariable("ProgramFiles");
+        //                    string java1 = "Java\\jre7\\bin\\javaw.exe";
+        //                    string java2 = "Java\\jre6\\bin\\javaw.exe";
+        //                    if (File.Exists(tmpJavaPath + "\\" + java1))
+        //                    {
+        //                        if (MessageBox.Show(String.Format("The java key could not be found in the registry, but java was found on the disk.{0}Path Found: {1}{0}Do you want to use this path?", Environment.NewLine, tmpJavaPath + "\\" + java1), "Alternative path to java found", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.Yes)
+        //                        {
+        //                            JavaPath = tmpJavaPath + "\\Java\\jre7";
+        //                        }
+        //                        else
+        //                        {
+        //                            ex.Data.Add("GetJavaVersion() - Alternative Paths. Java1 path refused?", true);
+        //                            throw ex;
+        //                        }
+        //                    }
+        //                    else
+        //                    {
+        //                        ex.Data.Add("GetJavaVersion() - Alternative Paths. Java1 path found?", false);
+        //                        if (File.Exists(tmpJavaPath + "\\" + java2))
+        //                        {
+        //                            if (MessageBox.Show(String.Format("The java key could not be found in the registry, but java was found on the disk.{0}NOTE: This version of java is very old and you should really install java 7!{0}Path Found: {1}{0}Do you want to use this path?", Environment.NewLine, tmpJavaPath + "\\" + java2), "Alternative path to java found", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == System.Windows.Forms.DialogResult.Yes)
+        //                            {
+        //                                JavaPath = tmpJavaPath + "\\Java\\jre6";
+        //                            }
+        //                            else
+        //                            {
+        //                                ex.Data.Add("GetJavaVersion() - Alternative Paths. Java2 path refused?", true);
+        //                                throw ex;
+        //                            }
+        //                        }
+        //                        else
+        //                        {
+        //                            ex.Data.Add("GetJavaVersion() - Alternative Paths. Java2 path found?", false);
+        //                            throw ex;
+        //                        }
+        //                    }
+
+        //                    return "Java not found in registry";
+        //                }
+        //                else
+        //                    throw ex;
+        //            }
+                
+        //            String javaKey = "SOFTWARE\\JavaSoft\\Java Runtime Environment";
+        //            RegistryKey localMachineRegistry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32);
+        //            regkey = localMachineRegistry.OpenSubKey(javaKey);
+        //            return (string)regkey.GetValue("CurrentVersion");
+        //        }
+        //        return JavaPath;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        //ex.Data.Add("GetJavaVersion() - regkey null?", regkey == null);
+        //        throw ex;
+        //    }
+        //}
+
+
+
 
         //private RegistryKey GetJavaKey()
         //{
@@ -551,6 +685,75 @@ namespace KBG_Launcher
         //    }
 
         //}
+
+        private RegistryKey FindJavaRegistryKey(string startPath, Exception exceptionData)
+        {
+            try
+            {
+                RegistryKey localMachineRegistry = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32);
+                List<string> keyPaths = new List<string>((startPath + "\\JavaSoft\\Java Runtime Environment").Split('\\'));
+
+                return FindJavaRegistryKeySub(keyPaths, localMachineRegistry, exceptionData);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        private RegistryKey FindJavaRegistryKeySub(List<string> keyPaths, RegistryKey currentKey, Exception exceptionData)
+        {
+            try
+            {
+                RegistryKey regkey = null;
+
+                //find reg key in the array[0]
+                if (keyPaths.Count > 0)
+                {
+                    regkey = currentKey.OpenSubKey(keyPaths[0]);
+                    if (regkey != null)
+                    {
+                        if (keyPaths[0] == "Java Runtime Environment") //found the end target
+                            return regkey;
+
+                        //if found (and not end target) then traverse deeper (if not at the end of the array)
+                        keyPaths.Remove(keyPaths[0]);
+                        return FindJavaRegistryKeySub(keyPaths, regkey, exceptionData);
+                    }
+                    else
+                    {
+                        //if not found then do tests depending on value of array[0]
+
+                        //throw new Exception("(42) Failed to open RegistryKey (" + keyPaths[0] + ")");      
+                        exceptionData.Data.Add("FindJavaRegistryKeySub() failed at key ", currentKey.Name);                        
+
+                        string tmpString = "";
+                        foreach (string key in keyPaths) tmpString += key + ",";
+
+                        exceptionData.Data.Add("FindJavaRegistryKeySub() - Remaining keys in array", tmpString.TrimEnd(','));
+
+                        if (keyPaths[0] == "JavaSoft" || keyPaths[0] == "Java Runtime Environment")
+                        {
+                            string[] list = currentKey.GetSubKeyNames();
+                            int tmpCounter = 0;
+                            foreach (string subkey in list)
+                            {
+                                exceptionData.Data.Add("FindJavaRegistryKeySub() - '" + currentKey.Name + "' contains key (" + tmpCounter++ + "):", subkey);
+                            }
+                        }
+                        return null;
+                    }
+                }
+                else
+                {
+                    throw new Exception("KeyPaths.Count was 0");
+                }                
+            }
+            catch (Exception ex)
+            {                
+                throw ex;
+            }
+        }
 
         private void ValidateJavaRegistryValues()
         {
@@ -1039,6 +1242,8 @@ namespace KBG_Launcher
                 //_settings.MemmoryMax = (int)numericUpDownRamMax.Value;
                 _settings.MemmoryMin = int.Parse(labelMemmoryMin.Text);
                 _settings.MemmoryMax = int.Parse(labelMemmoryMax.Text);
+                _settings.UseManualJavaPath = checkBoxManualJavaPath.Checked;
+                _settings.ManualJavaPath = textBoxManualJavaPath.Text;
             }
             catch (Exception ex)
             {
@@ -1228,6 +1433,25 @@ namespace KBG_Launcher
             catch (Exception ex)
             {
                 _formMain.ErrorReporting(ex, false);
+            }
+        }
+
+        private void buttonManualJavaPath_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                System.Windows.Forms.OpenFileDialog oFileDialog = new System.Windows.Forms.OpenFileDialog();
+
+                oFileDialog.Filter = "Executeable files (*.exe)|*.exe|All files (*.*)|*.*";
+                oFileDialog.Multiselect = false;
+                oFileDialog.DefaultExt = "exe";
+
+                if (oFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    textBoxManualJavaPath.Text = oFileDialog.FileName;
+            }                 
+            catch (Exception)
+            {
+                throw;
             }
         }
     }

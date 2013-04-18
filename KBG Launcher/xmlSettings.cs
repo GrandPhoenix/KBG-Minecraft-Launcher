@@ -102,6 +102,9 @@ namespace KBG_Launcher
         //private string _settingsFileName = "Settings.xml";
         private string _settingsFile = "";
 
+        //NOTE. To add new settings just add a const to the list below, and add a public property to the list below the const list.
+
+
         private const string SettingNameUsername = "UserName";
         private const string SettingNamePassword = "Password";
         private const string SettingNameRememberLogin = "RememberLogin";
@@ -111,6 +114,8 @@ namespace KBG_Launcher
         private const string SettingNameJavaVersion = "JavaVersion";
         private const string SettingNameDoAutoLogin = "DoAutoLogin";
         private const string SettingNameAutoLoginServer = "AutoLoginServer";
+        private const string SettingNameUseManualJavaPath = "UseManualJavaPath";
+        private const string SettingNameManualJavaPath = "ManualJavaPath";
         private const string SettingNameLastPlayedServer = "LastPlayedServer";
 
 
@@ -239,6 +244,29 @@ namespace KBG_Launcher
             get { return LoadSettingByName(SettingNameAutoLoginServer); }
             set { SaveSettingByName(SettingNameAutoLoginServer, value); }
         }
+
+        public bool UseManualJavaPath
+        {
+            get
+            {
+                bool b = false;
+                bool.TryParse(LoadSettingByName(SettingNameUseManualJavaPath), out b);
+                return b;
+            }
+            set
+            {
+                bool b = false;
+                bool.TryParse(value.ToString(), out b);
+                SaveSettingByName(SettingNameUseManualJavaPath, b.ToString());
+            }
+        }
+
+        public string ManualJavaPath
+        {
+            get { return LoadSettingByName(SettingNameManualJavaPath); }
+            set { SaveSettingByName(SettingNameManualJavaPath, value); }
+        }
+
 
         public string LastPlayedServer
         {
