@@ -48,5 +48,17 @@ namespace KBG_Launcher
             if (e.KeyChar == (char)Keys.Escape || e.KeyChar == (char)Keys.Enter)
                 this.Close();
         }
+
+        private void richTextBox1_LinkClicked(object sender, LinkClickedEventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(e.LinkText);
+            }
+            catch (Exception ex)
+            {
+                (ParentForm as FormMain).ErrorReporting(ex, false);
+            }
+        }
     }
 }

@@ -55,7 +55,7 @@ namespace KBG_Launcher
 #if (!DEBUG) //release
 
         private string _KBGClientVersionUrl = "https://dl.dropbox.com/s/y1kjdxqwnl935fk/KBGClientVersion.xml";
-        //private string _KBGClientUpdateUrl = "https://dl.dropbox.com/s/fdfrns4ww5wvoxo/KBG%20Minecraft%20Launcher.exe"; //Old url
+        //private string _KBGClientUpdateUrl = "https://dl.dropbox.com/s/fdfrns4ww5wvoxo/KBG%20Minecraft%20Launcher.exe"; //Old urlString
         private string _KBGClientUpdateUrl = "https://dl.dropbox.com/s/z2jdqjqd7gjirhq/KBG%20Launcher.exe";
        
         private const string _packIRName = "Industrial Rage";
