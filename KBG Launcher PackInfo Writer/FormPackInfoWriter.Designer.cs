@@ -501,7 +501,7 @@
             this.labelNewPathToJar.Name = "labelNewPathToJar";
             this.labelNewPathToJar.Size = new System.Drawing.Size(147, 20);
             this.labelNewPathToJar.TabIndex = 0;
-            this.labelNewPathToJar.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelNewPathToJar.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // groupBox6
             // 

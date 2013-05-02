@@ -229,9 +229,16 @@ namespace KBG_Minecraft_Launcher_NewsWriter
                 textContent += string.Format("<{0}>{1}</{0}>{2}", "Credits", System.Security.SecurityElement.Escape(phoenixRichTextBoxCredits.Rtf), Environment.NewLine);
                 foreach(string item in listBoxExcludes.Items)
                     textContent += string.Format("<{0}>{1}</{0}>{2}", "ExcludeFromUpdate", item, Environment.NewLine);
-                if(!labelNewPathToJar.Text.Contains("KEY") && labelNewPathToJar.Text != "")
-                    textContent += string.Format("<{0}>{1}</{0}>{2}", "InstallVersion", labelNewPathToJar.Text, Environment.NewLine);
-
+                if (labelNewPathToJar.Text != "")
+                {
+                    if (!labelNewPathToJar.Text.Contains("KEY"))
+                        textContent += string.Format("<{0}>{1}</{0}>{2}", "InstallVersion", labelNewPathToJar.Text, Environment.NewLine);
+                }
+                else
+                {
+                    if(!labelOldPathToJar.Text.Contains("KEY") && labelOldPathToJar.Text != "")
+                        textContent += string.Format("<{0}>{1}</{0}>{2}", "InstallVersion", labelOldPathToJar.Text, Environment.NewLine);
+                }
                 textContent += @"</KBGVersionInfo>" + Environment.NewLine;
 
                 xmlDoc.LoadXml(textContent);
@@ -333,7 +340,7 @@ namespace KBG_Minecraft_Launcher_NewsWriter
             if (ass != null)
             {
                 FileVersionInfo FVI = FileVersionInfo.GetVersionInfo(ass.Location);
-                this.Text = string.Format("KBG PackInfo Writer v.{0}.{1}", FVI.FileMajorPart, FVI.FileMinorPart);
+                this.Text = string.Format("KBG PackInfo Writer v.{0}", FVI.FileVersion);
             }
         }
 
